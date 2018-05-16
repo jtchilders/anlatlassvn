@@ -1,0 +1,30 @@
+GoSam - MadGraph - POWHEG interface
+
+To generate a new process follow these steps:
+
+1. create a new folder for the new process you want to generate in the main POWHEG-BOX directory
+
+2. write a MadGraph input card and, if needed, a GoSam input card (gosam.rc) and save them in the new process folder
+
+3. generate the tree amplitudes and POWHEG-BOX files by executing:
+   ../MadGraphStuff/BuildMad.sh
+
+   from the new folder, where you want to generate the process.
+
+4. generate the loop-amplitudes by executing:
+   ../GoSamStuff/BuildGS virtual
+   ../GoSamStuff/BuildGS newfiles
+   ../GoSamStuff/BuildGS standalone
+ 
+5. at this point a complete Makefile is available for compilation.
+
+6. to run the process the file Born_phsp.f has to be provided.
+
+--> Further modifications could be needed in 
+
+- Gosamlib/olp_module (for dynamical parameters)
+- pwhg_analysis.f (has to be provided)
+- init_couplings.f (to be edited to parallel runs)
+- charge conjugated processes are not automated (have to be implemented)
+
+

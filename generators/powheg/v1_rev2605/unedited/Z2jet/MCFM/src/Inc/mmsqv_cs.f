@@ -1,0 +1,2 @@
+      double precision mmsqv_cs(0:2,2,2)
+      common/mmsqv_cs/mmsqv_cs

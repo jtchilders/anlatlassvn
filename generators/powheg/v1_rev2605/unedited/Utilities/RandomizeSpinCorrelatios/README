@@ -1,0 +1,6 @@
+This program can be used to randomize the spin correlation of decaying
+resonances. In order to use it, identify the position of the
+decaying resonances in the Les Houches event file. Run the
+program, anter as requested the name of the input event file, the name
+of the output event file, and the position of each resonance, terminated
+by a negative integer. The program should handle nested resonances.

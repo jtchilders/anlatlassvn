@@ -1,0 +1,42 @@
+C
+C This is an automatically created file, don't edit!
+C File created on Wed Jul 14 10:40:54 CEST 2004
+C by ./DefVars.pl 
+C
+
+      double complex t1,t1025,t1063,t1100,t111,t1139,t1176,t118,t12
+      double complex t1214,t1251,t1255,t1258,t1261,t1264,t1267,t127
+      double complex t1270,t1277,t1288,t1291,t1298,t1301,t1306,t1309
+      double complex t1314,t132,t1321,t1324,t1337,t1344,t1348,t1351
+      double complex t1356,t1373,t1386,t1423,t1462,t1477,t15,t1500
+      double complex t1538,t155,t1575,t1615,t1652,t1690,t170,t1727
+      double complex t1766,t18,t1803,t1841,t1878,t1882,t1885,t1888
+      double complex t1895,t1898,t1901,t1906,t1911,t1914,t1917,t1920
+      double complex t1925,t1930,t1933,t1954,t1957,t1968,t1971,t1985
+      double complex t1992,t2003,t2012,t2013,t2016,t2051,t209,t2090
+      double complex t2127,t2165,t2202,t2242,t2279,t2317,t2354,t2393
+      double complex t2430,t246,t2468,t2505,t2509,t2512,t2515,t2518
+      double complex t2521,t2524,t2527,t2530,t2535,t2538,t2543,t2556
+      double complex t2557,t2564,t2569,t2572,t2575,t2578,t2595,t2600
+      double complex t2602,t2609,t2622,t2641,t2678,t27,t2717,t2754
+      double complex t2792,t2829,t284,t2869,t2906,t2944,t2981,t3020
+      double complex t3057,t3095,t3132,t3136,t3139,t3142,t3145,t3148
+      double complex t3153,t3156,t3161,t3164,t3175,t3178,t3183,t3186
+      double complex t3197,t32,t3200,t3205,t321,t3210,t3217,t3226
+      double complex t3246,t3251,t3266,t3289,t3304,t3343,t3344,t3381
+      double complex t3419,t3456,t3496,t3533,t3571,t3608,t361,t3647
+      double complex t3684,t3722,t3759,t3763,t3766,t3771,t3774,t3777
+      double complex t3780,t3785,t3788,t3791,t3794,t3799,t3802,t3805
+      double complex t3810,t3813,t3814,t3829,t3846,t3853,t3855,t3874
+      double complex t3893,t3930,t3967,t3970,t398,t3997,t4,t4008,t4046
+      double complex t4083,t41,t4123,t4160,t4198,t4235,t4274,t4311
+      double complex t4349,t436,t4386,t4390,t4393,t4396,t44,t4401
+      double complex t4404,t4407,t4410,t4415,t4418,t4421,t4428,t4437
+      double complex t4442,t4445,t4448,t4455,t4462,t4471,t4480,t4482
+      double complex t4485,t4518,t4521,t4558,t4563,t4598,t4635,t4673
+      double complex t47,t4710,t473,t4750,t4787,t4825,t4862,t4901
+      double complex t4938,t4976,t50,t5013,t512,t53,t549,t58,t587,t624
+      double complex t628,t631,t634,t637,t640,t643,t646,t649,t652,t655
+      double complex t658,t661,t664,t671,t674,t679,t7,t706,t709,t712
+      double complex t719,t747,t75,t750,t759,t78,t796,t81,t835,t86
+      double complex t862,t873,t91,t911,t948,t988

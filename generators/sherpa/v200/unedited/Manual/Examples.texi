@@ -1,0 +1,104 @@
+@node Examples
+@chapter Examples
+
+Some example set-ups are included in Sherpa, in the 
+@code{<prefix>/share/SHERPA-MC/Examples/} directory. These may be useful to 
+new users to practice with, or as templates for creating your 
+own Sherpa run-cards. In this section, we will look at some 
+of the main features of these examples.
+
+@menu
+* VJets::
+* Jets::
+* HJets::
+* TopsJets::
+* FONLO::
+* SoftQCD::
+* APIexamples::
+@end menu
+
+
+@node VJets
+@section Vector boson + jets production
+
+@menu
+* LHC_WJets::
+* LHC_ZJets::
+* LHC_Wbb::
+@end menu
+
+@include LHC_WJets.texi
+@include LHC_ZJets.texi
+@include LHC_Wbb.texi
+
+
+@node Jets
+@section Jet production
+
+@menu
+* LHC_Jets::
+* LEP_Jets::
+@end menu
+
+@include LHC_Jets.texi
+@include LEP_Jets.texi
+
+@node HJets
+@section Higgs boson + jets production
+
+@menu
+* LHC_HInt::
+* LHC_HJets::
+* LHC_HTTBar::
+@end menu
+
+@include LHC_HInt.texi
+@include LHC_HJets.texi
+@include LHC_HTTBar.texi
+
+
+@node TopsJets
+@section Top quark (pair) + jets production
+
+@menu
+* Tops in MC@@NLO::
+* Tops plus Jets in MEPS::
+* Tops plus W in MC@@NLO::
+@end menu
+
+@include LHC_TTBar.texi
+@include LHC_TTW.texi
+
+
+@node FONLO
+@section Fixed-order next-to-leading order calculations
+
+@menu
+* NTuple production::
+@end menu
+
+@include NLO_NTuples.texi
+
+@node SoftQCD
+@section Soft QCD: Minimum Bias and Cross Sections
+
+@menu
+* Calculation of inclusive cross sections::
+* Simulation of Minimum Bias events::
+@end menu
+
+@include InclusiveCrossSections.texi
+@include MinimumBiasEvents.texi
+
+@node APIexamples
+@section Using the Python interface
+
+@menu
+* ME2::
+* Events::
+* MPIEvents::
+@end menu
+
+@include ME2.texi
+@include Events.texi
+@include MPIEvents.texi

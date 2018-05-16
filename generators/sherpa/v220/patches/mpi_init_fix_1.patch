@@ -1,0 +1,71 @@
+Index: SHERPA/PerturbativePhysics/Matrix_Element_Handler.C
+===================================================================
+--- SHERPA/PerturbativePhysics/Matrix_Element_Handler.C	(revision 28133)
++++ SHERPA/PerturbativePhysics/Matrix_Element_Handler.C	(revision 28134)
+@@ -367,17 +367,11 @@
+   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
+   double btime(ATOOLS::rpa->gen.Timer().UserTime());
+ #ifdef USING__MPI
+-  if (MPI::COMM_WORLD.Get_rank()==0) {
++  if (MPI::COMM_WORLD.Get_rank()==0)
+ #endif
+   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
+   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+-#ifdef USING__MPI
+-  }
+-#endif
+   BuildProcesses();
+-#ifdef USING__MPI
+-  if (MPI::COMM_WORLD.Get_rank()==0)
+-#endif
+   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+   if (msg_LevelIsTracking()) msg_Info()<<"Process initialization";
+   double retime(ATOOLS::rpa->gen.Timer().RealTime());
+Index: AMISIC++/Model/Simple_Chain.C
+===================================================================
+--- AMISIC++/Model/Simple_Chain.C	(revision 28133)
++++ AMISIC++/Model/Simple_Chain.C	(revision 28134)
+@@ -236,6 +236,7 @@
+                                          const Flavour& out1,
+                                          const Flavour& out2)
+ {
++  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+   PHASIC::Process_Info pi;
+   pi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(in1,"",""));
+   pi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(in2,"",""));
+@@ -247,6 +248,7 @@
+   pi.m_kfactor=p_read->GetValue<std::string>("MPI_KFACTOR","MPI");
+   pi.m_coupling="Alpha_QCD 1";
+   pi.m_mpiprocess=true;
++  pi.m_addname="__MPI";
+   p_processes.push_back(new Semihard_QCD(p_read));
+   p_processes.back()->Init(pi,p_beam,p_isr);
+   msg_Info()<<METHOD<<"(): Init processes ";
+@@ -260,6 +262,7 @@
+   p_processes.back()->SetGenerator(p_processes.back());
+   for (size_t i(0);i<p_processes.back()->Size();++i)
+     m_processmap[(*p_processes.back())[i]->Name()]=(*p_processes.back())[i];
++  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
+ }
+ 
+ bool Simple_Chain::SetUpInterface()
+Index: PHASIC++/Process/Process_Group.C
+===================================================================
+--- PHASIC++/Process/Process_Group.C	(revision 28133)
++++ PHASIC++/Process/Process_Group.C	(revision 28134)
+@@ -84,9 +84,12 @@
+ void Process_Group::Add(Process_Base *const proc) 
+ {
+   if (proc==NULL) return;
+-  if (m_procmap.find(proc->Name())!=m_procmap.end())
+-    THROW(critical_error,"Doubled process '"+proc->Name()+"'");
+-  m_procmap[proc->Name()]=proc;
++  std::string name(proc->Name()), add(proc->Info().m_addname);
++  if (add.length() && name.rfind(add)!=std::string::npos)
++    name.erase(name.rfind(add),add.length());
++  if (m_procmap.find(name)!=m_procmap.end())
++    THROW(critical_error,"Doubled process '"+name+"'");
++  m_procmap[name]=proc;
+   if (m_maxcpl.size()<proc->MaxOrders().size()) {
+     m_maxcpl.resize(proc->MaxOrders().size(),0);
+     m_mincpl.resize(proc->MinOrders().size(),99);

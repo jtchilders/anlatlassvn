@@ -1,0 +1,104 @@
+display2d:false;
+nolabels:true;
+
+/* integrale di 1/(uk*tk) s^2*(1-x)^2/4 = 1/(1-y^2) */
+j[uk,tk]:-pi/ep$
+
+/* integrale di 1/(tk*w1) s^2*(1-x)^2/4 = 1/(1-y) * 1/(1-kk.eta)
+   con kk = kappa(cos(al),0 perp) , eta = (y,eta perp), |eta|=1      
+   cos(al) = (1-2*t1)/b
+   kappa   = b                      */
+j[tk,w1]:pi/(2*t1)*( -1/ep + vltm + lt1 -ep*( 1/2*vlpm^2+2*softt1))$
+
+/*  Spiegazione dei simboli:
+softt1=ddilog(1-2*t1/(1-b))+ddilog(1-2*t1/(1+b))+
+       log(2*t1/(1+b))*log(2*t1/(1-b)),
+softt2=ddilog(1-2*t2/(1-b))+ddilog(1-2*t2/(1+b))+
+       log(2*t2/(1+b))*log(2*t2/(1-b)),
+softb=ddilog(2*b/(1+b))-ddilog(-2*b/(1-b))
+*/
+
+/* integrale di 1/(tk*w1) s^2*(1-x)^2/4 = 1/(1-y) * 1/(1-kk.eta)
+   con kk = kappa(cos(al),0 perp) , eta = (y,eta perp), |eta|=1      
+   cos(al) = (1-2*t2)/b
+   kappa   = b                      */
+j[uk,w1]:pi/(2*t2)*( -1/ep + vlwm + lt2 -ep*( 1/2*vlpm^2+2*softt2))$
+
+j[tk,w2]:j[uk,w1]$
+j[uk,w2]:j[tk,w1]$
+j[w1,w1]:2*pi/ro*(  1+ep/b*vlpm )$
+j[w2,w2]:j[w1,w1]$
+j[w1,w2]:pi/b*(  vlpm+ep*softb  )$
+
+mm:2*i[1,2]*b12+2*i[1,q]*b13+2*i[1,qb]*b14+2*i[2,q]*b23+2*i[2,qb]*b24
++2*i[q,qb]*b34-(i[q,q]+i[qb,qb])*vcf*born;
+
+mm:subst([i[1,q]=2*t1*j[tk,w1],
+          i[2,q]=2*t2*j[uk,w1],
+          i[1,qb]=2*t2*j[tk,w2],
+          i[2,qb]=2*t1*j[uk,w2],
+          i[1,2]=2*j[uk,tk],
+          i[q,q]=ro*j[w1,w1],
+          i[qb,qb]=ro*j[w2,w2],
+          i[q,qb]=2*(1-ro/2)*j[w1,w2]  ],mm)$
+
+/* Per ottenere d sigma soft (da sommare alla parte virtuale)
+occorre moltiplicare mm per:
+1) il fattore di spazio delle fasi H*N*s^(1-ep)/(2*pi) d Phi_2
+2) il fattore che proviene dallo sviluppo di (1-x)^(-1-2*ep):
+   -b^-(4*ep)/(2*ep)
+3) il fattore 4/s omesso in precedenza
+4) il fattore g^6 mu^(2*ep)
+5) il fattore 1/(8*s*(1-ep)^2) T_F/D_A (medie varie).
+
+Di tutto cio' omettiamo N d Phi_2, che e' comune a tutti i contributi, e 
+sviluppiamo il resto in serie di ep, ricordando che ci sono al massimo 
+poli doppi in epsilon.
+
+vlsmu = log(s/mu^2)      */
+
+lb:0;
+
+norm:(1-pi^2*ep^2/3)*(1-ep*vlsmu+ep^2*vlsmu^2/2)/ep$
+/*
+      (1-pi^2*ep^2/3)*(1-ep*vlsmu+ep^2*vlsmu^2/2)*
+*/
+
+softreal:norm*mm;
+
+/* Calcolo il controtermine collineare:  */
+
+b0:(11*vca-4*nlf*vtf)/3$
+softct:2*zg^6*born/(8*s*(1-ep)^2)*vtf/vda*(b0)/ep$
+
+softreal0:
+        (2*b23*pi*(vlwm-(1-ep*vlsmu)/ep+lt2)
+        +2*b14*pi*(vlwm-(1-ep*vlsmu)/ep+lt2)
+        +2*b24*pi*(vltm-(1-ep*vlsmu)/ep+lt1)
+        +2*b13*pi*(vltm-(1-ep*vlsmu)/ep+lt1)-4*b12*pi*(1-ep*vlsmu)/ep
+        +4*b34*pi*(1-ro/2)*vlpm/b-4*born*pi*vcf)
+        
+        /(ep);
+
+
+
+df:rat(softreal-softreal0);
+
+df:df,ep=0;
+
+df:coefsm(df,[b12,b13,b14,b23,b24,b34,born]);
+
+
+/*
+[[4*pi*vcf*(b*vlsmu-vlpm)/b,born],
+        [2*pi*(ro-2)*(vlpm*vlsmu-softb)/b,b34],
+        [-pi*(6*vlsmu*vltm+3*vlsmu^2+6*lt1*vlsmu+3*vlpm^2+12*softt1-2*pi^2)/3,
+         b24],
+        [-pi*(6*vlsmu*vlwm+3*vlsmu^2+6*lt2*vlsmu+3*vlpm^2+12*softt2-2*pi^2)/3,
+         b23],
+        [-pi*(6*vlsmu*vlwm+3*vlsmu^2+6*lt2*vlsmu+3*vlpm^2+12*softt2-2*pi^2)/3,
+         b14],
+        [-pi*(6*vlsmu*vltm+3*vlsmu^2+6*lt1*vlsmu+3*vlpm^2+12*softt1-2*pi^2)/3,
+         b13],[-2*pi*(3*vlsmu^2-2*pi^2)/3,b12]]
+
+*/

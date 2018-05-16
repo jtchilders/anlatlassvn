@@ -1,0 +1,388 @@
+\documentclass[paper]{JHEP3}
+\usepackage{amssymb,enumerate,url,amsmath}
+\bibliographystyle{JHEP}
+
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\HERWIG{{\tt HERWIG}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\MCatNLO{{\tt MC@NLO}}
+
+\newcommand\kt{k_{\sss\rm T}}
+
+\newcommand\pt{p_{\sss\rm T}}
+\newcommand\LambdaQCD{\Lambda_{\scriptscriptstyle QCD}}
+%%%%%%%%%% End TeXmacs macros
+
+
+\title{The \mbox{POWHEG BOX} user manual:\\
+  Single-top t-channel in the 4-flavour scheme} \vfill
+\author{Emanuele Re\\
+  Institute for Particle Physics Phenomenology, Department of Physics\\
+  University of Durham, Durham, DH1 3LE, UK\\
+  E-mail: \email{emanuele.re@durham.ac.uk}}
+
+\vskip -0.5truecm
+
+\keywords{POWHEG, Shower Monte Carlo, NLO}
+
+\abstract{This note documents the use of the package \tmtexttt{POWHEG
+    BOX} for the single-top $t$-channel production process computed in
+  the $4$-flavour scheme.  Results can be easily interfaced to shower
+  Monte Carlo programs, in such a way that both NLO and shower
+  accuracy are maintained.  Please read carefully the manual before
+  using this code.}  \preprint{\today\\
+  \tmtexttt{POWHEG BOX} 1.0}
+
+\begin{document}
+
+
+\section{Introduction}
+
+The \tmtexttt{POWHEG BOX} program is a framework for implementing NLO
+calculations in Shower Monte Carlo programs according to the
+\POWHEG{} method. An explanation of the method and a discussion of
+how the code is organized can be found in
+refs.~\cite{Nason:2004rx,Frixione:2007vw,Alioli:2010xd}.  The code is
+distributed according to the ``MCNET GUIDELINES for Event Generator
+Authors and Users'' and can be found at the web page \\
+%
+\begin{center}
+ \url{http://powhegbox.mib.infn.it}.
+\end{center}
+%
+~\\
+%
+In the following we will focus on the implementation of single-top
+$t$-channel production in the $4$-flavour scheme, whose source files
+can be found in the \tmtexttt{POWHEG-BOX/ST\_tch\_4f} subdirectory.
+
+This program is an implementation of the NLO cross section calculated
+in~\cite{Campbell:2009ss} in the \POWHEG{} formalism of
+refs.~\cite{Nason:2004rx,Frixione:2007vw}. Tree level Born and real
+matrix-elements were obtained from scratch, whereas the one-loop
+contribution was taken from the MCFM package.
+
+A detailed description of the implementation, together with a
+comparison with the results for the same process as implemented with
+the \MCatNLO{} method, can be found in ref.~\cite{Frederix:2012dh}. In
+the current version, spin correlations of the top-quark decay products
+are not included, which means that angular correlation between the
+production and the decay stage are not present.
+%
+
+\section{Installation}
+Before describing the installation procedure, we want to recall that a
+NLO+PS simulation of the single-top $t$-channel process, in the
+``$5$-flavour'' scheme, is already present in the \tmtexttt{POWHEG
+  BOX} package (\tmtexttt{POWHEG-BOX/ST\_tch} directory,
+ref.~\cite{Alioli:2009je}). However, the process of single-top
+$t$-channel production can be described also in a different scheme,
+namely the ``$4$-flavour'' scheme. Although the $4$- and $5$-flavour
+prescriptions are formally equivalent if all the perturbative
+expansion were taken into account, they can show differences when the
+perturbative series is truncated, as unavoidably happens in a real
+computation. Both schemes have advantages and disadvantages, depending
+on the observables studied. The purpose of this implementation is to
+allow a simulation in the $4$-flavour scheme too, in order to allow
+for an assessment of these differences with NLO+PS accuracy. More
+commments and a more detailed explanation of differences and
+similarities between the 2 approaches can be found in
+ref.~\cite{Frederix:2012dh}, and in the references therein.
+
+Please notice that the PDF choice is \textbf{not} arbitrary for this
+implementation: a $4$-flavour PDF set (as for example {\tt
+  MSTW2008nlo68cl\_nf4}) must be used for consistency of the
+calculation. To this aim, the installation of
+LHAPDF~\cite{Whalley:2005nh} is strongly suggested. Notice also that,
+in the current version, the program doesn't check explicitly that such
+a set is actually selected in the input file.\footnote{It is possible
+  to add in the code some compensating terms, to make the computation
+  consistent with a $5$-flavour PDF set. By default these terms are
+  off. An explicit switch to turn them on from the input card could be
+  made available upon request, if needed.}
+
+In order to run the \tmtexttt{POWHEG BOX} program, we recommend the
+reader to start from the \tmtexttt{POWHEG BOX} user manual, which
+contains all the information and settings that are common between all
+subprocesses. In this note we focus on the settings and parameters
+specific to the single-top $t$-channel $4$-flavour implementation.
+
+\section{Generation of events and showering}
+
+The executable is built with the following commands\\~\\
+\tmtexttt{
+%
+  \$ cd POWHEG-BOX/ST\_tch\_4f\\
+% 
+  \$ make pwhg\_main\\
+%
+}
+\\
+In the \tmtexttt{testrun} folder, there are examples of input files.
+For example, you can start a run doing\\~\\
+\tmtexttt{
+%
+  \$ cd testrun\\
+% 
+  \$ ../pwhg\_main\\
+%
+}
+\\
+and then insert the prefix of an input file when prompted.  The input
+file read in this case will be \tmtexttt{<prefix>-powheg.input} and at
+the end a file named \tmtexttt{<prefix>-events.lhe} will contain
+events, in the Les Houches format.
+To shower them with \PYTHIA{} do\\~\\
+\tmtexttt{
+%
+\$ cd POWHEG-BOX/ST\_tch\_4f\\
+%
+\$ make main-PYTHIA-lhef \\
+%
+\$ cd testrun \\
+%
+\$ ../main-PYTHIA-lhef\\
+%
+}
+\\
+Similar commands will run the \HERWIG{} shower.
+~\\~\\
+It is possible to speed up the generation of events by splitting this
+stage in several short runs, producing several {\tt .lhe} files.  The
+full description of this procedure can be found in {\tt
+  POWHEG-BOX/Docs/Manyseeds.pdf}, and a summary of it, suited for this
+implementation, is reported in the following.\\
+%
+To parallelize the event generation, the code has first to be run setting in the input card\\~\\
+\tmtexttt{
+%
+numevts 0\\
+%
+}
+\\
+When this run is finished all the grids for subsequent runs will be
+ready, but no event file will be present yet. At this point, the user
+should uncomment the option {\tt manyseeds} in the input card:\\~\\
+\tmtexttt{
+%
+manyseeds 1\\
+%
+}
+\\
+and decide the number of events for each short run, setting
+{\tt numevts} as usual.
+In order to start the event generation, a file named {\tt <prefix>-seeds.dat}
+has to be created, with the following format:\\~\\
+\tmtexttt{
+%
+  randomseed1\\
+  randomseed2\\
+  randomseed3\\
+  ..\\
+  ..\\
+%
+}\\
+where each line has to be the integer that will be used to initialize
+the random numbers generator.  At this point, by running the code with
+the usual command {\tt pwhg\_main}, the user will be asked not only
+the prefix of the input file, but also an integer. This integer
+corresponds to the line in {\tt <prefix>-seeds.dat} that the program
+will read to initialize the random numbers generator.  The program
+will use all the grids generated, and the event file produced will
+contain in the name also the integer typed, so there is no risk of
+overwriting files.
+
+
+
+\section{Process specific input parameters}
+\tmtexttt{
+  facscfact 1 ! factorization scale factor: mufact=muref*facscfact\\
+  renscfact 1 ! renormalization scale factor: muren=muref*renscfact\\
+}
+\\
+Factorization and renormalization scale factors appearing here have to
+do with the computation of the inclusive cross section (i.e.~the
+$\bar{B}$ function~\cite{Nason:2004rx,Frixione:2007vw,Alioli:2010xd}),
+and can be varied by a factor of order 1 to study scale dependence.  A
+physically motivated choice for this process is of the order of the
+transverse mass of the $b$-quark~\cite{Frederix:2012dh}. The default
+scale choice is therefore
+\begin{equation}
+\mu = 4 \sqrt{(m_b^2+p_{T,b}^2)}\,,\nonumber
+\end{equation}
+although other scale choices are possible. The experienced user can
+change this setting modifying the \tmtexttt{set\_fac\_ren\_scales}
+routine.
+\\~\\
+It follows a description of parameters which are relevant for this
+production process:
+\begin{itemize}
+\item When generating events with this implementation, negative
+  weights can appear. As usual the fraction of negative weights in
+  {\tt POWHEG} can be largely reduced increasing \tmtexttt{foldcsi},
+  \tmtexttt{foldy}, \tmtexttt{foldphi}.  Allowed values are 1, 2, 5,
+  10, 25, 50. The speed of the program is inversely proportional to
+  the product of these numbers, so that a reasonable compromise should
+  be found. When using the folding parameters provided in the
+  examples, the fraction of negative-weighted generated events is
+  quite small (few \%), even at LHC energies.  However, it is
+  recommended to keep these events in the generated sample, by keeping
+  the \tmtexttt{withnegweights} flag enabled, as in the example input
+  files.
+\item Enabling the \tmtexttt{withdamp} option can slightly improve the
+  speed of event-generation. Notice that, for this process, no special
+  damping function is needed (cfr. the Higgs via gluon-fusion
+  implementaion and the large $\bar{B}/B$ factor). The only effect
+  here is to improve the efficency of event generation for events
+  where the ratio $R/B$ in the \POWHEG{} Sudakov exponent becomes too
+  large with respect to its corresponding collinear or soft
+  approximation~\cite{Alioli:2010xd}.
+\end{itemize}
+
+The other relevant parameters are:\\
+~\\
+\tmtexttt{
+ttype   1 \phantom{aaaaaaaaaaaa} ! 1 for t, -1 for tbar\\
+topmass 175.0 \phantom{aaaaaa}   ! top mass\\
+bmass 4.75 \phantom{aaaaaaaaa}   ! b mass\\
+wmass 80.398 \phantom{aaaaaaa}   ! w mass \\
+sthw2 0.2226459 \phantom{aaaa}   ! (sin(theta\_W))**2 \\
+alphaem\_inv  132.3384 \phantom{}! 1/alphaem \\
+~\\
+charmthr     1.5\\
+bottomthr    4.75\\
+~\\
+CKM\_Vud 0.9740 \phantom{aaaaaaa} ! CKM matrix entries ...\\
+CKM\_Vus 0.2225 \\
+CKM\_Vub 0.000001 \\
+CKM\_Vcd 0.2225 \\
+CKM\_Vcs 0.9740 \\
+CKM\_Vcb 0.000001 \\
+CKM\_Vtd 0.000001 \\
+CKM\_Vts 0.000001 \\
+CKM\_Vtb 1.0\\
+}
+%
+\\
+The value of \tmtexttt{ttype} is mandatory and it is used to decide if
+top or antitop quarks will be produced. The meaning of all the other
+parameters is self-explanatory. We remind that it is not allowed to
+set any entry of the CKM matrix exactly equal to zero.
+
+
+
+% \section{Generation of a sample with $t$ and $\bar{t}$
+%   events}\label{sec:merging}
+
+% The user can be interested in the generation of a sample where both
+% top and antitop events appear. To this purpose, a script and a
+% dedicated executable have been included. The script is named
+% \tmtexttt{merge\_ttb.sh} and can be found in the directory
+% \tmtexttt{testrun}.  It can be run in any subfolder of
+% \tmtexttt{ST\_wtch\_DR}. Three inputs are mandatory: the first two are
+% the prefixes of the input files used to generate $t$ and $\bar{t}$
+% events. The third input has to be an integer and correspond to the
+% total number of events that the final \emph{merged} sample will
+% contain. The script has to be run twice, using a positive integer
+% value at the first call and its opposite afterward.  Therefore, for
+% example, to produce a sample of 10000 events at the LHC, starting
+% from the input files \tmtexttt{lhc\_wt\_t-powheg.input} and \tmtexttt{lhc\_wt\_tb-powheg.input}, the invocation lines should be as follows:~\\~\\
+% \tmtexttt{\$ sh merge\_ttb.sh lhc\_wt\_t lhc\_wt\_tb 10000}\\~\\
+% and then~\\~\\
+% \tmtexttt{\$ sh merge\_ttb.sh lhc\_wt\_t lhc\_wt\_tb -10000}\\~
+
+% Few remarks are needed:
+% \begin{itemize}
+% \item it is responsibility of the user to check that the 2 input files
+%   are equal. The \tmtexttt{ttype} tokens have to be different,
+%   obviously.
+% \item the two values of \tmtexttt{numevts} are not really used: the
+%   program re-calculate the needed values as a function of the $t$ and
+%   $\bar{t}$ cross sections and of the total number of events to be
+%   generated.
+% \item the final event file is always named
+%   \tmtexttt{t\_tb\_sample-events.lhe}. In the header section it also
+%   contains a copy of the two input files used to generate it, for
+%   cross-checking purposes
+% \end{itemize}
+
+
+\begin{thebibliography}{10}
+
+\bibitem{Nason:2004rx}
+  P.~Nason,
+  ``A new method for combining NLO QCD with shower Monte Carlo algorithms,''
+  JHEP {\bf 0411} (2004) 040
+  [arXiv:hep-ph/0409146].
+  %%CITATION = JHEPA,0411,040;%%
+
+%\cite{Frixione:2007vw}
+\bibitem{Frixione:2007vw}
+  S.~Frixione, P.~Nason and C.~Oleari,
+``Matching NLO QCD computations with Parton Shower simulations: the POWHEG
+method,''
+  JHEP {\bf 0711} (2007) 070
+  [arXiv:0709.2092 [hep-ph]].
+  %%CITATION = JHEPA,0711,070;%%
+
+%\cite{Alioli:2010xd}
+\bibitem{Alioli:2010xd}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+``A general framework for implementing NLO calculations in shower Monte Carlo
+programs: the POWHEG BOX,''
+  JHEP {\bf 1006}, 043 (2010)
+  [arXiv:1002.2581 [hep-ph]].
+  %%CITATION = JHEPA,1006,043;%%
+
+%\cite{Campbell:2009ss}
+\bibitem{Campbell:2009ss} 
+  J.~M.~Campbell, R.~Frederix, F.~Maltoni and F.~Tramontano,
+``Next-to-Leading-Order Predictions for t-Channel Single-Top Production at Hadron Colliders,''
+  Phys.\ Rev.\ Lett.\  {\bf 102}, 182003 (2009)
+  [arXiv:0903.0005 [hep-ph]].
+  %%CITATION = ARXIV:0903.0005;%%
+
+%\cite{Frederix:2012dh}
+\bibitem{Frederix:2012dh} 
+  R.~Frederix, E.~Re and P.~Torrielli,
+``Single-top t-channel hadroproduction in the four-flavour scheme with POWHEG and aMC@NLO,''
+  arXiv:1207.5391 [hep-ph].
+  %%CITATION = ARXIV:1207.5391;%%
+
+%\cite{Alioli:2009je}
+\bibitem{Alioli:2009je}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+  ``NLO single-top production matched with shower in POWHEG: s- and t-channel
+  contributions,''
+  JHEP {\bf 0909}, 111 (2009)
+  [arXiv:0907.4076 [hep-ph]].
+  %%CITATION = JHEPA,0909,111;%%
+
+%\cite{Whalley:2005nh}
+\bibitem{Whalley:2005nh}
+  M.~R.~Whalley, D.~Bourilkov and R.~C.~Group,
+``The Les Houches accord PDFs (LHAPDF) and LHAGLUE,''
+  [arXiv:hep-ph/0508110].
+  %%CITATION = HEP-PH/0508110;%%
+
+\end{thebibliography}
+
+\end{document}
+
+
+
+
+

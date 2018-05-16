@@ -1,0 +1,465 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{amssymb,enumerate}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{url}
+\usepackage{cite}
+\usepackage{graphics}
+\usepackage{xspace}
+\usepackage{epsfig}
+\usepackage{subfigure}
+
+\setlength\paperwidth  {210mm}%
+\setlength\paperheight {300mm}%	
+
+\textwidth 160mm%		% DEFAULT FOR LATEX209 IS a4
+\textheight 230mm%
+
+\voffset -1in
+\topmargin   .05\paperheight	% FROM TOP OF PAGE TO TOP OF HEADING (0=1inch)
+\headheight  .02\paperheight	% HEIGHT OF HEADING BOX.
+\headsep     .03\paperheight	% VERT. SPACE BETWEEN HEAD AND TEXT.
+\footskip    .07\paperheight	% FROM END OF TEX TO BASE OF FOOTER. (40pt)
+
+
+\hoffset -1in				% TO ADJUST WITH PAPER:
+	\oddsidemargin .13\paperwidth	% LEFT MARGIN FOR ODD PAGES (10)
+	\evensidemargin .15\paperwidth	% LEFT MARGIN FOR EVEN PAGES (30)
+	\marginparwidth .10\paperwidth	% TEXTWIDTH OF MARGINALNOTES
+	\reversemarginpar		% BECAUSE OF TITLEPAGE.
+
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[ 1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+\newcommand\PSn{\Phi_{n}}
+\newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
+
+\newcommand\Lum{{\cal L}}
+\newcommand\matR{{\cal R}}
+\newcommand\Kinnpo{{\bf \Phi}_{n+1}}
+\newcommand\Kinn{{\bf \Phi}_n}
+\newcommand\PSnpo{\Phi_{n+1}}
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\asotpi{\frac{\as}{2\pi}}
+
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\POWHEGBOX{{\tt POWHEG\;BOX}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\POWHEGpPYTHIA{{\tt POWHEG+PYTHIA}}
+\newcommand\HERWIG{{\tt HERWIG}}
+
+\title{Manual for $W$ and $Z$ Production via Vector Boson Fusion in the \POWHEGBOX{}}
+\date{}
+%\author{}
+%\keywords{}
+%\abstract{}
+%\preprint{}
+
+
+\begin{document}
+\maketitle
+%
+\noindent
+This document describes the settings and input parameters that are specific to
+the implementation of $W$ and $Z$ production via vector boson fusion at the LHC within the
+\POWHEGBOX{} framework. 
+%
+The parameters that are common to all \POWHEGBOX{} implementations are given in
+the {\tt manual-BOX.pdf} document in the {\tt POWHEG-BOX/Docs}
+directory. Since there are singular configurations in the Born contributions, due care has to be exercised 
+to avoid these regions when generating the Born phase space. Two available options are described in 
+the Input parameters section. On this account, the code is not expected to give 
+reliable results when used with very inclusive cuts.
+%\\[2ex]
+If you use our program, please cite
+Refs.~\cite{SZ,Oleari:2003tc,Alioli:2010xd}.
+
+\section*{Running the program}
+Go to the directory
+{\tt \$ cd POWHEG-BOX/VBF\_W-Z}
+and create a directory where you want to run the code:
+\\[2ex]
+{\tt \$ mkdir testrun}
+\\[2ex]
+The directory must contain the {\tt powheg.input} and {\tt vbfnlo.input} file.
+To compile the code with {\tt gfortran}, type 
+\\[2ex]
+{\tt \$ make}
+\\[2ex]
+The code needs {\tt fastjet} and {\tt lhapdf}, so make sure that {\tt fastjet-config} and 
+{\tt lhapdf-config} are in the path.%
+\\[2ex]
+After compiling, enter the testrun directory:
+\\[2ex]
+{\tt \$ cd testrun}
+\\[2ex]
+The program can be run sequentially by deactivating the variable {\tt manyseeds} in {\tt powheg.input}. Execute the program with
+\\[2ex]
+{\tt \$../pwhg\_main}
+\\[2ex]
+The program can also be run in parallel by setting {\tt manyseeds} to {\tt 1} in {\tt powheg.input}
+and in several steps as for instance described in the manual 
+for VBF Z production \cite{JSZ}.
+\\[2ex]
+\section*{Input parameters}
+To have more flexible choices for the input parameters of the calculation, a new input file 
+({\tt vbfnlo.input}) was added 
+in addition to the standard {\tt powheg.input} file. The use of this new file and some special parameters 
+for {\tt powheg.input} will be explained in the following.
+\subsection*{{\tt powheg.input}}
+
+\begin{itemize}
+\item {\tt mll\_gencut }: cut on the invariant dilepton mass for $Zjj$ production, set to 15 GeV if lower than 15 GeV. This 
+cut is needed to avoid singularities when a virtual photon decays into two massless leptons.
+\item  {\tt bornsuppfact}: \begin{itemize}
+        \item[\textbf{0}]  No Born suppression factor. You should use generation cuts via {\tt  ptj\_gencut} when using this option.  
+        \item[\textbf{1}]  Use a Born suppression factor $F(\Phi_n)$ with 
+        $$F(\Phi_n) = \left( \frac{p_{T,j1}^2}{p_{T,j1}^2+\Lambda_{pTj}^2} \right)^n \left( \frac{p_{T,j2}^2}{p_{T,j2}^2+\Lambda_{pTj}^2} \right)^n.$$
+        $\Lambda_{pTj}$ is set to the value given in  {\tt ptsuppfact} and $F(\Phi_n)$ vanishes whenever 
+        a singular region in the Born phase space $\Phi_n$ is reached. The underlying Born kinematics are then generated 
+in the \textsc{Powheg-Box}  according to a modified $\overline{B}$ function,
+$$\overline{B}_{\text{supp}}=\overline{B}(\Phi_n) F(\Phi_n).$$
+     \end{itemize}
+\item {\tt ptj\_gencut}: Generation cut on the jets' $p_T$ in the phase space generator. Should be used when  {\tt bornsuppfact} 
+is set to 0.
+\item {\tt Phasespace}: \begin{itemize}
+        \item[\textbf{1}] Default value, use the standard phase space (with {\tt bornsuppfact} or {\tt ptj\_gencut}).  
+        \item[\textbf{2}] Use unweighted events as phase space generator.  To 
+use this option, unweighted events with very inclusive cuts have to be generated with \textsc{Vbfnlo} in a seperate run. Each 
+event which survives the unweighting procedure has to be reweighted by the factor $J_i=\sigma_{LO}/(|\mathcal{M}_B(\Phi_i)|^2 \,\text{pdf}(\Phi_i))$, 
+the Born cross section over the respective numerical value of the squared Born matrix element including pdfs. 
+This factor $J_i$ is exactly the Jacobian factor of the Born phase space. Place the file with the reweighted events called 
+{\tt event.total.lhe} in the running directory.
+        \end{itemize}
+\item {\tt bornxsec}: Born cross section in nb of the unweighted events used for {\tt Phasespace} 2. Not needed otherwise.
+\item {\tt fakevirt }: If the program is run in several steps, the generation of the grid can be 
+performed with {\tt fakevirt 1}, where the virtual amplitude is set to a factor proportional to the Born amplitude.
+\end{itemize}
+
+\subsection*{{\tt vbfnlo.input}}
+The input parameters which can be changed by the user are explained in the 
+\textsc{Vbfnlo} Manual \cite{vbfnlo} in detail. Here we give a list of the supported parameters 
+with a short description.
+
+\begin{itemize}
+\item {\tt PROC\_ID}: \begin{itemize}
+        \item[\bf 120]  $p p \to Z \, jj \to \ell^{+} \ell^{-} \, jj$  
+        \item[\bf 130]  $p p \to W^{+} \,  jj\to \ell^{+} \nu_\ell \, jj$  
+        \item[\bf 140]  $p p \to W^{-} \, jj\to \ell^{-} \bar{\nu}_\ell  \, jj$  \end{itemize} 
+\item {\tt DECAYMODE}: \begin{itemize}
+        \item[\bf 11]   $\ell = e$ (electron)
+        \item[\bf 13]  $\ell = \mu$ (muon)   \end{itemize}         
+\item {\tt HMASS}: Standard Model Higgs boson mass in GeV. Default value is 126~GeV.
+\item {\tt HWIDTH}: It is possible to set the Higgs boson width with this input
+parameter.  Default is -999~GeV, which means that the internally calculated
+value of the width is used. 
+\item {\tt EWSCHEME}: Sets the scheme for the calculation of electroweak
+parameters. A summary of the four available options is given in
+Table~\ref{tab:Schemes}. Note that if {\tt EWSCHEME = 4} is
+chosen, all variables in Table~\ref{tab:Schemes} are taken as inputs.  As the
+parameters are not independent, this can lead to problems if the input values
+are not consistent.  In this scheme, all photon couplings are set according to
+the input variable {\tt INVALFA} and all other couplings are set according to
+{\tt FERMI\_CONST}. Default value is 3.
+\item {\tt ANOM\_CPL}: If set to {\tt 1}, anomalous gauge
+boson couplings are used if available for the selected process. Anomalous
+coupling parameters are set via the file {\tt anomV.dat} which has to be located 
+in the running directory.
+For details on the possible choices and parameterisations of 
+the anomalous couplings see the \textsc{Vbfnlo} Manual \cite{vbfnlo}. This is 
+not a tested feature and should always be compared to the NLO result of 
+\textsc{Vbfnlo}. Default value is {\tt 0}. 
+\item {\tt TOPMASS}: Top-quark mass in GeV. Default value is 172.4~GeV. 
+\item {\tt TAU\_MASS}: Tau mass in GeV used in the calculation of the Higgs boson
+width and branching ratios. Default value is 1.77684~GeV. 
+\item {\tt BOTTOMMASS}: Bottom-quark pole mass in GeV, used in the calculation
+of the Higgs boson width and branching ratios. Default value is
+4.855~GeV, which corresponds to $m_{b}^{\overline{MS}}(m_{b}) = 4.204$~GeV.
+\item {\tt CHARMMASS}: Charm-quark pole mass in GeV used in the calculation of
+the Higgs boson width and branching ratios. Default value is 1.65~GeV,
+corresponding to $m_{c}^{\overline{MS}}(m_{c}) = 1.273$~GeV.
+\item {\tt FERMI\_CONST}: Fermi constant, used as input for the calculation of
+electroweak parameters in {\tt EWSCHEME} = 1-4. Default value is $1.16637 \times
+10^{-5} \ \mathrm{GeV}^{-2}$. 
+\item {\tt INVALFA:} One over the fine structure constant, used as input for
+{\tt EWSCHEME} $=$ 1 and 4.  Within the other schemes this parameter is
+calculated. The default value depends on the choice of {\tt EWSCHEME}, as given
+in Table~\ref{tab:Schemes}.
+\end{itemize} 
+To compare the code with \cite{JSZ}, the flag {\tt consistency} in the {\tt qqbqq.f} and 
+{\tt qqZWjqqi.f} file in the {\tt vbfnlo-files} directory has to be set to {\tt .true.}. 
+Than, all amplitudes with $Q^2<4 \text{~GeV}$ are provided with a large damping factor, not 
+only the ones with photons in the $t$-channel. After that, the code has to be recompiled. 
+
+
+\begin{table}[t!]
+\newcommand{\lstrut}{{$\strut\atop\strut$}}
+\begin{center}
+\begin{tabular}{c|c|l|c}
+\hline
+&&&\\
+{\tt EWSCHEME} & \textsc{Parameter} & \textsc{Default Value} & \textsc{Input/Calculated} \\
+&&&\\
+\hline
+&&&\\
+ & {\tt FERMI\_CONST} & $1.16637\times 10^{-5} \ \mathrm{GeV}^{-2}$ & \textsc{Input}\\
+ & {\tt INVALFA} & $128.944341122$ & \textsc{Input}\\
+\bf 1 & {\tt SIN2W} & $0.230990$ & \textsc{Calculated} \\
+ & {\tt WMASS} & $79.9654 \ \mathrm{GeV}$ & \textsc{Calculated}\\
+ & {\tt ZMASS} & $91.1876 \ \mathrm{GeV}$ & \textsc{Input}\\
+&&&\\
+\hline
+&&&\\
+ & {\tt FERMI\_CONST} & $1.16637 \times 10^{-5} \ \mathrm{GeV}^{-2}$ & \textsc{Input}\\
+ & {\tt INVALFA} & $132.340643024$ & \textsc{Calculated}\\
+\bf 2 & {\tt SIN2W} & $0.222646$ & \textsc{Input}\\
+ & {\tt WMASS} & $ 80.3980 \ \mathrm{GeV}$ & \textsc{Calculated}\\
+ & {\tt ZMASS} & $91.1876 \ \mathrm{GeV}$ & \textsc{Input}\\
+&&&\\
+\hline
+&&&\\
+ &{\tt FERMI\_CONST} & $1.16637 \times 10^{-5} \ \mathrm{GeV}^{-2}$ & \textsc{Input}\\
+ &{\tt INVALFA} & $132.340705199$ & \textsc{Calculated}\\
+\bf 3 &{\tt SIN2W} & $0.222646$ & \textsc{Calculated}\\
+ &{\tt WMASS} & $80.3980 \ \mathrm{GeV}$ & \textsc{Input}\\
+ & {\tt ZMASS} & $91.1876 \ \mathrm{GeV}$ & \textsc{Input}\\
+&&&\\
+\hline
+&&&\\
+ &{\tt  FERMI\_CONST} & $1.16637 \times 10^{-5} \ \mathrm{GeV}^{-2}$ & \textsc{Input}\\
+ &{\tt  INVALFA} & $137.035999679$ & \textsc{Input}\\
+\bf 4 &{\tt  SIN2W} & $0.222646$ & \textsc{Input}\\
+ &{\tt  WMASS} & $80.3980 \ \mathrm{GeV}$ & \textsc{Input}\\
+ &{\tt  ZMASS} & $91.1876 \ \mathrm{GeV}$ & \textsc{Input}\\
+&&&\\
+\hline
+&&&\\
+\end{tabular}
+\caption {\em  Electroweak input parameter schemes.}
+\vspace{0.2cm}
+\label{tab:Schemes}
+\end{center}
+\end{table}
+
+%===================================================================
+
+
+% \subsection*{{\tt anomV.dat} $-$ anomalous triple gauge
+%   boson couplings}
+% 
+% The anomalous triple gauge boson couplings can be set in the file
+% {\tt anomV.dat}.  They are parameterized using an effective Lagrangian, as
+% described in Refs.~\cite{Buchmuller:1985jz, Hagiwara:1993ck, Eboli:2006wa}
+% \begin{equation}
+%  \mathcal{L}_{\rm eff} = \frac{f_{i}}{\Lambda^{n}} \mathcal{O}_{i}^{n+4},
+% \end{equation}
+% where $n+4$ signifies the dimension of the operator $\mathcal{O}_{i}$. 
+% \textsc{Vbfnlo} defines the anomalous gauge couplings in terms of the
+% coefficients $f_{i}/\Lambda^{n}$ of the dimension-6 and dimension-8 
+% operators. 
+% 
+% A common alternative parameterization (which \textsc{Vbfnlo} can also use as
+% input) of the trilinear couplings $WW\gamma$ and $WWZ$ uses the following
+% effective Lagrangians:
+% \begin{equation}
+% \begin{split}
+% \label{anovertex}
+% \mathcal{L}_{{{WW}}\gamma} =& -ie \left[ W_{\mu\nu}^\dagger W^\mu
+% A^\nu- W_\mu^\dagger A_\nu W^{\mu\nu} +\kappa_\gamma W_\mu^\dagger
+% W_\nu F^{\mu\nu} +{\lambda_\gamma\over m_W^2} W_{\sigma\mu}^\dagger
+% W^\mu_\nu F^{\nu\sigma}\right]\,
+% \end{split}
+% \end{equation}
+% for the anomalous $WW\gamma$ vertex, and
+% \begin{equation}
+% \begin{split}
+% \label{anovertexZ}
+% \mathcal{L}_{{{WWZ}}} = & -ie \cot \theta_w \,\left[ g_1^Z\left(
+%   W_{\mu\nu}^\dagger W^\mu Z^\nu- W_\mu^\dagger Z_\nu
+%   W^{\mu\nu}\right) +\kappa_Z W_\mu^\dagger W_\nu Z^{\mu\nu}
+% +{\lambda_Z\over m_W^2} W_{\sigma\mu}^\dagger W^\mu_\nu
+% Z^{\nu\sigma}\right]\,
+% \end{split}
+% \end{equation}
+% for the anomalous $WWZ$ vertex. It is customary to rephrase the
+% electroweak modifications around the SM Lagrangian in terms of new
+% quantities,
+% %
+% \begin{equation}
+% (\Delta g_1^Z,\Delta \kappa_Z, \Delta\kappa_\gamma) = ( g_1^Z,\kappa_Z,\kappa_\gamma) - 1 .
+% \end{equation}
+% 
+% 
+% In order to include anomalous vector boson couplings, the parameter {\tt
+% ANOM\_CPL} must be switched to {\tt 1} in {\tt vbfnlo.input}.  The parameters
+% described above are input via the file {\tt anomV.dat}:
+% 
+% \begin{itemize}
+%  \item {\tt TRIANOM:} Switches between parameterizations of the anomalous
+% $WW\gamma$ and $WWZ$ couplings.  {\tt TRIANOM = 1} uses the coefficients of the
+% dimension-6 operators as input: 
+%    \begin{itemize}
+%      \item {\tt FWWW:} Coefficient of the operator $\mathcal{O}_{WWW}$, i.e.\
+% $f_{WWW}$/$\Lambda^{2}$.  Default is set to $9.19~\times~10^{-6}$~GeV$^{-2}$.
+%      \item {\tt FW:} Coefficient of the operator $\mathcal{O}_{W}$, i.e.\
+% $f_{W}$/$\Lambda^{2}$.  Default is set to $-1.44~\times~10^{-5}$~GeV$^{-2}$.
+%      \item {\tt FB:} Coefficient of the operator $\mathcal{O}_{B}$, i.e.\
+% $f_{B}$/$\Lambda^{2}$.  Default is set to $3.83~\times~10^{-5}$~GeV$^{-2}$.
+%    \end{itemize}
+%   {\tt TRIANOM = 2} uses the alternative parameterization of Eqs.~\ref{anovertex}~and~\ref{anovertexZ} as input:
+%    \begin{itemize}
+%     \item {\tt LAMBDA0:} The quantity $\lambda_{\gamma} (= \lambda_{Z})$. 
+% Default is set to 0.038.
+%     \item {\tt ZDELTAKAPPA0:} The quantity $\Delta \kappa_{Z}$.  Default is set
+% to -0.082.
+%     \item {\tt ZDELTAG0:} The quantity $\Delta g_{1}^{Z}$.  Default is set to -0.060.
+%     \item {\tt ADELTAKAPPA0:} The quantity $\Delta \kappa_{\gamma}$.  Default
+% is set to 0.077.
+%     \item  Note that, as can be seen from Eqs.~\ref{eq:param2}, the quantities $\Delta
+% \kappa_{Z}$, $\Delta \kappa_{\gamma}$ and $\Delta g_{1}^{Z}$ are not
+% independent, but obey the relation
+%  \begin{equation}
+%   \label{eq:anomVconsistency}
+%   \Delta \kappa_{Z} = \Delta g_{1}^{Z} - \frac{\sin^{2} \theta_{W}}{\cos^{2} \theta_{W}} \Delta \kappa_{\gamma}.
+%  \end{equation}
+%  If one of these quantities is zero, it will be set by \textsc{Vbfnlo} to be
+% consistent with the other values.  If the input values are inconsistent, $\Delta
+% \kappa_{\gamma}$ will be reset to give the correct relation.
+%    \end{itemize}
+% 
+%   Default is {\tt TRIANOM = 1}, and the default values are approximately the central values in the three-parameter fit given in Ref.~\cite{Abdallah:2010zj}.  Note that $Vjj$ and $VVj$ processes (process IDs 120-150 and 610-640) only take account of the above anomalous  coupling parameters and not the following parameters.
+%  \item {\tt FWW, FBB:} The coefficients of the remaining $\cal{CP}$-even
+% dimension-6 operators, i.e.\ $f_{i}$/$\Lambda^{2}$.  Note that these are not
+% implemented for $Vjj$ production via VBF (process IDs 120-150) and $VVj$
+% processes (IDs 610-640).  Default value is 0 GeV$^{-2}$.
+%  \item {\tt FWWWt, FWt, FBt, FBWt, FDWt, FWWt, FBBt:} The coefficients of the
+% $\cal{CP}$-odd di\-mension-6 operators, i.e.\ $f_{i}$/$\Lambda^{2}$.  Note that
+% these are
+% not implemented for $Vjj$ production via VBF (process IDs 120-150) and $VVj$
+% processes (IDs 610-640).  Default value is 0  GeV$^{-2}$.
+%  \item {\tt  FS0, FS1, FM0 -- FM7, FT0 -- FT2, FT5 -- FT9:} Parameters that give
+% the values of the coefficients of the dimension-8 operators, i.e.\
+% $f_{i}$/$\Lambda^{4}$. The default values for these parameters are~0 GeV$^{-4}$.  Note that
+% these are only relevant for triboson production and $VVjj$ production via VBF.
+% \end{itemize}
+% 
+% In addition, a form factor can be applied, which takes the form
+% \begin{equation}
+%  F = \left(1 + \frac{s}{\Lambda^{2}} \right)^{-p},
+% \end{equation}
+% for all processes except $\gamma jj$ production in VBF (process ID 150),
+% where $\Lambda$ is the scale of new physics.  $s$ is a universal scale (the
+% invariant mass squared of the produced bosons) for each phase-space point.
+% \begin{itemize}
+%  \item {\tt FORMFAC: }  Switch determining whether the above form factor $F$ is
+% included.  Default is set to {\tt true}.
+%  \item {\tt FFMASSSCALE: } Mass scale $\Lambda$.  Default is set to 2000~GeV.
+%  \item {\tt FFEXP:} The exponent $p$.  Default is set to 2.
+% \end{itemize}
+% Individual form factor mass scales and exponents can be set for the trilinear
+% $WWZ$ and $WW\gamma$ couplings, using either of the parametrizations above.  If
+% chosen, these values overwrite the ``universal'' mass scale and exponent ({\tt
+% FFMASSSCALE} and {\tt FFEXP}) set above for the selected parameters.
+% \begin{itemize}
+%  \item {\tt FORMFAC\_IND: } Switch determining whether individual or universal
+% form factors are used.  Default is set to {\tt false} -- universal form factors are used.
+% \end{itemize}
+% If {\tt TRIANOM = 1} then
+% \begin{itemize}
+%  \item {\tt MASS\_SCALE\_FWWW: } Mass scale $\Lambda$ for coefficient $f_{WWW}$.
+%  Default is 2000~GeV.
+%  \item {\tt FFEXP\_FWWW: } Exponent $p$ for coefficient $f_{WWW}$.  Default is 2.
+%  \item {\tt MASS\_SCALE\_FW: } Mass scale $\Lambda$ for coefficient $f_{W}$. 
+% Default is 2000~GeV.
+%  \item {\tt FFEXP\_FW: } Exponent $p$ for coefficient $f_{W}$.  Default is 2.
+%  \item {\tt MASS\_SCALE\_FB: } Mass scale $\Lambda$ for coefficient $f_{B}$. 
+% Default is 2000~GeV.
+%  \item {\tt FFEXP\_FB: } Exponent $p$ for coefficient $f_{B}$.  Default is 2.
+% \end{itemize}
+% If {\tt TRIANOM = 2} then
+% \begin{itemize}
+%  \item {\tt MASS\_SCALE\_AKAPPA: } Mass scale $\Lambda$ for parameter $\Delta
+% \kappa_{\gamma}$.  Default is 2000~GeV.
+%  \item {\tt FFEXP\_AKAPPA: } Exponent $p$ for parameter $\Delta \kappa_{\gamma}$.  Default
+% is 2.
+%  \item {\tt MASS\_SCALE\_ZKAPPA: } Mass scale $\Lambda$ for parameter $\Delta
+% \kappa_{Z}$.  Default is 2000~GeV.
+%  \item {\tt FFEXP\_ZKAPPA: } Exponent $p$ for parameter $\Delta \kappa_{Z}$.  Default
+% is 2.
+%  \item {\tt MASS\_SCALE\_LAMBDA: } Mass scale $\Lambda$ for parameter $\lambda$.
+%  Default is 2000~GeV.
+%  \item {\tt FFEXP\_LAMBDA: } Exponent $p$ for parameter $\lambda$.  Default is
+% 2.
+%  \item {\tt MASS\_SCALE\_G: } Mass scale $\Lambda$ for parameter $\Delta g_{1}^{Z}$. 
+% Default is 2000~GeV.
+%  \item {\tt FFEXP\_G: } Exponent $p$ for parameter $\Delta g_{1}^{Z}$.  Default is 2.
+%  \item As with the anomalous parameters themselves, the formfactors in the
+% parameterization of {\tt TRIANOM = 2} are not independent (see
+% Eq.~\ref{eq:anomVconsistency}).  If one mass scale is set to zero, it will be
+% set by \textsc{Vbfnlo} to be consistent with the other values.  If the input
+% values are inconsistent, they will be reset to give the correct relation.
+% \end{itemize}
+
+
+
+%
+\begin{thebibliography}{99}
+
+\bibitem{SZ} F.~Schissler, and D.~Zeppenfeld, {\em Parton Shower Effects on W and Z Production
+ via Vector Boson Fusion at NLO QCD}, arXiv:1302.2884. 
+
+\bibitem{Oleari:2003tc} 
+  C.~Oleari and D.~Zeppenfeld,
+  {\em QCD corrections to electroweak nu(l) j j and l+ l- j j production},
+  Phys.\ Rev.\ D {\bf 69}, 093004 (2004)
+  [hep-ph/0310156].
+\bibitem{Alioli:2010xd} S.~Alioli, P.~Nason, C.~Oleari, and E. Re, {\em
+    A general framework for implementing NLO calculations in shower
+    Monte Carlo programs: the POWHEG BOX}, JHEP {\bf 1006} (2010)
+  043  [arXiv:1002.2581 [hep-ph]].
+  
+  \bibitem{JSZ} B.~J\"ager, S.~Schneider, G.~Zanderighi, {\em
+    Next-to-leading order QCD corrections to electroweak $Zjj$ 
+    production in the POWHEG BOX}, arXiv:1207.2626 [hep-ph].
+\bibitem{vbfnlo}   
+  K.~Arnold, M.~B{\"a}hr, G.~Bozzi, F.~Campanario, C.~Englert, T.~Figy, N.~Greiner and C.~Hackstein {\it et al.},
+  %``VBFNLO: A Parton level Monte Carlo for processes with electroweak bosons,''
+  Comput.\ Phys.\ Commun.\  {\bf 180}, 1661 (2009)
+  [arXiv:0811.4559 [hep-ph]];\\
+  %%CITATION = ARXIV:0811.4559;%%
+  K.~Arnold, J.~Bellm, G.~Bozzi, F.~Campanario, C.~Englert, B.~Feigl, J.~Frank and T.~Figy {\it et al.},
+  %``Release Note -- Vbfnlo-2.6.0,''
+  [arXiv:1207.4975 [hep-ph]];\\
+  %%CITATION = ARXIV:1207.4975;%%
+  K.~Arnold, J.~Bellm, G.~Bozzi, M.~Brieg, F.~Campanario, C.~Englert, B.~Feigl and J.~Frank {\it et al.},
+  %``VBFNLO: A Parton Level Monte Carlo for Processes with Electroweak Bosons -- Manual for Version 2.5.0,''
+  [arXiv:1107.4038 [hep-ph]].
+  %%CITATION = ARXIV:1107.4038;%%
+% \bibitem{Buchmuller:1985jz}
+% W.~Buchmuller and D.~Wyler, ``{Effective Lagrangian Analysis of New Interactions
+%   and Flavor Conservation}'', {\em Nucl.\ Phys.} {\bf B268} (1986)
+% 621.
+
+% \bibitem{Eboli:2006wa}
+% O.~J.~P.~Eboli, M.~C.~Gonzalez-Garcia and J.~K.~Mizukoshi, 
+%                   ``{$p p \to j j e^\pm \mu^\pm \nu \nu$ and $j j e^\pm \mu^\mp \nu \nu$ at
+%                   $O(\alpha_{\rm em}^6)$ and $O(\alpha_{\rm em}^4 \alpha_S^2)$ for the
+%                   study of the quartic electroweak gauge boson vertex at
+%                   LHC}'', {\em Phys.\ Rev.} {\bf D74} (2006) 073005,
+% {{\tt hep-ph/0606118}}.
+% 
+% \bibitem{Abdallah:2010zj}
+%   The DELPHI Collaboration,
+%   ``{Measurements of CP-conserving Trilinear Gauge Boson Couplings $WWV$ ($V =
+%     \gamma,Z$) in $e^+e^-$ Collisions at LEP2}'',
+%   {\em Eur.\ Phys.\ J.}  {\bf C66 } (2010)  35-56,
+%   {{\tt arXiv:1002.0752}}.
+\end{thebibliography}
+%%%%%%%%%%%%%%%%%%
+\end{document}

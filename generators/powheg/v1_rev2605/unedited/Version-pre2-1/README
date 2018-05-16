@@ -1,0 +1,139 @@
+In order to implement the features included here, the makefile in the
+process directory should point at this directory in searching both
+fortran file and include files. For example:
+
+
+PWD=$(shell pwd)
+OBJ=$(PWD)/obj-$(COMPILER)
+WDNAME=$(shell basename $(PWD))
+VPATH= ./:../Version-pre2-1/:../:Madlib/:MODEL/:DHELAS/:MCFMvirt/:$(OBJ)/
+VPATH+=$(PWD)/HJJvirt
+
+INCLUDE0=$(PWD)
+INCLUDE0.1=$(shell dirname $(PWD))/Version-pre2-1/progress/
+INCLUDE0.2=$(shell dirname $(PWD))/Version-pre2-1/
+INCLUDE1=$(PWD)/include
+INCLUDE2=$(shell dirname $(PWD))/include
+INCLUDE3=$(PWD)/MCFM_Include 
+FF=$(F77) $(FFLAGS) $(FPE) $(OPT) $(DEBUG) -I$(INCLUDE0)  -I$(INCLUDE0.1)  -I$(INCLUDE0.2) -I$(INCLUDE1) -I$(INCLUDE2) -I$(INCLUDE3)
+
+
+Furthermore, the following files should be added in the PWG objects list:
+
+pwhgreweight.o setlocalscales.o mint_upb.o opencount.o  validflav.o
+
+where validflav.o should be provided by the user.
+
+
+The activation of various features works as follows:
+
+Reweight:
+Run the program with:
+storeinfo_rwgt 1
+in the powheg.input file. The program will run as usual, but it will add
+a line beginning with
+#rwg 
+at the end of each event, containing informations that are necessary for
+reweighting.
+
+To obtain new weights, corresponding to different pdf's or scale choice,
+comment away the storeinfo_rwgt line, and insert the line
+
+compute_rwgt 1
+
+in the powheg.input file. Modify the powheg.input to use the different pdf's
+and scale factors, and run pwhg_main. Now a new event file, named as
+OriginalName-rwgt.lhe is created, with the same events as the original
+OriginalName.lhe file, but with a line added to the end of each event,
+of the form
+ #new weight,renfact,facfact,pdf1,pdf2 <new weight> <new ren. scale factor> \
+<new fact rscale fact> < new pdf # for hadron 1> <new pdf number for hadron 2>
+<'mlm' or 'lha'>
+where the last string specifies if the native pdf package was used (with its
+own numbering scheme, or the lhapdf package.
+
+MANY SEEDS AND PARALLEL GRIDS
+
+This has chenged since version 1.
+Insert:
+
+manyseeds 1
+
+parallelstage 1
+xgriditeration 1
+
+This performs the first iteration for the computation of the importance
+sampling grid. Reiterating with xgriditeration 2, 3, etc. iterates the
+importance sampling grid.
+
+parallelstage 2
+
+computes in parallel the upper bounding envelope for the generation of the
+underlying Born configurations and remnant.
+
+parallelstage 3
+
+computes the upper bounding limits for radiation
+
+parallelstage 4 generates events.
+
+FAST UPPER BOUNDING ENVELOPE FOR GENERATING THE UNDERLYING BORN CONFIGURATIONS
+
+fastbtlbound 1
+
+If running in parallel, store results in files:
+
+storemintupb 1
+
+
+MINLO
+
+************** 1 ****************
+Edit the init_processes.f file, and add the following lines at the
+beginning of the init_processes subroutine:
+
+      if(powheginput("#minlo").eq.1) then
+         flg_minlo=.true.
+      else
+         flg_minlo=.false.
+      endif
+
+      st_bornorder=<m>
+
+where <m> is the power of alpha_s associated with the Born term.
+In the Higgs + 1 or 2 jets example, we have m=3 and 4.
+
+With the above lines minlo is activated by a "minlo 1" line in the powheg.input
+file. If you want it to be always on, add instead
+
+      flg_minlo=.true.
+
+
+**************** 2 *************
+
+Edit the Born_phsp.f file, and look at the set_fac_ren_scales. While using
+minlo, this routine should use a fixed scale, i.e. it should always set
+muf and mur to a constant value. This option is usually available as
+a variable "runningscales" or "fixedscale" in the powheg.input file.
+If not, simply edit the set_fac_ren_scales routine to make it return a
+constant value.
+
+
+**************** 3 *************
+
+The user should provide an extra function, validflav(lflav), and
+include it in the init_processes.f file, or in any other process file.
+The purpose of this function is to make sure that after each clustering
+in the kt-cl;ustering procedure, we are left with a consistent
+flavour structure. For example, in q qbar -> H g, if we cluster
+the icoming quark with a gluon, we are left with q qbar -> H, which has
+no cross section.
+lflav is an integer list of flavours for the process, labelled according
+to the PDG numbering scheme, except that the gluon is 0 (according to
+POWHEG conventions). The entries that have already been clustered away
+are set to 1000000. An example for the Higgs + n jets case is included
+in the MINLO/examples subdirectory.
+
+The Higgs case is the only case that we are aware of so far where
+this routine is needed. In Z and W production, this routine can
+safely always return true.

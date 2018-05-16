@@ -1,0 +1,45 @@
+
+v213 -> v214
+
+Mar 10 2009
+
+- compile.mk: corrected gfortran options (-fnoautomatic -> -fno-automatic)
+
+
+- fixed alplib/alpsho.f to allow matching for 2Qph procs
+
+- replaced hard file with sym link for hjetwork/pdflnk
+
+- chmod -x of a set of input or *.f files
+
+
+April 23 2010
+
+- replaced hard file with sym link for herlib/alpsho.inc
+- update alppdf.f with new sets of pdf: mstw, mrst mod, cteq66, ct09MC
+ (run in imode=3 to display list of PDFs and relative codes)
+- MSTW2008: LO, NLO, LO68CL, LO*, LO**
+- CTQ66, CT09MC1, CT09MC2
+- update directory structure of pdfdat
+- modified Makefile:
+  o to reflect new pdfdat structure
+  o removed the veridian compiler
+
+June 9 2010:
+
+- added Aint90.f to list of ALPGEN files in alplib/alpgen.mk
+
+- gfortran compatibility:
+c      open(unit=99,file=topfile,err=999,status='old')
+c      call aluend(99)
+c compatbility with latest gfortran
+      open(unit=99,file=topfile,access='append',err=999,status='old')
+
+Dec 10, 2010
+- introduced as input parameters xlclu and lpclu (lambda and nloop for
+the evaluation of alphas using the ckks scale)
+- introduced a new function alfas_clu, same as alfas, but invoked with
+xlclu and lpclu, to avoid reinitialization
+- fixed a few gfotran "deleted features" (goto XX, when XX is enddo statement)
+
+

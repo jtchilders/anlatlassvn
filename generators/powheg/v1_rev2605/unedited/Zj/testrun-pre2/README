@@ -1,0 +1,4 @@
+
+Sample run for the generation of 6M events in parallel, using the new
+features of Version-pre2-1. Here we use MiNLO and the reweighting
+feature to perform a scale variation study.

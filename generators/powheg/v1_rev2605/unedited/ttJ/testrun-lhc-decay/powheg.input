@@ -1,0 +1,96 @@
+! ttbar+jet production
+bornktmin  5d0    ! (default 0d0) kt min at Born level for jet in ttbar+jet 
+topmass 174d0
+topwidth 1.31d0
+R_jet 1d0
+ptmin_jet 50d0
+topdecaymode 20000   ! an integer of 5 digits that are either 0, or 2, representing in 
+                     ! the order the maximum number of the following particles(antiparticles)
+                     ! in the final state: e  mu tau up charm
+                     ! For example
+                     ! 22222    All decays (up to 2 units of everything)
+                     ! 20000    both top go into b l nu (with the appropriate signs)
+                     ! 10011    one top goes into electron (or positron), the other into (any) hadrons,
+                     !          or one top goes into charm, the other into up
+                     ! 00022    Fully hadronic
+                     ! 00002    Fully hadronic with two charms
+                     ! 00011    Fully hadronic with a single charm
+                     ! 00012    Fully hadronic with at least one charm
+
+!semileptonic 1      ! uncomment if you want to filter out only semileptonic events. For example,
+                     ! with topdecaymode 10011 and semileptonic 1 you get only events with one top going
+                     ! to an electron or positron, and the other into any hadron.
+
+!zerowidth 1         ! uncomment if you want to keep the top quark and the W boson on shell during decay procedure
+                     ! Note that their widths are always  set to a nonzero value  in decayed matrix elements 
+   
+numevts 10000 	  ! number of events to be generated
+ih1   1           ! hadron 1 (1 for protons, -1 for antiprotons)
+ih2   1          ! hadron 2 (1 for protons, -1 for antiprotons)
+! 131 cteq4m
+!  83 cteq4l
+ndns1 131         ! pdf set for hadron 1 (mlm numbering)
+ndns2 131         ! pdf set for hadron 2 (mlm numbering)
+ebeam1 3500d0     ! energy of beam 1
+ebeam2 3500d0     ! energy of beam 2
+
+! To be set only if using LHA pdfs
+! 19150 cteq4m
+! 19170 cteq4l
+! 10050 cteq6m
+lhans1  10050         ! pdf set for hadron 1 (LHA numbering)
+lhans2  10050         ! pdf set for hadron 2 (LHA numbering)	
+! To be set only if using different pdf sets for the two incoming hadrons
+! QCDLambda5  0.25 ! for not equal pdf sets 
+
+! Parameters to allow or not the use of stored data
+use-old-grid    1 ! if 1 use old grid if file pwggrids.dat is present (<> 1 regenerate)
+use-old-ubound  1 ! if 1 use norm of upper bounding function stored in pwgubound.dat, if present; <> 1 regenerate
+
+ncall1 50000   ! number of calls for initializing the integration grid
+itmx1    5     ! number of iterations for initializing the integration grid
+ncall2 100000   ! number of calls for computing the integral and finding upper bound
+itmx2    1     ! number of iterations for computing the integral and finding upper bound
+foldcsi   1    ! number of folds on csi integration
+foldy     1    ! number of folds on  y  integration
+foldphi   1    ! number of folds on phi integration
+nubound 200000  ! number of bbarra calls to setup norm of upper bounding function
+icsimax  3     ! <= 100, number of csi subdivision when computing the upper bounds
+iymax    3     ! <= 100, number of y subdivision when computing the upper bounds
+xupbound 2d0   ! increase upper bound for radiation generation
+
+! OPTIONAL PARAMETERS
+withnegweights 1    ! (default 0) if on (1) use negative weights
+#renscfact  1d0   ! (default 1d0) ren scale factor: muren  = muref * renscfact 
+#facscfact  1d0   ! (default 1d0) fac scale factor: mufact = muref * facscfact 
+bornsuppfact 100d0   ! (default 0d0)  mass param for Born suppression factor (generation cut) If < 0 suppfact = 1
+#bornonly   1      ! (default 0) if 1 do Born only
+#smartsig   0      ! (default 1) remember equal amplitudes (0 do not remember)
+#withsubtr  0      ! (default 1) subtract real counterterms (0 do not subtract)
+#withdamp    1      ! (default 0, do not use) use Born-zero damping factor
+#ptsqmin    0.8    ! (default 0.8 GeV) minimum pt for generation of radiation
+#charmthr   1.5    ! (default 1.5 GeV) charm treshold for gluon splitting 
+#bottomthr  5.0    ! (default 5.0 GeV) bottom treshold for gluon splitting
+testplots  1      ! (default 0, do not) do NLO and PWHG distributions
+#hfact    100d0    ! (default no dumping factor) dump factor for high-pt radiation: > 0 dumpfac=h**2/(pt2+h**2)
+#testsuda  1       ! (default 0, do not test) test Sudakov form factor
+#radregion 1       ! (default all regions) only generate radiation in the selected singular region  
+#charmthrpdf  1.5  ! (default 1.5 GeV) pdf charm treshold
+#bottomthrpdf 5.0  ! (default 5.0 GeV) pdf bottom treshold
+
+#iseed    54217137    ! initialize random number sequence 
+#rand1     240599122      ! initialize random number sequence 
+#rand2     0      ! initialize random number sequence 
+manyseeds 1       ! Used to perform multiple runs with different random
+                   ! seeds in the same directory.
+                   ! If set to 1, the program asks for an integer j;
+                   ! The file pwgseeds.dat at line j is read, and the
+                   ! integer at line j is used to initialize the random
+                   ! sequence for the generation of the event.
+                   ! The event file is called pwgevents-'j'.lhe
+
+#iupperisr 1 ! (default 1) choice of ISR upper bounding functional form 
+#iupperfsr 2 ! (default 2) choice of FSR upper bounding functional form 
+
+pdfreweight 1
+flg_debug 1

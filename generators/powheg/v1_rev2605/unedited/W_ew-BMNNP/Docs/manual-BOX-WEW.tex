@@ -1,0 +1,259 @@
+\documentclass[paper]{JHEP3}
+\usepackage{amsmath,amssymb,enumerate,url}
+\bibliographystyle{JHEP}
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\POWHEGBOX{{\tt POWHEG BOX}}
+\newcommand\HERWIG{{\tt HERWIG}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\PHOTOS{{\tt PHOTOS}}
+\newcommand\MCatNLO{{\tt MC@NLO}}
+
+\newcommand\kt{k_{\sss\rm T}}
+
+\newcommand\pt{p_{\sss\rm T}}
+\newcommand\LambdaQCD{\Lambda_{\scriptscriptstyle QCD}}
+%%%%%%%%%% End TeXmacs macros
+
+
+\title{The POWHEG BOX user manual:\\
+  $\boldsymbol{W^\pm}$ NLO EW \& QCD production} \vfill
+\author{Luca Barz\`e\\
+  Dipartimento di Fisica Nucleare e Teorica, Universit\`a di Pavia and INFN, Sezione di Pavia, Via A. Bassi 6, 27100 Pavia, Italy\\
+  E-mail: \email{Luca.Barze@pv.infn.it}}
+\author{Guido Montagna\\
+  Dipartimento di Fisica Nucleare e Teorica, Universit\`a di Pavia and INFN, Sezione di Pavia, Via A. Bassi 6, 27100 Pavia, Italy\\
+  E-mail: \email{Guido.Montagna@pv.infn.it}}
+\author{Paolo Nason\\
+  INFN, Sezione di Milano-Bicocca,
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Paolo.Nason@mib.infn.it}}
+\author{Oreste Nicrosini\\
+  INFN, Sezione di Pavia, Via A. Bassi 6, 27100 Pavia, Italy\\
+  E-mail: \email{Oreste.Nicrosini@pv.infn.it}}
+\author{Fulvio Piccinini\\
+  INFN, Sezione di Pavia, Via A. Bassi 6, 27100 Pavia, Italy\\
+  E-mail: \email{Fulvio.Piccinini@pv.infn.it}}
+
+\vskip -0.5truecm
+
+\keywords{POWHEG, Shower Monte Carlo, NLO, Electroweak}
+
+\abstract{This note documents the use of the package
+  \tmtexttt{POWHEG BOX} for $W^\pm$ production processes including
+  QCD and ElectroWeak NLO corrections.
+  Results can be easily interfaced to shower Monte Carlo programs, in
+  such a way that both NLO and shower accuracy are maintained.}
+\preprint{\today\\ \tmtexttt{POWHEG BOX} 1.0}
+
+\begin{document}
+
+
+\section{Introduction}
+
+The \tmtexttt{POWHEG BOX} program is a framework for implementing NLO
+calculations in Shower Monte Carlo programs according to the
+\POWHEG{} method. An explanation of the method and a discussion of
+how the code is organized can be found in
+Refs.~\cite{Nason:2004rx,Frixione:2007vw,Alioli:2010xd}. The code is
+distributed according to the ``MCNET GUIDELINES for Event Generator
+Authors and Users'' and can be found at the web page \\
+%
+\begin{center}
+ \url{http://powhegbox.mib.infn.it}.
+\end{center}
+%
+~\\
+%
+This program is an implementation of the Drell-Yan NLO cross sections
+$pp\to W \to \ell \nu$ including QCD and ElectroWeak (EW) 
+radiative corrections. 
+A detailed description of the implementation can be found in 
+Ref.~\cite{Barze:2012tt}. Please cite the paper when you use the program. \\
+In order to run the \tmtexttt{POWHEG BOX} program, we recommend the
+reader to start from the \tmtexttt{POWHEG BOX} user manual, which
+contains all the information and settings that are common between
+all subprocesses. In this note we focus on  the settings and
+parameters specific to the $W$ implementation.
+
+\section{Generation of events}
+
+Build the executable\\
+\tmtexttt{\$ cd POWHEG-BOX/WEW \\
+\$ make pwhg\_main }\\
+Then do (for example) \\
+\tmtexttt{\$
+cd test-el\\
+\$ ../pwhg\_main}\\
+At
+the end of the run, the file \tmtexttt{pwgevents.lhe} will contain
+100000 events for $W^+ \to e^+ \nu_e$  in the Les Houches format. In
+order to shower them with \PYTHIA{} do\\~\\
+\tmtexttt{\$
+cd POWHEG-BOX/WEW \\ \$ make
+main-PYTHIA-lhef \\ \$ cd
+test-el \\
+\$ ../main-PYTHIA-lhef}
+
+\section{Process specific input parameters}
+
+For the EW NLO $W^\pm$ production, it is required to activate the
+\tmtexttt{easlight} option, to enable the new final state radiation mapping
+necessary to describe the final state collinear radiation.\\
+Other mandatory parameters are those needed to select the final state
+leptonic species coming from the vector-boson:
+~\\
+\tmtexttt{
+  idvecbos 24 \phantom{a} ! PDG code for vector boson to be produced\\
+  \phantom{aaaaaaaaaaaaa} ! ( W+: 24 W-: -24 )\\
+  vdecaymode 11 !  code for selected W decay\\
+  \phantom{aaaaaaaaaaaaa} ! (11(-11): electronic; 13(-13): muonic; 15(-15): tauonic)}
+\\
+Together with the mandatory parameters, the \POWHEGBOX{} input facility allows for an easy 
+setting of EW and run parameters, by explicitly adding the relevant lines to the input card. 
+If one of the following entries is not present in the input card  the reported default 
+value is assumed. In any case, these parameters are printed in the output of the program, 
+so their values can be easily tracked down. 
+~\\~\\
+ \tmtexttt{
+   Wmass\phantom{aa}  80.398 \phantom{aaaaaaa} ! W mass in GeV\\
+   Wwidth\phantom{a} 2.141 \phantom{aaaaaaaa} ! W width in GeV\\
+   Zmass\phantom{aa}  91.1876 \phantom{aaaaaa}   ! Z mass in GeV\\
+   Zwidth\phantom{a} 2.4952 \phantom{aaaaaaa} ! Z width in GeV\\
+   alphaem 0.00729735254 \phantom{a}! em coupling alpha(0)\\
+   Hmass\phantom{aa}  120. \phantom{aaaaaaaa} ! Higgs mass in GeV\\
+   Tmass\phantom{aa} 172.9 \phantom{aaaaaaaa} ! Top mass in GeV\\
+   gmu\phantom{aaaa} 1.16637d-5 \phantom{aaa} ! Fermi constant in GeV\^{}-2\\
+}
+\\
+\tmtexttt{masswindow\_low 10 \phantom{a}! M\_W > Wmass - masswindow\_low * Wwidth}\\
+\tmtexttt{masswindow\_high 10  ! M\_W < Wmass + masswindow\_high * Wwidth  }\\
+\tmtexttt{runningscale 0 \phantom{aaaa}! choice for ren and fac scales in Bbar integration}\\
+\phantom{pppppppppppppppppppppppppppppp} \tmtexttt{ 0: fixed scale M\_W}\\
+\phantom{pppppppppppppppppppppppppppppp} \tmtexttt{ 1: running scale inv mass W}\\ 
+\tmtexttt{scheme 1! choice for EW NLO scheme calculation}\\
+\phantom{pppppppppppppppppppppppppppppp} \tmtexttt{ 0: Alpha(0)}\\
+\phantom{pppppppppppppppppppppppppppppp} \tmtexttt{ 1: G\_$\mu$}\\ 
+\tmtexttt{
+   CKM\_Vud   0.975  ! Entries of CKM mixing matrix\\
+   CKM\_Vus   0.222  \\
+   CKM\_Vub   1d-10 \\
+   CKM\_Vcd   0.222 \\
+   CKM\_Vcs   0.975 \\
+   CKM\_Vcb   1d-10 \\
+   CKM\_Vtd   1d-10 \\
+   CKM\_Vts   1d-10 \\
+   CKM\_Vtb   1.0\\}
+\\
+\\
+The EW radiative corrections can be calculated according to two 
+different schemes: the $\alpha(0)$ scheme, where the input parameters 
+are $\alpha(0)$, $M_W$ and $M_Z$; the $G_\mu$ scheme, where the 
+input parameters are $G_\mu$, $M_W$ and $M_Z$. The latter one 
+(default in the code) is preferred because it minimizes 
+the EW corrections and the uncertainties due to the light quark masses. 
+\\
+As described in Ref.~\cite{Barze:2012tt}, higher order QED corrections 
+are simulated by means of \PHOTOS~\cite{Golonka:2005pn} used in the 
+exponentiated mode {\tt (IEXP=.TRUE.)}. 
+An interface to the code is provided in the file {\tt main-PYTHIA.f} 
+and the photon cascade information is stored in the {\tt common/hepeup}. 
+\\
+The \PHOTOS \, source code is included in the \POWHEGBOX. 
+
+
+
+\section{Generation of a sample with $W^+$ and $W^-$
+  events}\label{sec:merging}
+
+In case the user is interested in the generation of a sample where
+both $W^+$ and $W^-$ events appear, a script and a dedicated
+executable have been included. The script is named
+\tmtexttt{merge\_wp\_wm.sh} and can be found in the directory
+\tmtexttt{W/testrun-merge}. It can be run in any subfolder of
+\tmtexttt{W} however. Three inputs are mandatory: the first two are
+the prefixes of the input files used to generate $W^+$ and $W^-$
+events. The third input has to be an integer and correspond to the
+total number of events that the final \emph{merged} sample will
+contain. The script has to be run twice, using a positive integer
+value at the first call and its opposite afterwards.  Therefore, for
+example, to produce a sample of 10000 events, starting from the input
+files \tmtexttt{wp-powheg.input} and \tmtexttt{wm-powheg.input}, the
+invocation lines should be as follows:~\\~\\ \tmtexttt{\$ sh
+  merge\_wp\_wm.sh wp wm 10000}\\~\\ and then~\\~\\ \tmtexttt{\$ sh
+  merge\_wp\_wm.sh wp wm -10000}\\~\\
+
+Few remarks are needed:
+\begin{itemize}
+\item it is responsability of the user to check that the 2 input files
+  are equal. The \tmtexttt{idvecbos}  and \tmtexttt{vdecaymode} tokens have to be different,
+  obviously.
+\item the two values of \tmtexttt{numevts} are not really used: the
+  program re-calculate the needed values as a function of the $W^+$ and
+  $W^-$ cross sections and of the total number of events to be
+  generated.
+\item the final event file is always named
+  \tmtexttt{wp\_wm\_sample-events.lhe}. In the header section it also
+  contains a copy of the two input files used to generate it, for
+  cross-checking purposes
+\end{itemize}
+
+
+\begin{thebibliography}{10}
+
+\bibitem{Nason:2004rx}
+  P.~Nason,
+  ``A new method for combining NLO QCD with shower Monte Carlo algorithms,''
+  JHEP {\bf 0411} (2004) 040
+  [arXiv:hep-ph/0409146].
+  %%CITATION = JHEPA,0411,040;%%
+
+%\cite{Frixione:2007vw}
+\bibitem{Frixione:2007vw}
+  S.~Frixione, P.~Nason and C.~Oleari,
+``Matching NLO QCD computations with Parton Shower simulations: the POWHEG
+method,''
+  JHEP {\bf 0711} (2007) 070
+  [arXiv:0709.2092 [hep-ph]].
+  %%CITATION = JHEPA,0711,070;%%
+
+%\cite{Alioli:2010xd}
+\bibitem{Alioli:2010xd}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+``A general framework for implementing NLO calculations in shower Monte Carlo
+  programs: the POWHEG BOX,''
+  [arXiv:1002.2581 [hep-ph]].
+  %%CITATION = ARXIV:1002.2581;%%
+
+\bibitem{Barze:2012tt}
+  L.~Barz\`e, G.~Montagna, P.~Nason, O.~Nicrosini and F.~Piccinini,
+  ``Implementation of electroweak corrections in the POWHEG BOX: single W production,''
+  [arXiv:1202.0465 [hep-ph]]
+
+%\cite{Golonka:2005pn}
+\bibitem{Golonka:2005pn}
+  P.~Golonka and Z.~Was,
+  %``PHOTOS Monte Carlo: A Precision tool for QED corrections in $Z$ and $W$ decays,''
+  Eur.\ Phys.\ J.\ C {\bf 45} (2006) 97
+  [hep-ph/0506026].
+  %%CITATION = HEP-PH/0506026;%%
+
+\end{thebibliography}
+
+\end{document}
+
+
+
+

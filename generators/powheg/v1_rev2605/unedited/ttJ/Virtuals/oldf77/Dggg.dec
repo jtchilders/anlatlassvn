@@ -1,0 +1,14 @@
+C
+C This is an automatically created file, don't edit!
+C File created on Wed Feb 16 11:42:22 CET 2005
+C by ./DefVars.pl 
+C
+
+      double complex t1,t105,t107,t11,t110,t112,t115,t116,t121,t123
+      double complex t128,t132,t135,t140,t143,t148,t151,t152,t154,t155
+      double complex t156,t159,t16,t160,t163,t165,t167,t17,t182,t189
+      double complex t190,t20,t204,t208,t209,t21,t222,t224,t228,t235
+      double complex t236,t237,t25,t250,t26,t287,t29,t30,t34,t35,t36
+      double complex t38,t40,t43,t44,t45,t48,t49,t51,t53,t54,t55,t58
+      double complex t6,t60,t62,t64,t66,t69,t7,t71,t73,t75,t78,t79,t83
+      double complex t86,t87,t90,t91,t96,t98

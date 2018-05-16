@@ -1,0 +1,382 @@
+Index: ATOOLS/Org/Read_Write_Base.C
+===================================================================
+--- ATOOLS/Org/Read_Write_Base.C	(revision 26399)
++++ ATOOLS/Org/Read_Write_Base.C	(working copy)
+@@ -65,8 +65,8 @@
+   size_t se(name.find(m_namesplit,sb+1));
+   if (se==std::string::npos) return;
+   SetInputFile(name.substr(0,sb),i);
+-  m_filebegin.push_back(name.substr(sb+1,se-sb-1));
+-  m_fileend.push_back(name.substr(se+1));
++  m_filebegin=String_Vector(1,name.substr(sb+1,se-sb-1));
++  m_fileend=String_Vector(1,name.substr(se+1));
+   msg_IODebugging()<<METHOD<<"(): Set '"<<m_filebegin.back()
+ 		 <<"'->'"<<m_fileend.back()<<"'.\n"; 
+ }
+@@ -400,6 +400,17 @@
+   }
+ }
+ 
++void Read_Write_Base::AddCommandLine(const std::string commandline)
++{
++  s_commandline.push_back(commandline);
++}
++
++void Read_Write_Base::AddCommandLine(const String_Vector &commandline)
++{
++  s_commandline.insert(s_commandline.end(),
++		       commandline.begin(),commandline.end());
++}  
++
+ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
+ {  
+   if (InputPath(i)+InputFile(i)==nullstring) {
+@@ -422,7 +433,7 @@
+   bool inbuf(s_buffermap.find(file)!=s_buffermap.end());
+   String_Vector &cbuffer(s_buffermap[file]);
+   msg_IODebugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
+-		 <<file<<"' -> ("<<&cbuffer<<")\n";
++		   <<file<<"' -> "<<inbuf<<"("<<&cbuffer<<")\n";
+   if (inbuf) {
+     m_filecontent[i].clear();
+     for (size_t j(0);j<cbuffer.size();++j)
+@@ -511,8 +522,8 @@
+ void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
+ { 
+   msg_IODebugging()<<METHOD<<"(): ("<<this<<") closes file '"
+-		 <<InputPath(i)+InputFile(i)<<"', mode = "
+-		 <<InFileMode(i)<<"\n";
++		   <<InputPath(i)+InputFile(i)<<"', file mode = "
++		   <<InFileMode(i)<<", mode = "<<mode<<"\n";
+   My_In_File &infile(InFile(i));
+   if (infile()==NULL) return;
+   m_filecontent[i].clear();
+Index: ATOOLS/Org/Read_Write_Base.H
+===================================================================
+--- ATOOLS/Org/Read_Write_Base.H	(revision 26399)
++++ ATOOLS/Org/Read_Write_Base.H	(working copy)
+@@ -129,6 +129,9 @@
+ 
+     size_t Find(std::string input,std::string parameter) const;
+ 
++    static void AddCommandLine(const std::string commandline);
++    static void AddCommandLine(const String_Vector &commandline);
++
+     // setters
+     inline void SetBlank(const char blank)
+     { m_blank.clear(); m_blank.push_back(blank); }
+@@ -177,30 +180,6 @@
+     inline void AddIgnore(const String_Vector &ignore)
+     { m_ignore.insert(m_ignore.end(),ignore.begin(),ignore.end()); }
+ 
+-    inline void ClearFileBegin()
+-    { m_filebegin.clear(); }
+-    inline void SetFileBegin(const std::string filebegin)
+-    { m_filebegin.clear(); m_filebegin.push_back(filebegin); }
+-    inline void SetFileBegin(const String_Vector &filebegin)
+-    { m_filebegin=filebegin; }
+-    inline void AddFileBegin(const std::string filebegin)
+-    { m_filebegin.push_back(filebegin); }
+-    inline void AddFileBegin(const String_Vector &filebegin)
+-    { m_filebegin.insert(m_filebegin.end(),
+-			 filebegin.begin(),filebegin.end()); }
+-
+-    inline void ClearFileEnd()
+-    { m_fileend.clear(); }
+-    inline void SetFileEnd(const std::string fileend)
+-    { m_fileend.clear(); m_fileend.push_back(fileend); }
+-    inline void SetFileEnd(const String_Vector &fileend)
+-    { m_fileend=fileend; }
+-    inline void AddFileEnd(const std::string fileend)
+-    { m_fileend.push_back(fileend); }
+-    inline void AddFileEnd(const String_Vector &fileend)
+-    { m_fileend.insert(m_fileend.end(),
+-		       fileend.begin(),fileend.end()); }
+-
+     inline void SetOccurrence(const size_t occurrence)
+     { m_occurrence=occurrence; }
+ 
+@@ -216,18 +195,6 @@
+     inline void SetUseGlobalTags(const bool globaltags)
+     { m_useglobaltags=globaltags; }
+ 
+-    inline static void SetCommandLine(const std::string commandline)
+-    { s_buffermap.clear(); s_commandline.clear();
+-      s_commandline.push_back(commandline); }
+-    inline static void SetCommandLine(const String_Vector &commandline)
+-    { s_buffermap.clear(); s_commandline=commandline; }
+-
+-    inline static void AddCommandLine(const std::string commandline)
+-    { s_buffermap.clear(); s_commandline.push_back(commandline); }
+-    inline static void AddCommandLine(const String_Vector &commandline)
+-    { s_buffermap.clear(); s_commandline.insert(s_commandline.end(),
+-			   commandline.begin(),commandline.end()); }
+-  
+     inline void SetIgnoreCase(const bool ignorecase)
+     { m_ignorecase=ignorecase; }
+     inline void SetIgnoreBlanks(const bool ignoreblanks)
+Index: ATOOLS/Org/Run_Parameter.C
+===================================================================
+--- ATOOLS/Org/Run_Parameter.C	(revision 26399)
++++ ATOOLS/Org/Run_Parameter.C	(working copy)
+@@ -198,12 +198,10 @@
+ 	     <<". Initialization of framework underway."<<std::endl;
+   msg_Info()<<"The local time is "<<rpa->gen.Timer().TimeString(0)<<"."<<std::endl;
+   // make path nice
+-  if (path.length()>0) {
+-    if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
+-    while (path.length()>0 && 
+-	   (path[path.length()-1]=='/' || path[path.length()-1]=='.')) 
+-      path=path.substr(0,path.length()-1);
+-  }
++  if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
++  while (path.length()>0 && 
++	 (path[path.length()-1]=='/' || path[path.length()-1]=='.')) 
++    path=path.substr(0,path.length()-1);
+ 
+   // set cpp path
+   std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
+Index: AddOns/Analysis/Main/Analysis_Handler.C
+===================================================================
+--- AddOns/Analysis/Main/Analysis_Handler.C	(revision 26399)
++++ AddOns/Analysis/Main/Analysis_Handler.C	(working copy)
+@@ -130,12 +130,8 @@
+   std::string infile(InputFile());
+   if (infile.find('|')!=std::string::npos)
+     infile=infile.substr(0,infile.find('|'));
+-  reader.SetInputFile(infile);
++  reader.SetInputFile(infile+"|BEGIN_ANALYSIS|END_ANALYSIS");
+   reader.AddComment("#");
+-  reader.SetFileBegin("BEGIN_ANALYSIS");
+-  reader.SetFileEnd("END_ANALYSIS");
+-  reader.AddFileBegin("BEGIN_ANALYSIS{");
+-  reader.AddFileEnd("}END_ANALYSIS");
+   for (size_t i=0;i<s_maxanalyses;++i) {
+     reader.SetOccurrence(i);
+     reader.RescanInFile();
+Index: AddOns/Rivet/Rivet_Interface.C
+===================================================================
+--- AddOns/Rivet/Rivet_Interface.C	(revision 26399)
++++ AddOns/Rivet/Rivet_Interface.C	(working copy)
+@@ -442,12 +442,8 @@
+     std::string infile(m_infile);
+     if (infile.find('|')!=std::string::npos)
+       infile=infile.substr(0,infile.find('|'));
+-    reader.SetInputFile(infile);
++    reader.SetInputFile(infile+"|BEGIN_"+m_tag+"|END_"+m_tag);
+     reader.AddComment("#");
+-    reader.SetFileBegin("BEGIN_"+m_tag);
+-    reader.SetFileEnd("END_"+m_tag);
+-    reader.AddFileBegin("BEGIN_"+m_tag+"{");
+-    reader.AddFileEnd("}END_"+m_tag);
+ 
+     m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
+     m_splitSH=reader.GetValue<int>("SPLITSH", 0);
+Index: HADRONS++/Main/Hadron_Decay_Channel.C
+===================================================================
+--- HADRONS++/Main/Hadron_Decay_Channel.C	(revision 26399)
++++ HADRONS++/Main/Hadron_Decay_Channel.C	(working copy)
+@@ -79,12 +79,11 @@
+     reader.AddComment("#");
+     reader.AddComment("//");
+     reader.SetInputPath(m_path);
+-    reader.SetInputFile(m_filename);
++    reader.SetInputFile(m_filename+"|<Options>|</Options>");
+     reader.SetMatrixType(mtc::transposed);
+ 
+     // process <Options>
+     vector<vector<string> > options_svv;
+-    reader.SetFileBegin("<Options>"); reader.SetFileEnd("</Options>");
+     if(reader.MatrixFromFile(options_svv)) ProcessOptions(options_svv);
+     else {
+       msg_Error()<<METHOD<<": Error.\n"
+@@ -97,8 +96,8 @@
+     // process <ME>
+     vector<vector<string> > me_svv;
+     GeneralModel model_for_ps;
+-    reader.SetFileBegin("<ME>"); reader.SetFileEnd("</ME>");
+-    reader.RereadInFile();
++    reader.SetInputFile(m_filename+"|<ME>|</ME>");
++    reader.RescanInFile();
+     if(reader.MatrixFromFile(me_svv)) ProcessME(me_svv, reader, model_for_ps);
+     else {
+       msg_Error()<<METHOD<<": Error.\n"
+@@ -109,8 +108,8 @@
+ 
+     // process <Phasespace>
+     vector<vector<string> > ps_svv;
+-    reader.SetFileBegin("<Phasespace>"); reader.SetFileEnd("</Phasespace>");
+-    reader.RereadInFile();
++    reader.SetInputFile(m_filename+"|<Phasespace>|</Phasespace>");
++    reader.RescanInFile();
+     if(!reader.MatrixFromFile(ps_svv)) {
+     msg_Error()<<METHOD<<": Error.\n"
+ 	       <<"   Read in failure for <Phasespace> section in "
+@@ -123,8 +122,8 @@
+     // process <Result> 
+     // don't do it before ME and phasespace, or CalcNormWidth doesn't work!
+     vector<vector<string> > result_svv;
+-    reader.SetFileBegin("<Result>"); reader.SetFileEnd("</Result>");
+-    reader.RereadInFile();
++    reader.SetInputFile(m_filename+"|<Result>|</Result>");
++    reader.RescanInFile();
+     reader.MatrixFromFile(result_svv);
+     ProcessResult(result_svv);
+   }
+@@ -203,8 +202,8 @@
+       me->SetPath(m_path);
+       msg_Tracking()<<"  "<<me->Name()<<endl;
+       vector<vector<string> > parameter_svv;
+-      reader.SetFileBegin("<"+me_svv[i][2]+">"); reader.SetFileEnd("</"+me_svv[i][2]+">");
+-      reader.RereadInFile();
++      reader.SetInputFile(m_filename+"|<"+me_svv[i][2]+">|</"+me_svv[i][2]+">");
++      reader.RescanInFile();
+       reader.MatrixFromFile(parameter_svv);
+       GeneralModel me_model=Parameters2Model(parameter_svv,model_for_ps);
+       me->SetModelParameters( me_model );
+@@ -219,8 +218,8 @@
+       Current_Base* current1 = SelectCurrent(me_svv[i][2]);
+       current1->SetPath(m_path);
+       vector<vector<string> > parameter1_svv;
+-      reader.SetFileBegin("<"+me_svv[i][2]+">"); reader.SetFileEnd("</"+me_svv[i][2]+">");
+-      reader.RereadInFile();
++      reader.SetInputFile(m_filename+"|<"+me_svv[i][2]+">|</"+me_svv[i][2]+">");
++      reader.RescanInFile();
+       reader.MatrixFromFile(parameter1_svv);
+       GeneralModel current1_model=Parameters2Model(parameter1_svv,model_for_ps);
+       current1->SetModelParameters( current1_model );
+@@ -228,8 +227,8 @@
+       Current_Base* current2 = SelectCurrent(me_svv[i][3]);
+       current2->SetPath(m_path);
+       vector<vector<string> > parameter2_svv;
+-      reader.SetFileBegin("<"+me_svv[i][3]+">"); reader.SetFileEnd("</"+me_svv[i][3]+">");
+-      reader.RereadInFile();
++      reader.SetInputFile(m_filename+"|<"+me_svv[i][3]+">|</"+me_svv[i][3]+">");
++      reader.RescanInFile();
+       reader.MatrixFromFile(parameter2_svv);
+       GeneralModel current2_model=Parameters2Model(parameter2_svv,model_for_ps);
+       current2->SetModelParameters( current2_model );
+Index: MODEL/HEFT/Model.C
+===================================================================
+--- MODEL/HEFT/Model.C	(revision 26399)
++++ MODEL/HEFT/Model.C	(working copy)
+@@ -117,7 +117,6 @@
+ 
+ bool HEFT::ModelInit(const PDF::ISR_Handler_Map& isr)
+ {
+-  p_dataread->RereadInFile();
+   FixEWParameters();  
+   FixCKM();
+   FixEFT();
+Index: MODEL/SM/Model.C
+===================================================================
+--- MODEL/SM/Model.C	(revision 26399)
++++ MODEL/SM/Model.C	(working copy)
+@@ -113,7 +113,6 @@
+ 
+ bool Standard_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
+ {
+-  p_dataread->RereadInFile();
+   FixEWParameters();  
+   FixCKM();
+   SetAlphaQCD(isr);
+Index: MODEL/TauPi/Model.C
+===================================================================
+--- MODEL/TauPi/Model.C	(revision 26399)
++++ MODEL/TauPi/Model.C	(working copy)
+@@ -114,7 +114,6 @@
+ 
+ bool Standard_Model_TauPi::ModelInit(const PDF::ISR_Handler_Map& isr)
+ {
+-  p_dataread->RereadInFile();
+   FixEWParameters();  
+   FixCKM();
+   SetAlphaQCD(isr);
+Index: MODEL/UFO/UFO_Param_Reader.C
+===================================================================
+--- MODEL/UFO/UFO_Param_Reader.C	(revision 26399)
++++ MODEL/UFO/UFO_Param_Reader.C	(working copy)
+@@ -30,7 +30,7 @@
+     filename=file_path.substr(pos+1);
+   }
+   else{
+-    path=string("./");
++    path=string("");
+     filename=file_path;
+   }
+   if (filename.find("|")!=string::npos) 
+Index: SHERPA/Initialization/Initialization_Handler.C
+===================================================================
+--- SHERPA/Initialization/Initialization_Handler.C	(revision 26399)
++++ SHERPA/Initialization/Initialization_Handler.C	(working copy)
+@@ -58,7 +58,7 @@
+   p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
+   p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL)
+ {
+-  m_path=std::string("./");
++  m_path=std::string("");
+   m_file=std::string("Run.dat");
+ 
+   ExtractCommandLineParameters(argc, argv);
+@@ -169,8 +169,6 @@
+     if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library "+*pdflib);
+     ((PDF_Exit_Function)exit)();
+   }
+-  String_Vector dummy;
+-  Read_Write_Base::SetCommandLine(dummy);
+ }
+ 
+ void Initialization_Handler::CheckVersion()
+@@ -1043,25 +1041,14 @@
+   m_path="";
+ 
+   std::vector<std::string> helpsv2;
+-  // Add parameters from possible global.dat to command line
+   Data_Reader dr(" ",";","!","=");
+   dr.AddWordSeparator("\t");
+   dr.AddComment("#");
+-  dr.SetInputPath(rpa->gen.Variable("HOME")+"/.sherpa/");
+-  dr.SetInputFile("global.dat");
+-  std::vector<std::vector<std::string> > helpsvv;
+-  if (dr.MatrixFromFile(helpsvv,"")) {
+-    helpsv2.resize(helpsvv.size());
+-    for (size_t i(0);i<helpsvv.size();++i) {
+-      helpsv2[i]=helpsvv[i][0];
+-      for (size_t j(1);j<helpsvv[i].size();++j) helpsv2[i]+=" "+helpsvv[i][j];
+-    }
+-  }
+   // Add parameters from Run.dat to command line
+   // (this makes it possible to overwrite particle properties in Run.dat)
+   dr.SetInputPath(m_path);
+   dr.SetInputFile(m_file);
+-  dr.RereadInFile();
++  std::vector<std::vector<std::string> > helpsvv;
+   if (dr.MatrixFromFile(helpsvv,"")) {
+     size_t oldsize(helpsv2.size());
+     helpsv2.resize(oldsize+helpsvv.size());
+Index: SHERPA/Main/Sherpa.C
+===================================================================
+--- SHERPA/Main/Sherpa.C	(revision 26399)
++++ SHERPA/Main/Sherpa.C	(working copy)
+@@ -71,7 +71,7 @@
+ 
+ bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
+ { 
+-  m_path = std::string("./");
++  m_path = std::string("");
+   int oldc(argc);
+   char **oldargs(NULL);
+   std::string statuspath;
+Index: SHERPA/SoftPhysics/Hadron_Decay_Handler.C
+===================================================================
+--- SHERPA/SoftPhysics/Hadron_Decay_Handler.C	(revision 26399)
++++ SHERPA/SoftPhysics/Hadron_Decay_Handler.C	(working copy)
+@@ -69,7 +69,7 @@
+   dmap->Read(decaypath, decayfile, true);
+   dmap->Read(decaypath, aliasdecayfile);
+   dmap->Initialise();
+-  dmap->ReadFixedTables("./", "FixedDecays.dat");
++  dmap->ReadFixedTables("", "FixedDecays.dat");
+   p_decaymap=dmap;
+   
+   p_mixinghandler = new Mixing_Handler();

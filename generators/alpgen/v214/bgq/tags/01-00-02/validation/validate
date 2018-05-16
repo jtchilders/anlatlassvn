@@ -1,0 +1,204 @@
+#!/bin/bash 
+debug=0
+
+Validation_dir=`pwd`
+mode="$1"
+# For users:
+# mode= none: compare current version to reference template
+# For developers only:
+# mode=ref: generate reference templates for the current version
+# mode=comp: compare version NEW with REF
+# mode=her: validate herwig
+# mode=pyt: validate pythia
+
+# if mode=3 then
+let SHmode=0
+NEW_path="$Validation_dir/.."
+REF_path="$Validation_dir/.."
+    if [ $mode = "comp" ] ; then
+	testname="comp"
+	NEW_path="$2"
+	REF_path="$3"
+	let imin=0
+	let imax=1
+	rm -f $Validation_dir/"*".dat
+	rm -f $Validation_dir/$testname.summary
+# elseif mode=2 then
+    elif [ $mode = "ref" ] ; then
+	testname="ref"
+	let imin=1
+	let imax=1
+    elif [ $mode = "her" ] ; then
+	SHmode=1
+	SHpath="$REF_path/herlib"
+	SHexec=hwuser
+    elif [ $mode = "pyt" ] ; then
+	SHmode=1
+	SHpath="$REF_path/pylib"
+	SHexec=pyuser
+    elif [ $mode = "clean" ] ; then
+	rm $Validation_dir"/NEW"*
+    else
+# elseif mode=1 then
+	mode="val"
+	testname="val"
+	let imin=0
+	let imax=0
+	rm -f $Validation_dir/"*".dat
+	rm -f $Validation_dir/$testname.summary
+    fi
+#
+    if [ $SHmode -eq 1 ] ; then
+	testname="ref"
+	let imin=1
+	let imax=1
+	cd $SHpath
+	rm $SHexec
+	make $SHexec
+    fi
+#
+    ver=("NEW" "REF")
+    verpath=($NEW_path $REF_path)
+#
+    Data_dir=($Validation_dir $Validation_dir/REF)
+
+# list processes
+let prcmin=1
+let prcmax=16
+#prc=  0     1   2   3    4    5     6  7  8   9    10    11    12   13  14     15    16
+procs=(empty wqq zqq wjet zjet vbjet 2Q 4Q QQh Njet wcjet phjet hjet top wphjet wphqq 2Qph)
+njmin=(0     0   0   0    0    0     0  0  0   2    0     1     0    0   0      0     0)
+njmax=(0     4   4   6    6    3     4  2  2   6    3     4     3    0   4      2     3)
+
+## debug
+if [ $debug -eq 1 ]; then 
+prcmin=14
+prcmax=16
+fi
+## debug
+let ifirst=0
+let topprc=0
+let nprc=$prcmin-1
+while [ $nprc -lt $prcmax ] ; do
+    let nprc=$nprc+1
+    iprc=$nprc
+    prc=${procs[$iprc]}
+    workdir=$prc"work"
+    genfile=$prc"gen"
+    sprc=$prc
+
+    if [ $mode != "clean" ]; then
+# loop over single top subprocesses:
+    if [ $nprc -eq 13 ]; then 
+	let topprc=$topprc+1
+	if [ $topprc -lt 4 ]; then
+	    let nprc=$nprc-1
+	fi
+	sprc=$prc"_"$topprc
+    fi
+#
+    let i=$imin-1
+    while [ $i -lt $imax ] ; do
+	let i=$i+1
+	try=${ver[$i]};
+	path=${verpath[$i]}
+	datfile=$try$sprc".dat"
+#  echo $try; echo $path; echo $datfile
+	if [ $SHmode -eq 0 ] ; then 
+	    rm ${Data_dir[$i]}/$datfile	
+	fi
+#print $genfile
+	
+	if [ $SHmode -eq 0 ] ; then
+	    cd $path/$workdir
+#  echo $path/$workdir;
+	    make cleanobj
+	    rm $genfile
+	    make gen
+	fi
+# prepare parameter list files
+	if  [ $mode = "ref" ] ; then
+	    ./$genfile <<EOF
+4
+EOF
+	    mv par.list ../$prc"lib"
+	    if [ $ifirst -eq 0 ]; then
+		let ifirst=1
+		./$genfile <<EOF
+5
+EOF
+		mv prc.list ../
+	    fi
+	fi 
+	njlow=${njmin[$iprc]}
+	njhigh=${njmax[$iprc]}
+## debug
+#if [ $debug -eq 1 ]; then 
+#	njlow=0
+#	njhigh=3
+#fi
+## debug
+	let nj=$njlow-1
+	while [ $nj -lt $njhigh ];  do
+	  let nj=$nj+1
+#
+	  string=$try$sprc"_"$nj
+#
+	  if [ $SHmode -eq 0 ] ; then
+	      ./$genfile <<EOF
+1
+$string
+0
+0 0
+100
+***
+njets 4
+njets $nj
+ickkw 0
+iqopt 0
+qfac 100
+itopprc $topprc
+EOF
+	      ./$genfile <<EOF
+2
+$string
+***
+dummy 1
+impunw 2
+EOF
+	      echo $string >> ${Data_dir[$i]}/$datfile
+	      grep -A1 wgted $string.par >> ${Data_dir[$i]}/$datfile
+	      if [ $mode = "ref" ]; then
+		  mv $string".unw" $Validation_dir/REF
+		  mv $string"_unw.par" $Validation_dir/REF
+	      fi
+	  elif [ $SHmode -eq 1 ] ; then
+#	  if [ $SHmode -eq 1 ] ; then
+	      cd $Validation_dir/REF
+	      ln -sf $SHpath/$SHexec
+	      ./$SHexec <<EOF
+$string
+EOF
+	  fi
+	done
+	cd $Validation_dir
+    done
+# if mode=1
+    if [ $mode = "val" ] || [ $mode = "comp" ] ; then
+	echo "For process=$sprc" >> $testname.summary
+	echo "Diff between REF and NEW:" >> $testname.summary
+	diff "NEW$sprc.dat" "REF/REF$sprc.dat" >> $testname.summary
+	echo "*****" >> $testname.summary
+    fi
+
+    if [ $mode = "ref" ] ; then
+	cd $path/$workdir
+#	echo `pwd`
+	rm REF$prc*
+    fi
+
+    else
+	cd $REF_path/$workdir
+	rm NEW$prc*
+    fi
+done

@@ -1,0 +1,393 @@
+\documentclass[paper]{JHEP3}
+\usepackage{amsmath,amssymb,enumerate,url}
+\bibliographystyle{JHEP}
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+%\newcommand{\texttt}[1]{\tt #1}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\POWHEGBOX{{\tt POWHEG BOX}}
+\newcommand\HERWIG{{\tt HERWIG}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\MCatNLO{{\tt MC@NLO}}
+
+\newcommand\kt{k_{\sss\rm T}}
+
+\newcommand\pt{p_{\sss\rm T}}
+\newcommand\LambdaQCD{\Lambda_{\scriptscriptstyle QCD}}
+%%%%%%%%%% End TeXmacs macros
+
+
+\title{The POWHEG BOX user manual:\\
+  dijet production} \vfill
+\author{Simone Alioli\\
+  Deutsches Elektronen-Synchrotron DESY\\
+  Platanenallee 6, D-15738 Zeuthen, Germany\\
+  E-mail: \email{simone.alioli@desy.de}}
+\author{Keith Hamilton\\
+  INFN, Sezione di Milano-Bicocca,
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Keith.Hamilton@mib.infn.it}}
+\author{Paolo Nason\\
+  INFN, Sezione di Milano-Bicocca,
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Paolo.Nason@mib.infn.it}}
+\author{Carlo Oleari\\
+  Universit\`a di Milano-Bicocca and INFN, Sezione di Milano-Bicocca\\
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Carlo.Oleari@mib.infn.it}}
+\author{Emanuele Re\\
+  Institute for Particle Physics Phenomenology, Department of Physics\\
+  University of Durham, Durham, DH1 3LE, UK\\
+  E-mail: \email{emanuele.re@durham.ac.uk}}
+
+\vskip -0.5truecm
+
+\keywords{POWHEG, Shower Monte Carlo, NLO}
+
+\abstract{This note documents the use of the package
+  \POWHEGBOX{} for jet pair production processes.
+  Results can be easily interfaced to shower Monte Carlo programs, in
+  such a way that both NLO and shower accuracy are maintained.}
+\preprint{\today\\ \tmtexttt{POWHEG BOX} 1.0}
+
+\begin{document}
+
+
+\section{Introduction}
+
+The \POWHEGBOX{} program is a framework for implementing NLO
+calculations in Shower Monte Carlo programs according to the
+\POWHEG{} method. An explanation of the method and a discussion of
+how the code is organized can be found in
+refs.~\cite{Nason:2004rx,Frixione:2007vw,Alioli:2010xd}.  The code is
+distributed according to the ``MCNET GUIDELINES for Event Generator
+Authors and Users'' and can be found at the web page 
+%
+\begin{center}
+ \url{http://powhegbox.mib.infn.it}.
+\end{center}
+%
+In this manual, we describe the \POWHEG{} NLO implementation of jet pair
+hadroproduction, as described in ref.~\cite{Alioli:2010xa}.
+
+
+\section{Producing \POWHEG{} events out-of-the-box}
+
+The \POWHEGBOX{} dijet program may be run directly
+from the downloaded code as follows:
+\begin{itemize}
+\item Enter the\texttt{ POWHEG-BOX/Dijet }directory.
+\item Type \texttt{make} here to produce an executable \texttt{pwhg\_main}
+for producing \POWHEG{} events.%
+\footnote{The compiler will relay numerous warnings due to our use of the \texttt{-Wall}
+compilation flag; as with most High Energy Physics software these
+can be safely ignored.%
+}
+\item Enter either directory \texttt{testrun-tev} or \texttt{testrun-lhc}. 
+\item Type \texttt{../pwhg\_main }to run the program using the local \texttt{powheg.input}
+input file to produce a Les Houches format event file, \texttt{pwgevents.lhe},
+containing 50000 \POWHEG{} events.
+\end{itemize}
+The run-time for producing such an event sample should be in the region
+of three hours. The number of events to be generated may be freely
+changed and is set by the \texttt{numevts} flag in \texttt{powheg.input}.
+Such events are distributed according to the so-called \POWHEG{}
+hardest emission cross section, essentially a leading-log resummed
+version of the next-to-leading order cross section, thus they contain
+three-parton final-states with very few additional, `non-radiative',
+two-parton final-state events.
+
+The user is free to analyse the \POWHEG{} predictions to give
+NLO accurate, resummed, predictions for observables using their own
+analysis code, or, to fully develop them into life-like hadron level
+events by passing them to a shower Monte Carlo program. In any case,
+we have included within the \POWHEGBOX{} package programs
+which can carry out all of these tasks with a minimum of effort, as
+described in the following sections. 
+
+
+\section{NLO and \POWHEG{}-level analysis with \textsc{FastJet}}
+
+Besides producing the \POWHEG{} events the program can also
+analyse them on-the-fly whilst they are being generated. At least
+for jet production, to carry out such analysis the user should have
+installed a copy of the \textsc{FastJet} jet-clustering package%
+\footnote{FastJet is available at\texttt{ http://www.lpthe.jussieu.fr/\textasciitilde{}salam/fastjet/}%
+} and the directory of the \texttt{fastjet\_config} script included
+in his / her \texttt{PATH} environment variable. With \textsc{FastJet}
+set up one can produce some basic \POWHEG{}-level topdrawer
+histogram output by replacing, at the beginning of the \texttt{Dijet/Makefile}, 
+
+\begin{center}
+\texttt{\medskip{}
+ANALYSIS=none $\Rightarrow$ ANALYSIS=default\medskip{}
+}
+\par\end{center}
+
+\noindent which simply swaps\texttt{ pwhg\_analysis-dummy.f} by the
+\textsc{FastJet} dependent \texttt{pwhg\_analysis.f} code. Now, repeating
+the same steps given in Sect.\,1, yields an additional topdrawer
+file, \texttt{pwgpwhgalone-output.top}, containing the analysis.
+
+The \texttt{pwhg\_analysis.f} file contains very basic code passing particle
+momenta to \textsc{FastJet} as well as booking and filling histograms. The
+pre-packaged analysis was used, in part, to produce a number of the results
+in our related publication~\cite{Alioli:2010xa} but can be overwritten by
+users as they wish.
+
+As well as producing analysis at the level of the \POWHEG{}
+hardest emission cross section, the software is also capable of producing
+the corresponding fixed order NLO analysis, since the NLO cross section
+must be throughly explored prior to event generation to determine
+an upper bound for the $\widetilde{B}\left(\Phi_{B}\right)$ function
+--- the distribution of the underlying-Born kinematic configurations.
+This analysis proceeds through the exact same \texttt{pwhg\_analysis.f}
+code and maybe activated by replacing
+
+\begin{center}
+\texttt{\medskip{}
+\#testplots 1 $\Rightarrow$ testplots 1\medskip{}
+}
+\par\end{center}
+
+\noindent in \texttt{powheg.input}. Hopefully it is obvious that enabling
+this feature depends on having set \texttt{ANALYSIS = default} in
+the \texttt{Makefile}. If one is only interested in obtaining fixed
+order NLO results it is not necessary to generate any \POWHEG{}
+events, hence, the process is expedited by then setting \texttt{numevts}
+to zero.
+
+Of course the Les Houches file content may be analysed `off-line',
+independently of the way in which it was generated, using standalone
+code. Users can readily write their own programs to this end, however,
+for convenience we include a program to do the task using, again,
+the \texttt{pwhg\_analysis.f} code. To build this program, \texttt{lhef\_analysis},
+\begin{itemize}
+\item Enter\texttt{ POWHEG-BOX/Dijet/} .
+\item Type \texttt{make} \texttt{lhef\_analysis} .
+\end{itemize}
+\noindent Two inputs are required in order to run the analysis: the
+input file used to create the Les Houches events,\texttt{ foo-powheg.input},
+and the event file \texttt{bar.lhe}. If the input file has been misplaced
+it can be easily recovered from the head of the Les Houches event
+file. Assuming these two files are in the directory \texttt{POWHEG-BOX/Dijet/foo-bar}
+\begin{itemize}
+\item Enter\texttt{ POWHEG-BOX/Dijet/foo-bar/} .
+\item Type \texttt{../lhef\_analysis} .
+\end{itemize}
+When prompted enter the prefix of the input file \texttt{`foo}' and,
+on further prompting, the full name of the event file. Note that the
+program assumes that the name of the input file is formatted as \texttt{{*}-powheg.input}.
+The program will run to produce a topdrawer histogram file, \texttt{LHEF\_analysis.top}.
+
+If run on the same event file created by \texttt{pwhg\_main}, with
+no modifications to \texttt{pwhg\_analysis.f}, one should find \texttt{LHEF\_analysis.top}
+and \texttt{pwgpwhgalone-output.top} are basically identical, making
+this seem like a redundant feature. However, if one is only interested
+in the \POWHEG{} predictions and not the (inferior) fixed order
+NLO ones, it is of course hugely faster to modify \texttt{pwhg\_analysis.f}
+to your tastes and then run \texttt{lhef\_analysis}, as opposed to
+running the event generation code over again from the beginning. Moreover,
+if one is ultimately interested in generating large samples of events
+it will be necessary to generate them independently on a CPU cluster
+whereupon they may be combined at the end and analysed \emph{en} \emph{masse}
+with \texttt{lhef\_analysis}.%
+\footnote{For more details on parallel generation of event samples see \texttt{POWHEG-BOX/Docs/Manyseeds.pdf}.%
+}
+
+
+\section{Evolving \POWHEG{} events to the hadron level}
+
+Given a Les Houches file of \POWHEG{} events one may evolve
+these to the hadron level with \textsc{Herwig} as follows 
+\begin{itemize}
+\item Enter\texttt{ POWHEG-BOX/Dijet/} .
+\item Type \texttt{make main-HERWIG-lhef} .
+\end{itemize}
+\noindent As in Sect.\,2, to run the program we require the input
+file used to create the Les Houches event file,\texttt{ foo-powheg.input},
+and the event file itself \texttt{bar.lhe} in the same directory.
+Assuming these are present in \texttt{POWHEG-BOX/Dijet/foo-bar}
+\begin{itemize}
+\item Enter\texttt{ POWHEG-BOX/Dijet/foo-bar/} .
+\item Type \texttt{../main-HERWIG-lhef}.
+\end{itemize}
+When prompted enter the prefix of the input file \texttt{`foo}' and
+on further prompting \texttt{`bar.lhe}'. Assuming that \texttt{ANALYSIS
+= default} in the \texttt{Makefile} the program will run to produce
+a topdrawer histogram file, \texttt{foo-POWHEG+HERWIG-output.top},
+based on the analysis of the hadron-level events with the (freely
+changeable) \texttt{pwhg\_analysis.f} code. Although we have not included
+the facility explicitly it is of course possible to store the showered
+events in a binary format for direct off-line analysis and / or detector
+simulation with little effort.
+
+The file \texttt{main-HERWIG.f} in the main {\tt POWHEG-BOX}
+directory contains a short generic program driving the \textsc{Herwig}
+run, while \texttt{setup-HERWIG-lhef.f}, in the \texttt{Dijet} directory,
+contains an equally brief user-serviceable subroutine, \texttt{setup\_HERWIG\_parameters},
+allowing one to set options affecting the behaviour of \textsc{Herwig}. 
+
+All of the discussion and instructions above here hold true for the
+\textsc{Pythia}\texttt{ }event generator, up to replacing \texttt{HERWIG
+$\rightarrow$ PYTHIA} everywhere it appears in the shell commands.
+As in the analogous case of \textsc{Herwig}, \texttt{setup\_PYTHIA\_parameters}
+isolates the setting of \textsc{Pythia} options; here one can, for
+example, disable the multiple interactions / underlying event model,
+substantially quickening studies in their preliminary stages. One
+minor difference with respect to the \textsc{Herwig} driver code is
+the routine \texttt{setup\_PYTHIA\_tune} routine in\texttt{ setup-PYTHIA-lhef.f}
+file. This routine simply calls \texttt{PYTUNE} with an index to a
+particular \textsc{Pythia} tuning, other tunings may be freely selected
+by simply changing the argument of \texttt{PYTUNE}.
+
+
+\section{Running with \textsc{Lhapdf}}
+
+The \POWHEGBOX{} includes, for convenience, its own
+internal PDF evolution code and a limited number of PDF data sets
+(see the \texttt{POWHEG-BOX/pdfdata}/). It is, however, easy to use
+instead the popular \textsc{Lhapdf} package for this purpose. To do
+this edit the beginning of the \texttt{Makefile} by simply replacing
+the line
+
+\begin{center}
+\texttt{PDF=native $\Rightarrow$ PDF=lhapdf}
+\par\end{center}
+
+\noindent and in the \texttt{foo-powheg.input} file
+
+\begin{center}
+\texttt{ndns1 131 $\Rightarrow$ ! ndns1 131}
+\par\end{center}
+
+\begin{center}
+\texttt{ndns2 131 $\Rightarrow$ ! ndns2 131}
+\par\end{center}
+
+\begin{center}
+\texttt{! lhans1 10050 $\Rightarrow$ lhans1 10050}
+\par\end{center}
+
+\begin{center}
+\texttt{! lhans2 10050 $\Rightarrow$ lhans2 10050}
+\par\end{center}
+
+\noindent Of course, for this to work, \textsc{Lhapdf} should be correctly
+installed and the directory containing the \texttt{lhapdf-config}
+script should be included in the \texttt{PATH} environment variable.
+Note also that the \texttt{Makefile} we include assumes the latest
+version of \textsc{Lhapdf} is installed, if this is not the case one
+may need to adjust the setting of the \texttt{LIBSLHAPDF} variable
+in it, replacing the two instances of \texttt{-{}-libdir) }on line
+58 by \texttt{-{}-prefix)/lib}. Lastly, with performance in mind we
+recommend building \textsc{Lhapdf} with the \texttt{-{}-enable-low-memory}
+configure option.%
+\footnote{For more details please see \texttt{http://projects.hepforge.org/lhapdf/configure}%
+}
+
+
+\section{\texttt{bornktmin}}
+
+As with all Monte Carlo simulations of processes such as this, which
+are already divergent at the leading order, a generation cut
+is required in the simulation process to avoid the singular, low $p_{T}$,
+region of phase space. The presence of such cuts is nothing new and
+will be well familiar to users who have simulated processes of the
+type $X+\mathrm{jet}$ using, for example, \textsc{Pythia }and\textsc{
+Herwig}. In the \POWHEGBOX{} framework, as in \textsc{Pythia
+}and\textsc{ Herwig}, this amounts to a lower bound on the $p_{T}$
+of the $2\rightarrow2$ underlying Born configuration, from which
+radiation is subsequently generated. The value of this cut is set
+by \texttt{bornktmi}n in \texttt{powheg.input}.
+
+Since this cut has no physical origins and is merely a crude device
+to avoid the singular regions of the leading order configurations,
+it is essential that the observables which one is analysing include
+sufficiently high $p_{T}\,/\, E_{T}$ cuts that they are unaffected
+by a decrease in it. Re-iterating, it is fundamental that the observables
+one is studying exhibit little or no sensitivity to the `missing',
+unpopulated, low $p_{T}$ region of phase space below the cut. This
+requirement must be more rigidly enforced in the \POWHEGBOX{}
+case than \textsc{Pythia }or\textsc{ Herwig} since the latter only
+aim at leading order accuracy.
+
+To give some idea of what may be considered appropriate, in our related
+article,\texttt{ arXiv:1012.3380v1}, we were able to reliably use
+a generation cut, \texttt{bornktmi}n, of 10 GeV to study observables
+for which the two leading jets were above as little as 20 GeV in transverse
+momentum (at the Tevatron), while a \texttt{bornktmi}n cut of 20 GeV
+proved adequate for the study of the same observables but with the
+two leading jets above 50 GeV (at the LHC). In terms of what constitutes
+`best practice' we recommend that serious studies involve cross checks
+to verify that the dependence on \texttt{bornktmin} does not modify
+predictions by more than 1-2\%.
+
+
+\section{Scale choices}
+
+In the \POWHEG{} algorithm, each event is built by first producing
+what is referred to as an underlying Born configuration, here a QCD
+$2\rightarrow2$ scattering, before proceeding to generate the hardest
+branching in the event. We have elected to use the $p_{T}$ of the
+underlying-Born configuration as the renormalization and factorization
+scale in obtaining the fixed-order NLO predictions, effectively resumming
+virtual corrections to the associated t-channel gluon propagator ---
+see the subroutine \texttt{set\_fac\_ren\_scales} in \texttt{Dijet/Born\_phsp.}f.
+This same scale choice is used in generating the underlying Born kinematics,
+of the \POWHEG{} events, while the component of the hardest-emission
+cross section, responsible for the subsequent generation of the hardest
+branching kinematics, uses the transverse momentum of the branching,
+both in the evaluation of the strong coupling constant and the PDF. 
+
+
+
+\begin{thebibliography}{10}
+
+
+\bibitem{Nason:2004rx}
+  P.~Nason,
+  ``A new method for combining NLO QCD with shower Monte Carlo algorithms,''
+  JHEP {\bf 0411} (2004) 040
+  [arXiv:hep-ph/0409146].
+  %%CITATION = JHEPA,0411,040;%%
+
+%\cite{Frixione:2007vw}
+\bibitem{Frixione:2007vw}
+  S.~Frixione, P.~Nason and C.~Oleari,
+``Matching NLO QCD computations with Parton Shower simulations: the POWHEG
+method,''
+  JHEP {\bf 0711} (2007) 070
+  [arXiv:0709.2092 [hep-ph]].
+  %%CITATION = JHEPA,0711,070;%%
+
+%\cite{Alioli:2010xd}
+\bibitem{Alioli:2010xd}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+``A general framework for implementing NLO calculations in shower Monte Carlo
+  programs: the POWHEG BOX,''
+  [arXiv:1002.2581 [hep-ph]].
+  %%CITATION = ARXIV:1002.2581;%%
+
+%\cite{Alioli:2010xa}
+\bibitem{Alioli:2010xa}
+  S.~Alioli, K.~Hamilton, P.~Nason, C.~Oleari and E.~Re,
+  ``Jet pair production in POWHEG,''
+  arXiv:1012.3380 [hep-ph].
+  %%CITATION = ARXIV:1012.3380;%%
+
+
+\end{thebibliography}
+
+\end{document}

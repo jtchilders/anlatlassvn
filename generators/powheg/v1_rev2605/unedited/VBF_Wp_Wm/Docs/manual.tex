@@ -1,0 +1,413 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{amssymb,enumerate}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{url}
+\usepackage{cite}
+\usepackage{graphics}
+\usepackage{xspace}
+\usepackage{epsfig}
+\usepackage{subfigure}
+
+\setlength\paperwidth  {210mm}%
+\setlength\paperheight {300mm}%	
+
+\textwidth 160mm%		% DEFAULT FOR LATEX209 IS a4
+\textheight 230mm%
+
+\voffset -1in
+\topmargin   .05\paperheight	% FROM TOP OF PAGE TO TOP OF HEADING (0=1inch)
+\headheight  .02\paperheight	% HEIGHT OF HEADING BOX.
+\headsep     .03\paperheight	% VERT. SPACE BETWEEN HEAD AND TEXT.
+\footskip    .07\paperheight	% FROM END OF TEX TO BASE OF FOOTER. (40pt)
+
+
+\hoffset -1in				% TO ADJUST WITH PAPER:
+	\oddsidemargin .13\paperwidth	% LEFT MARGIN FOR ODD PAGES (10)
+	\evensidemargin .15\paperwidth	% LEFT MARGIN FOR EVEN PAGES (30)
+	\marginparwidth .10\paperwidth	% TEXTWIDTH OF MARGINALNOTES
+	\reversemarginpar		% BECAUSE OF TITLEPAGE.
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[ 1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+\newcommand\PSn{\Phi_{n}}
+\newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
+
+
+
+\newcommand\Lum{{\cal L}}
+\newcommand\matR{{\cal R}}
+\newcommand\Kinnpo{{\bf \Phi}_{n+1}}
+\newcommand\Kinn{{\bf \Phi}_n}
+\newcommand\PSnpo{\Phi_{n+1}}
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\asotpi{\frac{\as}{2\pi}}
+
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\POWHEGBOX{{\tt POWHEG BOX}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\POWHEGpPYTHIA{{\tt POWHEG+PYTHIA}}
+\newcommand\HERWIG{{\tt HERWIG}}
+
+\def\lq{\left[} 
+\def\rq{\right]} 
+\def\rg{\right\}} 
+\def\lg{\left\{} 
+\def\({\left(} 
+\def\){\right)} 
+
+\def\beq{\begin{equation}}
+\def\beqn{\begin{eqnarray}}
+\def\eeq{\end{equation}}
+\def\eeqn{\end{eqnarray}}
+
+\def\mr{\mathrm}
+\def\vbfevmv{VBF $e^+\nu_e\mu^-\bar\nu_\mu jj$\;}
+\def\vbfww{VBF $W^+W^-jj$\;}
+\def\wpm{W^+W^-}
+\def\evmv{e^+\nu_e\mu^+\nu_\mu}
+\def\pbox{{\tt POWHEG BOX}}
+\def\pwg{{\tt POWHEG}}
+\def\mc{\mathcal}
+
+%%%%%%%%%% End TeXmacs macros
+
+\title{Manual for electroweak $W^+W^- jj$ production in the \POWHEGBOX{}}
+\date{}
+%\author{}
+%\keywords{}
+%\abstract{}
+%\preprint{}
+
+
+\begin{document}
+\maketitle
+%
+\noindent
+The {\tt VBF\_Wp\_Wm} program is an implementation of the electroweak
+$W^+W^- jj$ production cross section within the \pbox{} framework. 
+\\[2ex]
+If you use this program, please quote
+Refs.~\cite{Jager:2006zc,JZ,Alioli:2010xd}.
+This code includes a new version of some \POWHEGBOX{} files that were
+provided to us by Paolo Nason and that will soon be released as part
+of the Version 2 of the \POWHEGBOX{}. 
+\\[2ex]
+This document describes the input parameters that are specific to the
+implementation of the EW $\wpm\,jj$ channel.  The parameters that are
+common to all {\tt POWHEG BOX} implementations are given in the {\tt
+  manual-BOX.pdf} document, in the {\tt POWHEG-BOX/Docs} directory.
+\\[2ex]
+The decay mode of the $W^+$ and $W^-$~bosons can be fixed by setting
+the parameters {\tt vdecaymodeWp} and {\tt vdecaymodeWm},
+respectively, in the {\tt powheg.input} file. For the leptonic decay
+modes, these flags specify the charged leptons the bosons decay to
+(11: $e^-$; 13: $\mu^-$; 15: $\tau^-$; -11: $e^+$; -13: $\mu^+$; -15:
+$\tau^+$). The same applies for the leptonically decaying gauge boson
+in the semi-leptonic decay modes. In that case for the hadronically
+decaying $W$ the user can choose between decay into a specific quark
+type (1: $W^-\to d\bar u$; 3: $W^-\to s\bar c$; -1 $W^+\to u\bar d$;
+-3: $W^+\to c\bar s$) and the sum of the light quark decay channls (7:
+$W^-\to d\bar u + s\bar c$; -7: $W^+\to u\bar d + c\bar s$). 
+%
+Depending on the decay mode selected by the user, the program automatically chooses an appropriate sample analysis. The user can replace these sample analyses with own ones, see {\tt pwhg\_analysis\_all.f}. 
+\\[2ex]
+In addition, the user can set the values of the masses and widths of
+the Higgs and the $W$~bosons via the parameters {\tt hmass, hwidth,
+  wmass, wwidth}.
+\\[2ex]
+Note that 
+in the presence of a very sharp resonance, as is the case in a
+scenario with a light Higgs boson with a mass below 200~GeV, the
+resonant Higgs contribution has to be evaluated separately from the
+$WW$ continuum, as described in Ref.~\cite{JZ}. In this case all the
+steps described below have to be performed for each of these two
+contributions separately in two distinct working directories, setting
+\\[2ex]
+{\tt ww\_res\_type 1}
+\\[2ex]
+for the $WW$ continuum and
+\\[2ex]
+{\tt ww\_res\_type 2}
+\\[2ex]
+for the Higgs resonance contribution. After all the runs have been
+performed for each case, the results have to be added. This can be
+done, e.g., with the help of the file {\tt addplots.f} in the
+directory {\tt auxiliary}. 
+\\[2ex]
+If the Higgs is heavy and broad, such a splitting is not necessary,
+and all contributions can be evaluated at the same time, setting
+\\[2ex]
+{\tt ww\_res\_type 0}
+\\[2ex]
+%
+For convenience, we also provide the setup for running the code in a kinematic regime with highly boosted jets. To select this mode, set 
+\\[2ex]
+{\tt ww\_res\_type 1}
+\\
+{\tt fat\_jet 1}
+\\[2ex]
+in {\tt powheg.input}. When the {\tt fat\_jet} flag is set to 1, generation cuts on the decay leptons are used in the 
+phase space and an appropriate analysis routine is selected. 
+
+
+
+\section*{Running the program}
+%
+Download the {\tt POWHEG BOX}, following the instructions at the web site 
+\\[2ex]
+{\tt http://powhegbox.mib.infn.it/}
+\\[2ex] 
+and go to 
+\\[2ex]
+{\tt \$ cd POWHEG-BOX/VBF\_Wp\_Wm}
+\\[2ex]
+Running is most conveniently done in a separate directory. Together with the code, we provide the directories {\tt runs\_lep}, {\tt runs\_slm\_hh}, and {\tt runs\_slp\_fat} that contain sample input files for setups with fully leptonic decays in the presence of a light Higgs boson, semileptonic decays of a heavy Higgs boson, and for running the code in the kinematic regime of a highly boosted fat jet. 
+\\[2ex]
+For your runs, generate your own directory, for instance by doing 
+\\[2ex]
+{\tt \$ mkdir testrun}
+\\[2ex]
+The directory must contain the {\tt powheg.input} file and, for
+parallel running, a {\tt pwgseeds.dat} file (see {\tt manual-BOX.pdf}
+and {\tt Manyseeds.pdf}).
+\\[2ex]
+Before compiling make sure that:
+\begin{itemize}
+\item 
+{\tt fastjet} is installed and {\tt fastjet-config} is in the path,
+\item 
+{\tt lhapdf} is installed and {\tt lhapdf-config} is in the path,
+\item
+{\tt gfortran}, {\tt ifort} or {\tt g77} is in the path, and the
+appropriate libraries are in the environment variable {\tt
+  LD\_LIBRARY\_PATH}. 
+\end{itemize}
+%
+If {\tt LHAPDF} or {\tt fastjet} are not installed, the code can still
+be run using a dummy analysis routine and built-in PDFs, see the {\tt
+  Makefile} in {\tt VBF\_Wp\_Wm}.
+%
+\\[2ex]
+The timings given in the following refer to the program compiled with
+{\tt gfortran} and run on a cluster with 2.7~GHz Opteron processors.
+\\[2ex]
+After compiling, enter the testrun directory:
+\\[2ex]
+{\tt \$ cd testrun}
+\\[2ex]
+and perform all your runs there. 
+\\[2ex]
+We recommend running the program in a parallel mode in several consecutive steps, with the following common settings in {\tt powheg.input}:
+\\[2ex]
+{\tt foldcsi   1}
+\\
+{\tt foldy     1}
+\\
+{\tt foldphi   1}
+\\
+{\tt withdamp   1}
+\\
+{\tt manyseeds   1}
+\\[2ex]
+When executing
+\\[2ex]
+{\tt \$../pwhg\_main}
+\\[2ex]
+the program will ask you to
+\\[2ex]
+{\tt enter which seed}
+\\[2ex]
+The program requires you to enter an index that specifies the line
+number in the {\tt pwgseeds.dat} file where the seed of the random
+number generator to be used for the run is stored. All results
+generated by the run will be stored in files named {\tt
+  *-[index].*}. When running on parallel CPUs, make sure that each
+parallel run has a different index.
+% 
+%%%%%%%%%%%%%%%%%%%
+\subsection*{Step 1}
+%%%%%%%%%%%%%%%%%%%
+%
+In this first step, the importance sampling grids are generated. Make sure that the relevant technical parameters in {\tt powheg.input} are set to the following values:
+\\[2ex]
+{\tt xgriditeration   1}
+\\
+{\tt parallelstage     1}
+\\[2ex]
+We recommend to generate the grids with the option {\tt fakevirt 1} in
+{\tt powheg.input}. When using this option, the virtual contribution
+is replaced by a fake one proportional to the Born term. This speeds
+up the generation of the grids.
+\\[2ex]
+For a default setup one needs 50-100 runs with the number of events generated set by
+\\[2ex] 
+{\tt ncall1 50000}
+\\[2ex] 
+for each. 
+%\\[2ex]
+In order to run, for example, 100 processes in parallel, do: 
+\\[2ex]
+{\tt \$../pwhg\_main}
+\\[2ex]
+When prompted
+\\[2ex]
+{\tt enter which seed}
+\\[2ex]
+enter an index for each run (from 1 to 100). The {\tt pwgseeds.dat}
+must contain at least 100 lines, each with a different seed.
+\\[2ex]
+The completion of the first iteration of the grid production takes
+roughly half an hour of CPU per job. Once all jobs of the first iteration are completed,  the grids are refined in further iterations. We recommend to perform at least a second iteration, setting 
+\\[2ex]
+{\tt xgriditeration   2}
+\\
+{\tt parallelstage     1}
+\\[2ex]
+%
+and rerunning the program as in the first iteration. If more iterations are needed, the value of {\tt xgriditeration} has to be adapted accordingly.  Each iteration takes roughly the same amount of CPU time as the first one. 
+ 
+
+%%%%%%%%%%%%%%%%%%%
+\subsection*{Step 2}
+%%%%%%%%%%%%%%%%%%%
+%
+In order to proceed, perform subsequent runs in the directory where the previously generated grids are located.
+%
+Comment out the {\tt fakevirt} token from {\tt powheg.input}. 
+\\[2ex]
+The integration and upper bound for the generation of btilde can be
+performed with 50-100 runs with 15000-25000 calls each. In {\tt powheg.input} set, for instance:
+\\[2ex]
+{\tt ncall2 25000}
+\\
+{\tt itmx2 1}
+\\
+{\tt parallelstage  2}
+\\[2ex]
+Run jobs in parallel, in the same way as explained for {\tt step 1} above. 
+\\[2ex]
+Time is about 2.5~hours of CPU for each run with {\tt ncall2=25000}.
+\\[2ex]
+Depending on the decay mode selected, the program automatically chooses an appropriate analysis routine ({\tt pwhg\_analysis\_lep,pwhg\_analysis\_slp,pwhg\_analysis\_slm}), unless the option {\tt ANALYSIS} has been set to {\tt none} in the {\tt Makefile} when the code was compiled. The user is free to replace these analysis routines with her own ones, depending on her needs.  
+\\[2ex]
+Upon the completion of {\tt step 2}, for each parallel run a file {\tt
+  pwg-*-NLO.top} is generated (where the * denotes the integer
+identifier of the run).  These files contain the histograms defined in
+{\tt pwhg\_analysis.f} at NLO-QCD accuracy, if the variable {\tt
+  bornonly} is set to zero in {\tt powheg.input}.  Setting {\tt
+  bornonly} to 1 yields the respective LO results. In either case, the
+individual results of the parallel runs can be combined with the help
+of the {\tt combineplots.f} file contained in the {\tt auxiliary}
+directory.  To this end, just compile the file by typing, e.g.,
+\\[2ex]
+{\tt \$ gfortran combineplots.f}
+\\[2ex]
+and run the resulting executable. The program will ask for the the
+number of {\tt pwg-*-NLO.top} files in the directory and the the number
+of calls per run which are set by {\tt ncall2} in {\tt
+  powheg.input}. Finally, enter the integer identifier of the first
+file. The program will then generate the files {\tt combinedNLO.top}
+and {\tt combinedNLO-gnu.top} which contain the combined histograms
+in two different formats (topdraw or gnuplot friendly). 
+
+%%%%%%%%%%
+\subsection*{Step 3}
+%%%%%%%%%%
+%
+Also this step can be run in parallel. 
+Setting
+\\[2ex]
+{\tt nubound 5000}
+\\
+{\tt parallelstage  3}
+\\[2ex]
+takes roughly 5~minutes per process.
+\\[2ex] 
+The parallel execution of the program is
+performed as in the previous step.
+
+%%%%%%%%%%%%
+\subsection*{Step 4}
+%%%%%%%%%%%%
+%
+Set {\tt numevts} to the number of events you want to generate per
+process, for example
+\\[2ex]
+{\tt numevts 5000}
+\\[2ex]
+and run in parallel. 
+Generating the specified number of
+events takes about 5-10~hours per process, depending on the setup.
+\\[2ex]
+At this point, files of the form {\tt pwgevents-[index].lhe} are
+present in the run directory.
+\\[2ex]
+Count the events:
+\\[2ex]
+{\tt \$ grep '/event' pwgevents-*.lhe | wc}
+\\[2ex]
+The events can be merged into a single event file by
+\\[2ex]
+{\tt \$ cat pwgevents-*.lhe | grep -v '/LesHouchesEvents' >
+  pwgevents.lhe}
+\\[2ex]
+At the end of the generated file {\tt pwgevents.lhe}, add a line containing the expression
+\\[2ex]
+{\tt </LesHouchesEvents>}
+
+
+
+
+%%%%%%%%%%%%%%%%%%
+\section*{Analyzing the events}
+%%%%%%%%%%%%%%%%%%
+%
+It is straightforward to feed the combined event file {\tt pwgevents.lhe} (or each individual file {\tt pwgevents-*.lhe}) into a generic
+shower Monte Carlo program, within the analysis framework of each
+experiment. We also provide a sample analysis that computes several
+histograms and stores them in topdrawer output files.
+\\[2ex]
+Doing (from the {\tt VBF\_Wp\_Wm} directory)
+\\[2ex]
+{\tt \$ make lhef\_analysis}
+\\[2ex]
+{\tt \$ cd testrun}
+\\[2ex]
+{\tt ../lhef\_analysis}
+\\[2ex]
+analyses the bare {\tt POWHEG BOX} output, creating the topdrawer file
+{\tt LHEF\_analysis.top}. The target {\tt
+  main-PYTHIA-lhef} is instead used to perform the analysis on events
+fully showered using  {\tt PYTHIA}. The settings of
+the Monte Carlo can be modified by editing the file {\tt
+  setup-PYTHIA-lhef.f}. 
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\begin{thebibliography}{99}
+\bibitem{Jager:2006zc} B.~J\"ager, C.~Oleari, D.~Zeppenfeld, {\em
+    Next-to-leading order QCD corrections to $W^+W^-jj$ 
+    production via vector-boson fusion},  JHEP {\bf 0607} (2006)
+  015  [hep-ph/0603177].
+
+\bibitem{JZ} B.~J\"ager, G.~Zanderighi, {\em Electroweak $W^+W^-jj$ prodution at
+  NLO in QCD matched with parton shower in the POWHEG BOX}, arXiv:1301.1695.
+  
+\bibitem{Alioli:2010xd} S.~Alioli, P.~Nason, C.~Oleari and E. Re, {\em
+    A general framework for implementing NLO calculations in shower
+    Monte Carlo programs: the POWHEG BOX}, JHEP {\bf 1006} (2010)
+  043  [arXiv:1002.2581 [hep-ph]].
+
+\end{thebibliography}
+%%%%%%%%%%%%%%%%%%
+\end{document}

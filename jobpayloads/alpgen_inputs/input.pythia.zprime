@@ -1,0 +1,100 @@
+! main03.cmnd.
+! This file contains commands to be read in for a Pythia8 run. 
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! The settings here are illustrative, not always physics-motivated.
+
+! 1) Settings used in the main program.
+Main:numberOfEvents = 1000         ! number of events to generate
+Main:timesAllowErrors = 3          ! how many aborts before run stops
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = off ! list changed particle data
+Next:numberCount = 1000            ! print message every n events
+Next:numberShowInfo = 1            ! print event information n times
+Next:numberShowProcess = 1         ! print process record n times
+Next:numberShowEvent = 0           ! print event record n times
+
+! 3) Beam parameter settings. Values below agree with default ones.
+Beams:idA = 2212                   ! first beam, p = 2212, pbar = -2212
+Beams:idB = 2212                   ! second beam, p = 2212, pbar = -2212
+Beams:eCM = 14000.                 ! CM energy of collision
+
+#  ---------------------------------------
+! Example ATLAS Setup
+
+"6:m0 = 172.5
+23:m0 = 91.1876
+23:mWidth = 2.4952
+24:m0 = 80.399
+24:mWidth = 2.085
+StandardModel:sin2thetaW = 0.23113
+StandardModel:sin2thetaWbar = 0.23146
+ParticleDecays:limitTau0 = on
+ParticleDecays:tau0Max = 10.0
+
+# Zprime example
+# mc12_8TeV.203459.Pythia8_AU2MSTW2008LO_qqZprimeWWhadronic_Zprime_3000.evgen.e3177
+
+#Specify process
+NewGaugeBoson:ffbar2gmZZprime = on
+#Allow production of only Zprimes, no photons or Zs
+Zprime:gmZmode = 3
+#Set the mass
+32:m0 = 1200
+#Set coupling to WW
+Zprime:coup2WW = 1.
+#Turn off all Z' decays
+32:onMode = off
+#Turn on Z' decays only to W bosons
+32:onIfMatch = 24 -24 
+#Turn of Z boson decays
+24:onMode = off
+#Turn on Z boson decays to quarks
+24:onIfAny = 1 2 3 4 5 6
+
+#AU2 Tune
+Tune:pp = 5
+PDF:useLHAPDF = on
+PDF:LHAPDFset = MSTW2008lo68cl.LHgrid
+MultipartonInteractions:bProfile = 4
+MultipartonInteractions:a1 = 0.01
+MultipartonInteractions:pT0Ref = 1.87
+MultipartonInteractions:ecmPow = 0.28
+BeamRemnants:reconnectRange = 5.32
+SpaceShower:rapidityOrder=0
+#  ---------------------------------------
+
+! 4) Settings for the hard-process generation.
+
+! Example 1: QCD + prompt photon production; must set pTmin. 
+#HardQCD:all = on                   ! switch on all QCD jet + jet processes
+#PromptPhoton:all = on              ! swich on gamma + jet and gamma + gamma 
+#PhaseSpace:pTHatMin = 50.          ! minimal pT scale in process 
+
+! Example 2: t-tbar production.  
+#Top:All = on                  ! g g -> t tbar
+#Top:qqbar2ttbar = on               ! q qbar -> t tbar
+
+! Example 3: Z0 production; should set mMin.
+#WeakSingleBoson:ffbar2gmZ = on     ! q qbar -> gamma*/Z0
+#PhaseSpace:mHatMin = 50.            
+
+! Example 4: gauge boson pair production; set pTmin. Not yet complete.
+#WeakDoubleBoson:ffbar2ZW = on      ! q qbar -> Z0 W+- 
+#WeakDoubleBoson:ffbar2WW = on      ! q qbar -> W+ W-
+#PhaseSpace:pTHatMin = 20.          ! minimal pT scale in process 
+
+! 5) Switch on/off the key event generation steps. 
+#PartonLevel:MPI = off              ! no multiparton interactions
+#PartonLevel:ISR = off              ! no initial-state radiation 
+#PartonLevel:FSR = off              ! no final-state radiation
+#HadronLevel:Hadronize = off        ! no hadronization
+#HadronLevel:Decay = off            ! no decays
+
+! 6) Other settings. Can be expanded as desired.
+#Tune:preferLHAPDF = off            ! use internal PDFs when LHAPDF not linked
+#Tune:pp = 6                        ! use Tune 4Cx
+#ParticleDecays:limitTau0 = on      ! set long-lived particle stable ...
+#ParticleDecays:tau0Max = 10        ! ... if c*tau0 > 10 mm

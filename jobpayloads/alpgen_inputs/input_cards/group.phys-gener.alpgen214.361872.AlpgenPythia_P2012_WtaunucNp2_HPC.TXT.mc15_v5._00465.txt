@@ -1,0 +1,37 @@
+0              ! imode 
+alpout         ! label for files
+0              ! start with: 0=new grid, 1=previous warmup grid, 2=previous generation grid
+100000       2 ! Num events/iteration, Num warm-up iterations
+500000         ! Num events generated after warm-up
+*** The above 5 lines provide mandatory inputs for all processes
+*** (Comment lines are introduced by the three asteriscs)
+*** The lines below modify existing defaults for the hard process under study
+*** For a complete list of accessible parameters and their values,
+*** input "print 1" (to display on the screen) or "print 2" to write to file
+cluopt                     1.0
+drjmin                     0.4
+ebeam                   6500.0
+etacmax                    6.0
+etajmax                    6.0
+etalmax                   10.0
+ickkw                      1.0
+ih2                        1.0
+iqopt                      1.0
+iseed1                  9663.0
+iseed2                 57077.0
+iseed3                  4466.0
+iseed4                 23560.0
+iwdecmod                   3.0
+ktfac                      1.0
+lpclu                      1.0
+mb                       4.700
+mc                       0.000
+mh                     120.000
+mt                     174.300
+mw                      80.419
+mz                      91.188
+njets                      2.0
+ptcmin                    10.0
+ptjmin                    15.0
+qfac                       1.0
+xlclu                     0.26

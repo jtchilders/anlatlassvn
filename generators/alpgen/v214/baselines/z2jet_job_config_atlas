@@ -1,0 +1,6 @@
+mode 0: ~15min on ARGO
+1000000 8 ! Nevents/iteration,  N(warm-up iterations)
+10000000  ! Nevents generated after warm-up
+mode 1:  ~5min on Vesta with 1node in c32 mode
+0 0       ! Nevents/iteration,  N(warm-up iterations)
+240000    ! Nevents generated after warm-up

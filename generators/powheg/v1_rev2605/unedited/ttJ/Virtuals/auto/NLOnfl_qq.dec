@@ -1,0 +1,21 @@
+/*
+* This is an automatically created file, don't edit!
+* File created on Thu Oct  5 12:16:48 CEST 2006
+* by /afs/cern.ch/user/p/puwer/projekte/ttbar-prod/ggttg-nlo/cxx/DefVarsC.pl 
+*/
+//;
+double t1,t10,t103,t104,t109,t11,t114,t115,t118,t119,t12,t124,t125,t13;
+double t130,t131,t136,t140,t144,t145,t146,t15,t152,t154,t155,t156,t158;
+double t159,t16,t161,t162,t163,t165,t167,t168,t17,t170,t171,t173,t175;
+double t177,t178,t179,t180,t181,t182,t183,t185,t187,t189,t191,t192;
+double t194,t196,t198,t2,t20,t200,t202,t203,t205,t207,t208,t21,t211;
+double t218,t223,t225,t226,t227,t229,t230,t231,t232,t234,t236,t237;
+double t238,t24,t240,t243,t245,t246,t247,t249,t25,t253,t254,t256,t258;
+double t259,t26,t266,t27,t271,t272,t273,t274,t275,t28,t287,t290,t295;
+double t310,t316,t318,t319,t321,t322,t324,t326,t327,t328,t330,t331;
+double t333,t335,t337,t338,t34,t340,t342,t344,t345,t346,t347,t348,t349;
+double t35,t351,t353,t355,t357,t359,t36,t360,t361,t363,t365,t366,t367;
+double t369,t371,t373,t375,t377,t379,t381,t383,t384,t387,t39,t394,t398;
+double t399,t4,t40,t402,t405,t41,t422,t43,t44,t448,t45,t457,t458,t46;
+double t463,t49,t52,t55,t58,t6,t61,t62,t69,t72,t75,t76,t79,t8,t84,t85;
+double t86,t87,t9,t90,t93,t94;

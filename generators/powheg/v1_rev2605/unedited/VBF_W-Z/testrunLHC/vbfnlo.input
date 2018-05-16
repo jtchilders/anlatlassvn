@@ -1,0 +1,27 @@
+!ccccccc THIS IS THE INPUT FILE RELATED TO VBFNLO-INPUT ccccccccccccccccc
+!c
+!c
+!c      adapted from vbfnlo.dat
+!c
+!c
+
+PROC_ID   130
+DECAYMODE 11
+
+!   Physics parameters
+!------------------------ 
+HMASS        126.0d0         ! Higgs mass
+HWIDTH       -999d0          ! Higgs width
+EWSCHEME     3               ! Choose scheme for electroweak parameters (1,2,3,4,5,6)
+ANOM_CPL     0               ! Anomalous couplings 
+TOPMASS      172.4d0         ! Top mass
+TAU_MASS     1.77684         ! Tau mass
+BOTTOMMASS   4.855d0         ! Bottom Pole mass
+CHARMMASS    1.65d0          ! Charm Pole mass 
+FERMI_CONST  1.16637d-5      ! Fermi Constant
+INVALFA      128.944341122D0 ! 1/fine-structure constant
+SIN2W        0.222646d0      ! Weak mixing angle
+WMASS        80.398d0        ! W mass
+ZMASS        91.1876d0       ! Z mass
+
+

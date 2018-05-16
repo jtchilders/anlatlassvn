@@ -1,0 +1,70 @@
+      subroutine setreal(pin,rflav,amp2real)
+      implicit none
+      include 'nlegborn.h'
+      include 'pwhg_flst.h'
+      include 'pwhg_st.h'
+      include 'qcdcouple.f'
+      include 'constants.f'
+      real * 8 pin(0:3,nlegreal)
+      integer rflav(nlegreal)
+      real * 8 amp2real
+      double precision p(mxpart,4),msq(-nf:nf,-nf:nf)
+      integer i
+
+c --- set scale dependent QCD coupling 
+
+      gsq = st_alpha*fourpi
+      ason2pi = st_alpha/twopi
+c -- MadGraph gsq	
+	gsq=1.48283173249438d0
+
+         pin(0,1) = 500.000000000000d0
+         pin(1,1) = 0.00000000000000d0
+         pin(2,1) = 0.00000000000000d0
+         pin(3,1) = 500.000000000000d0
+          
+         pin(0,2) = 500.000000000000d0
+         pin(1,2) = 0.00000000000000d0
+         pin(2,2) = 0.00000000000000d0
+         pin(3,2) =-500.000000000000d0
+         
+         pin(0,3) = 86.3540681437814d0
+         pin(1,3) =-15.2133893202618d0
+         pin(2,3) = 37.6335512949163d0
+         pin(3,3) =-76.2187226821854d0
+          
+         pin(0,4) = 280.118181809376d0
+         pin(1,4) =-83.1261116505822d0
+         pin(2,4) =-263.203856758651d0
+         pin(3,4) = 47.7490851160266d0
+         
+     
+         pin(0,5) = 127.522529569661d0
+         pin(1,5) =-90.4490412959935d0
+         pin(2,5) =-83.1783077030789d0
+         pin(3,5) = 34.0930433392580d0
+     
+         pin(0,6) = 414.130068374543d0
+         pin(1,6) = 232.145564945939d0
+         pin(2,6) = 332.754436780819d0
+         pin(3,6) =-82.9857518524426d0
+         
+         pin(0,7) = 91.8751521026384d0
+         pin(1,7) =-43.3570226791011d0
+         pin(2,7) =-24.0058236140057d0
+         pin(3,7) = 77.3623460793435d0
+
+      do i=1,nlegreal
+         p(i,4) = pin(0,i)
+         p(i,1:3) = pin(1:3,i)
+      enddo
+
+      p(1,:)=-p(1,:)
+      p(2,:)=-p(2,:)
+
+      call qqb_ww_g(p,msq)
+
+      amp2real = msq(rflav(1),rflav(2))
+      amp2real = amp2real/ason2pi
+
+      end

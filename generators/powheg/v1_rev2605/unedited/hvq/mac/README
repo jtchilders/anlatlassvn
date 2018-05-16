@@ -1,0 +1,33 @@
+The programs ggvfin.mac and qqvfin.mac construct the finite part of
+the virtal cross section Vfin, as defined in the FNO, in the BOX, and
+in the MadFKS paper. The starting point is the formula for the virtual
+corrections of NDE, encoded in the arrays totdel0, totdel1,
+totdel2. These are the coefficients of the 1, 1/ep and 1/ep^2
+terms. The NDE virtual term is computed in dimensional regularization. The
+spin average factors are included in d dimension (i.e. a factor 1/(1-ep)^2
+for the gg process is included). The flux factor is included.
+It is normalized as follows:
+
+d sigma = N * totdel/(2*s) * delta(tx) * d phi1 
+           = N * totdel/(2*s) * s/(2 pi) * 2 pi delta(s*tx) * d phi1
+           = N * totdel/(4 pi) d phi2,
+
+where N is given by
+
+          (4 pi)^ep Gamma(1+ep)
+      N = --------------------  (m2/mu^2)^(-ep)
+              (4 pi)^2
+
+According to the conventions of FNO and of the BOX paper, the infinite
+part of the virtual should be normalized to
+
+          (4 pi)^ep
+         -----------
+         Gamma(1-ep)
+
+assuming that the Ellis-Sexton scale has been taken equal to mu. Thus,
+up to the overall 1/(4 pi)^2 factor, we should supply the factor
+
+  Gamma(1+ep)*gamma(1-ep)*(m2/mu^2)^(-ep) = (1+pi^2 ep^2/6)*(m2/mu^2)^(-ep) 
+
+to bring the virtual correction into the desired normalization.          

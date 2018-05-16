@@ -1,0 +1,23 @@
+2             ! imode
+alpout        ! label for files
+2 ! start with: 0=new grid, 1=previous warmup grid, 2=previous generation grid
+0 0      ! Nevents/iteration,  N(warm-up iterations)
+100000       ! Nevents generated after warm-up
+*** The above 5 lines provide mandatory inputs for all processes
+*** (Comment lines are introduced by the three asteriscs)
+*** The lines below modify existing defaults for the hard process under study
+*** For a complete list of accessible parameters and their values,
+*** input 'print 1' (to display on the screen) or 'print 2' to write to file
+ih2   1              !  pp collisions (-1 is ppbar)
+ebeam 50000          ! beam energy
+ndns  9              ! pdf CTEQ6L1
+njets   2            ! total number of jets
+iseed1    11228
+iseed2    72211
+iseed3    54701
+iseed4    79001
+ptjmin   50
+ptlmin   50
+etajmax  10
+etalmax  10
+iwdecmod  5  ! W-decays are fully inclusive (1=enu,2=munu,3=taunu,4=lnu,4=qq,5=all)

@@ -1,0 +1,33 @@
+0              ! imode 
+alpout         ! label for files
+0              ! start with: 0=new grid, 1=previous warmup grid, 2=previous generation grid
+0      0 ! Num events/iteration, Num warm-up iterations
+0           ! Num events generated after warm-up
+*** The above 5 lines provide mandatory inputs for all processes
+*** (Comment lines are introduced by the three asteriscs)
+*** The lines below modify existing defaults for the hard process under study
+*** For a complete list of accessible parameters and their values,
+*** input "print 1" (to display on the screen) or "print 2" to write to file
+cluopt         1.00000000000000000  ! kt scale option. 1:kt propto pt, 2:kt propto mt
+drjmin                     0.4  ! min dR between jet
+drlmin         0.0000000000000000  ! min delta r between leptons
+ebeam          6500.0000000000000  ! Beam energy GeV
+etajmax        6.0000000000000000  ! parton max eta
+etalmax        10.0000000000000000  ! lepton max eta
+ickkw          1.00000000000000000  ! enable jet-parton matching, determine scale of alpha_s
+ih2            1.00000000000000000  ! LHC
+iqopt          1.00000000000000000  ! Qscale, 1 is generator default for all the processes
+iseed1                   41680  ! first  random seed for weighting process
+iseed2         41578.000000000000  ! second random seed for weighting process
+iseed3         41911.000000000000  ! first  random seed for unweighting process
+iseed4         42244.000000000000  ! second random seed for unweighting process
+iwdecmod       2.00000000000000000  ! W decay mode (1: enu, 2: munu, 3: taunu, 4: lnu) 
+ktfac          1.00000000000000000  ! ckkw alphs scale
+lpclu          1.00000000000000000
+metmin         0.0000000000000000  ! missing et cut
+ndns           9.0000000000000000  ! PDF CTEQ6L1
+njets          6.00000000000000000  ! number of emitted partons
+ptjmin         15.000000000000000  ! jet min pT
+ptlmin         0.0000000000000000  ! lepton min pt
+qfac           1.00000000000000000  ! Qscale factor
+xlclu          0.26000000000000001

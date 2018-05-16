@@ -1,0 +1,24 @@
+1     ! generation mode
+test   ! string labeling the output files0 
+0     ! start with: 0=new grid, 1=previous warmup grid, 2=previous generation grid
+1000 5  ! N(events)/iteration and N(iter's) for initial grid optimiz
+10000  ! number evts to generate
+*** The above 5 lines provide mandatory inputs for all processes
+*** (Comment lines are introduced by the three asteriscs)
+*** The lines below modify existing defaults for the hard process under study
+*** For a complete list of accessible parameters and their values,
+*** input 'print 1' (to display on the screen) or 'print 2' to write to file
+ebeam 7000
+ih2 1
+ihvy 5
+njets 2
+nph 1
+ptbmin  30.
+etabmax 2.5 
+etajmax 2.5.
+ptphmin 30.
+etaphmax 2.0
+drbmin 0.7
+ptjmin 30
+drphjmin 0.7
+ickkw 0

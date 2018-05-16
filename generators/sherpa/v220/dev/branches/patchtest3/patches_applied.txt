@@ -1,0 +1,5 @@
+patch -p0 < ../../../patches/buffered_readin_1.patch
+patch -p0 < ../../../patches/mpi_aggregate_2_for-unpatched.patch
+patch -p0 < ../../../patches/psi_itmin_1.patch
+patch -p0 < ../../../patches/downsize_n_speedup_2.patch
+patch -p0 < ../../../patches/init_speedup_1.patch

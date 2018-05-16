@@ -1,0 +1,42 @@
+This files allow the storage of reweighting information in the .lhe
+file. It works as follows.
+
+At the moment, you must edit the process Makefile, set the VPATH
+with the ReweightingStuff directory as the first directory to search,
+and set the include paths to serch this directory before the others.
+Add the dependencies pwhgreweight.o and opencount.o to the pwhg_main
+target, and compile.
+
+Later on all the changes will be merged with the trunk, and the reweighting
+options will be available with no further work.
+
+
+1) Run pwhg_main with the line
+
+storeinfo_rwgt 1
+
+in the powheg.input file. The program will run as usual, but it will add
+a line beginning with
+#rwg 
+at the end of each event, containing informations that are necessary for
+reweighting.
+
+To obtain new weights, corresponding to different pdf's or scale choice,
+comment away the evreweight line, and insert the line
+
+compute_rwgt 1
+
+in the powheg.input file. Modify the powheg.input to use the different pdf's
+and scale factors, and run pwhg_main. Now a new event file, named as
+OriginalName-rwgt.lhe is created, with the same events as the original
+OriginalName.lhe file, but with a line added to the end of each event,
+of the form
+ #new weight,renfact,facfact,pdf1,pdf2 <new weight> <new ren. scale factor> \
+<new fact rscale fact> < new pdf # for hadron 1> <new pdf number for hadron 2>
+<'mlm' or 'lha'>
+where the last string specifies if the native pdf package was used (with its
+own numbering scheme, or the lhapdf package.
+
+The script runexample.sh illustrate the procedure with an example for building
+reweighting information for 6 more combinations of scale variations.
+

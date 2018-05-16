@@ -1,0 +1,58 @@
+Use the BuildMad.sh script;
+Create a directory under POWHEG-BOX and cd into it.
+do:
+$ cp ../MadGraphStuff/Cards/proc_card.dat .
+Edit proc_card.dat, and insert the process you want to generate,
+including radiation, i.e. the real emission process.
+
+do:
+
+$../MadGraphStuff/BuildMad.sh
+
+
+The Born_phsp.f, and the virtual.f are place holders. The user must
+provide the Born phase space and the virtual matrix elements.
+
+
+
+
+The procedure step by step:
+
+(Copy the whole MadGraphStuff tree to a new location.)
+
+$ cd MadGraphStuff
+
+$ edit MadGraphStuff/Cards/proc_card.dat
+
+Set the process as in madgraph. Always enter the real emission
+process, i.e. the born process plus one j.
+For example, for the Z, enter pp > e- e+ j. Remember also to set the
+QCD coupling appropriate for the real emission process.
+
+Set the model of your choice:
+sm (standard model with diagonal CKM)
+smckm  (standard model with vud vus vcd vcd CKM)
+heft   (standard model with Higgs production effective vertex)
+
+$ ./NewProcess.sh
+
+Use:
+
+$ ./NewProcess.sh -g
+
+if you want to compile with debug information and no optimization.
+
+You will find in the current directory:
+
+Born.f
+real.f
+init_couplings.f
+coupl.inc
+Cards/param_card.dat
+
+A file Born_phsp.f and virtual.f must be provided by the user to complete
+the POWHEG implementation, that can be compiled with
+
+$make pwhg_main
+
+

@@ -1,0 +1,72 @@
+This files are needed to implement the MINLO prescription.
+This is an experimental feature, to be used with care.
+
+
+In order to do MINLO in a process of the kind:
+
+h h -> heavy particles + n jets
+
+you should do the following: link all the MINLO *.h and *.f
+files to the process directory:
+
+**************** 1 *************
+
+POWHEG-BOX$ cd MyProcess
+POWHEG-BOX/MyProcess$ for file in ../MINLO/*.f  ../MINLO/*.h ; \
+do ln -s $file . ; done
+
+**************** 2 *************
+
+Edit the process Makefile, and add setlocalscales.o to the PWHG variable.
+
+
+**************** 3 *************
+
+Edit the init_processes.f file, and add the following lines at the
+beginning of the init_processes subroutine:
+
+      if(powheginput("#minlo").eq.1) then
+         flg_minlo=.true.
+      else
+         flg_minlo=.false.
+      endif
+
+      st_bornorder=<m>
+
+where <m> is the power of alpha_s associated with the h h -> heavy particles
+(with no jets) process. In the Higgs + 1 or 2 jets example, we have m=2.
+
+With the above lines minlo is activated by a "minlo 1" line in the powheg.input
+file. If you want it to be always on, add instead
+
+      flg_minlo=.true.
+
+
+**************** 4 *************
+
+Edit the Born_phsp.f file, and look at the set_fac_ren_scales. While using
+minlo, this routine should use a fixed scale, i.e. it should always set
+muf and mur to a constant value. This option is usually available as
+a variable "runningscales" or "fixedscale" in the powheg.input file.
+If not, simply edit the set_fac_ren_scales routine to make it return a
+constant value.
+
+
+**************** 5 *************
+
+The user should provide an extra function, validflav(lflav), and
+include it in the init_processes.f file, or in any other process file.
+The purpose of this function is to make sure that after each clustering
+in the kt-cl;ustering procedure, we are left with a consistent
+flavour structure. For example, in q qbar -> H g, if we cluster
+the icoming quark with a gluon, we are left with q qbar -> H, which has
+no cross section.
+lflav is an integer list of flavours for the process, labelled according
+to the PDG numbering scheme, except that the gluon is 0 (according to
+POWHEG conventions). The entries that have already been clustered away
+are set to 1000000. An example for the Higgs + n jets case is included
+in the MINLO/examples subdirectory.
+
+The Higgs case is the only case that we are aware of so far where
+this routine is needed. In Z and W production, this routine can
+safely always return true.

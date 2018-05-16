@@ -1,0 +1,12 @@
+Hi Tom, Taylor,
+
+I found one more problem in the MPI routines: They were accidentally called twice per optimization step(!), once for the actual update, and once again before the results were written to disk. This is fixed by the attached patches. It means we can trivially save another factor 2 communication time!
+
+I'm adding two patches, one for a previously patched, and one for an unpatched 2.2.0. Note that none of them disables the weight histogram initialization in Process_Integrator::InitWeightHistogram(), you still need to do this if you want to remove overhead from Histogram::MPISync for testing. But this might not be such a big issue anymore(?).
+
+Cheers
+Stefan
+
+mpi_aggregate_2_for-patched.patch
+mpi_aggregate_2_for_unpatched.patch
+

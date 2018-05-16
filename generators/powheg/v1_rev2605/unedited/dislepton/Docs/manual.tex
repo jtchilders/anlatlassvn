@@ -1,0 +1,186 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{amssymb,enumerate}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{url}
+\usepackage{cite}
+\usepackage{graphics}
+\usepackage{xspace}
+\usepackage{epsfig}
+\usepackage{subfigure}
+
+\setlength\paperwidth  {210mm}%
+\setlength\paperheight {300mm}%	
+
+\textwidth 160mm%		% DEFAULT FOR LATEX209 IS a4
+\textheight 230mm%
+
+\voffset -1in
+\topmargin   .05\paperheight	% FROM TOP OF PAGE TO TOP OF HEADING (0=1inch)
+\headheight  .02\paperheight	% HEIGHT OF HEADING BOX.
+\headsep     .03\paperheight	% VERT. SPACE BETWEEN HEAD AND TEXT.
+\footskip    .07\paperheight	% FROM END OF TEX TO BASE OF FOOTER. (40pt)
+
+
+\hoffset -1in				% TO ADJUST WITH PAPER:
+	\oddsidemargin .13\paperwidth	% LEFT MARGIN FOR ODD PAGES (10)
+	\evensidemargin .15\paperwidth	% LEFT MARGIN FOR EVEN PAGES (30)
+	\marginparwidth .10\paperwidth	% TEXTWIDTH OF MARGINALNOTES
+	\reversemarginpar		% BECAUSE OF TITLEPAGE.
+
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[ 1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+\newcommand\PSn{\Phi_{n}}
+\newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
+
+\newcommand\Lum{{\cal L}}
+\newcommand\matR{{\cal R}}
+\newcommand\Kinnpo{{\bf \Phi}_{n+1}}
+\newcommand\Kinn{{\bf \Phi}_n}
+\newcommand\PSnpo{\Phi_{n+1}}
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\asotpi{\frac{\as}{2\pi}}
+
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\POWHEGBOX{{\tt POWHEG\;BOX}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\POWHEGpPYTHIA{{\tt POWHEG+PYTHIA}}
+\newcommand\HERWIG{{\tt HERWIG}}
+
+
+\title{Manual for slepton pair production in the \POWHEGBOX{}}
+\date{}
+%\author{}
+%\keywords{}
+%\abstract{}
+%\preprint{}
+
+
+\begin{document}
+\maketitle
+%
+\noindent
+This document describes the settings and input parameters that are specific to
+the implementation of slepton pair production at the LHC within the
+\POWHEGBOX{} framework. 
+%
+The parameters that are common to all \POWHEGBOX{} implementations are given in
+the {\tt manual-BOX.pdf} document in the {\tt POWHEG-BOX/Docs}
+directory.
+%\\[2ex]
+If you use our program, please quote
+Refs.~\cite{JMT,Alioli:2010xd,Ellis:2007qk,vanOldenborgh:1990yc,Hahn:2006nq,Sjostrand:2006za}.
+
+\section*{Running the program}
+%
+Download the \POWHEGBOX{}, following the instructions at the web site 
+\\[2ex]
+{\tt http://powhegbox.mib.infn.it/}
+\\[2ex] 
+Before compiling the code make sure that:
+\begin{itemize}
+\item 
+{\tt fastjet} is installed and {\tt fastjet-config} is in the path,
+\item 
+{\tt lhapdf} is installed and {\tt lhapdf-config} is in the path,
+\item
+{\tt gfortran} or {\tt ifort} is in the path, and the
+appropriate libraries are in the environment variable {\tt
+  LD\_LIBRARY\_PATH}. 
+\end{itemize}
+%
+If {\tt LHAPDF} or {\tt fastjet} are not installed, the code can still
+be run using a dummy analysis routine and built-in PDFs.
+For this and other build options, see the {\tt Makefile} in the project
+directory {\tt sleptons}.
+%
+\\[2ex]
+For a convenient illustration of compiling and running the code,
+we are providing a {\tt Makefile} in the sub-directory {\tt testrun-lhc}.
+Go to this directory by typing
+\\[2ex]
+{\tt \$ cd POWHEG-BOX/sleptons/testrun-lhc}
+\\[2ex]
+Compile and run the code in its default mode by executing
+\\[2ex]
+{\tt \$ make}
+%
+%%%%%%%%%%%%%%%%%%%
+%
+\\[2ex]
+Physics parameters are read from the file {\tt params.slha} which is formated 
+according to the SUSY Les Houches Accord ({\tt SLHA})~\cite{Skands:2003cj,Allanach:2008qq} and can be taken from standard SUSY spectrum generators.
+Technical parameters are specified in the  {\tt powheg.input} file. 
+\\[2ex] 
+In the last step of the run, the generated events are showered via {\tt PYTHIA}. Various settings of {\tt PYTHIA}
+can be modified by editing the file {\tt setup-PYTHIA-lhef.f} prior to compilation.
+%\\[2ex]
+%Both initial state and final state showers are enabled by default,
+%they may be switched off by setting {\tt mstp(61)=0} in the former
+%and {\tt mstp(71)=0} in the latter case.
+%\\[2ex]
+We modified {\tt PYTHIA} in such a way that by setting the flag {\tt mstp(41)=1}, slepton decays are activated.  
+{\tt PYTHIA} generates the decays according to the masses provided in {\tt params.slha}.
+For the case of each slepton decaying into a lepton and the lightest neutralino, our sample analysis provides various histograms for the decay products. 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\begin{thebibliography}{99}
+
+\bibitem{JMT} B.~J\"ager, A.~von~Manteuffel, and S.~Thier, {\em
+  Slepton pair production in the POWHEG BOX}, arXiv:1208.2953. 
+  
+\bibitem{Alioli:2010xd} S.~Alioli, P.~Nason, C.~Oleari, and E. Re, {\em
+    A general framework for implementing NLO calculations in shower
+    Monte Carlo programs: the POWHEG BOX}, JHEP {\bf 1006} (2010)
+  043  [arXiv:1002.2581 [hep-ph]].
+
+\bibitem{Ellis:2007qk}
+  R.~K.~Ellis and G.~Zanderighi,
+  {\em Scalar one-loop integrals for QCD}, 
+  JHEP {\bf 0802} (2008) 002
+  [arXiv:0712.1851 [hep-ph]].
+
+\bibitem{vanOldenborgh:1990yc}
+  G.~J.~van Oldenborgh,
+ {\em FF: A Package to evaluate one loop Feynman diagrams}, 
+  Comput.\ Phys.\ Commun.\  {\bf 66} (1991) 1.
+
+%\cite{Hahn:2006nq}
+\bibitem{Hahn:2006nq}
+  T.~Hahn,
+  %{\tt SLHALib\,2}
+  {\em SUSY Les Houches Accord 2 I/O made easy},  
+  Comput.\ Phys.\ Commun.\  {\bf 180} (2009) 1681
+  [hep-ph/0605049].
+  %,\url{http://www.feynarts.de/slha/}.
+
+\bibitem{Sjostrand:2006za}
+  T.~Sjostrand, S.~Mrenna, P.~Z.~Skands,
+  {\em PYTHIA 6.4 Physics and Manual},
+  JHEP {\bf 0605 } (2006)  026.
+  [hep-ph/0603175]. 
+
+\bibitem{Skands:2003cj}
+  P.~Z.~Skands  {\it et al.},
+  {\em SUSY Les Houches accord: Interfacing SUSY spectrum calculators, decay packages, and event generators},  
+  % ``SUSY Les Houches accord 1,'' 
+  JHEP {\bf 0407} (2004) 036
+  [hep-ph/0311123].
+
+\bibitem{Allanach:2008qq}
+  B.~C.~Allanach  {\it et al.},
+  {\em SUSY Les Houches Accord 2}, 
+  Comput.\ Phys.\ Commun.\  {\bf 180} (2009)~8
+  [arXiv:0801.0045 [hep-ph]].
+
+\end{thebibliography}
+%%%%%%%%%%%%%%%%%%
+\end{document}

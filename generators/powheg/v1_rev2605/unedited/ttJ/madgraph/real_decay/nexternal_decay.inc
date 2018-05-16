@@ -1,0 +1,1 @@
+../nexternal_decay.inc

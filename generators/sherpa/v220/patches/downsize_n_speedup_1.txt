@@ -1,0 +1,15 @@
+attached the patch. This will be included in our next official version (whenever that may be released). The speedups and memory savings are substantial, so please don't use a plain 2.2.0 (except to figure out that you don't want to use it ;)). The patch also reduces usage of the Data_Reader, which helps speed up initialization as well. For example, in Examples/V_plus_Jets/LHC_ZJets I get (using LJET:=0 to check only Comix)
+
+plain 2.2.0:
+ pocess generation -> 200 MB, 1h 11m 25s
+  run init -> 196 MB, 59s
+  patched 2.2.0:
+   pocess generation -> 135 MB, 28m 56s
+    run init -> 131 MB, 16s
+
+    What you're interested in is the run init, and you can see that already for Z+4j we get a speedup of factor 4. In the patched version Comix also computes much faster, though not faster than in 2.1.1.
+
+    Part of the improvements also work for Amegic, i.e. the startup time should be reduced overall. Let me know how well this works for you.
+
+    Cheers
+    Stefan

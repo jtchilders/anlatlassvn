@@ -1,0 +1,7 @@
+mode 0: 4hr 30min on ARGO Cluster (XEON 2.4Gz)
+5000000 12  ! Nevents/iteration,  N(warm-up iterations)
+65000000   |   Nevents generated after warm-up
+mode 1: 50 min on BGQ
+0 0  ! Nevents/iteration,  N(warm-up iterations)
+610351       |   Nevents generated after warm-up
+

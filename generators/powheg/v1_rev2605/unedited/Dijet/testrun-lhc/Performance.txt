@@ -1,0 +1,3 @@
+The initialization phase with the given powheg.input file
+takes roughly an hour. Events are then generated at a rate of
+5 per second.

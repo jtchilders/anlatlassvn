@@ -1,0 +1,108 @@
+*******************************************************************
+*********      README for WGRAD2 in POWHEG-W_EW USAGE  *************
+*******************************************************************
+
+This README describes the usage of flags for the EW corrections of
+WGRAD2 as implemented in POWHEG-W_EW. The flags described below are
+contained in the powheg.input file. Additional WGRAD2 settings can be
+found in virtual_EW.f, which should not be changed unless the user is
+confident about their impact.
+
+For questions related to the EW part please contact:
+
+Catherine Bernaciak, bernaciak@thphys.uni-heidelberg.de
+
+For more details, see the POWHEG-W_EW publication at
+
+http://arxiv.org/abs/arXiv:  
+
+=========|========================|
+  FLAG          USAGE                         
+=========|========================|
+ ewonly    1: only EW corrections  
+              all NLO QCD pieces 
+              zeroed
+           0: include QCD pieces
+=========|=================================================================|
+NOTICE:
+=========|=================================================================|
+This flag allows the user to ONLY include the NLO EW corrections.  
+This is equivalent to only running WGRAD2. 
+!!! NOTE !!!: the user cannot use showering with the event file 
+produced during this run!!  The resulting files 'pwgNLO.top' and 
+'pwgpwhgalone-output.top' which correspond to the weighted and unweighted 
+exact NLO result (respectively) are the ONLY files that should be utilized 
+for a run when ewonly is set to 1.
+=========|========================|
+  FLAG          USAGE                         
+=========|========================|
+ wgrad2    1: include EW corrections
+           0: do no include EW 
+              corrections 
+=========|========================|
+  FLAG          USAGE                         
+=========|========================|
+ QED       1: IS QED radiation
+           2: FS QED radiation
+           3: interference QED 
+              radiation
+           4: all QED radiation
+=========|========================|
+  FLAG          USAGE                         
+=========|========================|
+ qnonr     1: non-resonant W
+              production
+           0: resonant W production
+=========|=================================================================|
+NOTICE:
+=========|=================================================================|
+If qnonr=1, then QED must be set to 4.
+=========|========================|
+  FLAG          USAGE                         
+=========|========================|
+ lfc       1: QED DIS factorization 
+              scheme
+           0: QED MSbar factorization 
+              scheme
+=========|========================|
+  FLAG          USAGE                         
+=========|========================|
+ bare      1: include bare cuts
+           0: no bare cuts
+=========|=================================================================|
+NOTICE:
+=========|=================================================================|
+If bare=1, then the cuts below are applied. The cuts are applied only
+when the subroutine analysis is called (in pwhg_analysis.f), where the
+histograms are filled. The corresponding total cross section is
+provided in pwgNLO.top.  The total cross section printed on the screen
+when running POWHEG-W_EW does not reflect the cuts.
+=========|========================|
+  FLAG          USAGE                         
+=========|========================|
+ cut1      set to desired minimum transverse momentum of charged lepton
+ cut2      set to desired minimum transverse momentum of neutrino
+ cut3      set to desired maximum value of |pseudorapidity| of charged lepton
+=========|========================|
+  FLAG          USAGE                         
+=========|========================|
+ calo      1: include calometric cuts
+           0: no calo cuts
+=========|=================================================================|
+NOTICE:
+=========|=================================================================|
+Setting calo=1 can only be used in combination with the setting bare=1
+with the cut1,2,3 values as set by the user.  Currently the calometric
+setup includes Gaussian smearing of final-state particles a la D0
+(Tevatron) or ATLAS (LHC) as well as a recombination of
+electron and photon, see arXiv:0705.3251 (page 154) for more details of
+the recombination procedure.  The smearing routines can be found in
+smear_routines.f.  In the electron case the setting calo=1 should
+not be used in combination with showering. If collcut=1 is
+chosen in virtual_EW.f, a recombination procedure has to be performed
+(default is collcut=0). The calometric setup also includes cuts on the
+separation between the photon and charged lepton. They are applied
+only to the real hard QED radiation part in real_EW.f.
+ 
+
+

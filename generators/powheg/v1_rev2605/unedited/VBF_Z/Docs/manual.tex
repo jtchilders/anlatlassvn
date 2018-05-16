@@ -1,0 +1,371 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{amssymb,enumerate}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{url}
+\usepackage{cite}
+\usepackage{graphics}
+\usepackage{xspace}
+\usepackage{epsfig}
+\usepackage{subfigure}
+
+\setlength\paperwidth  {210mm}%
+\setlength\paperheight {300mm}%	
+
+\textwidth 160mm%		% DEFAULT FOR LATEX209 IS a4
+\textheight 230mm%
+
+\voffset -1in
+\topmargin   .05\paperheight	% FROM TOP OF PAGE TO TOP OF HEADING (0=1inch)
+\headheight  .02\paperheight	% HEIGHT OF HEADING BOX.
+\headsep     .03\paperheight	% VERT. SPACE BETWEEN HEAD AND TEXT.
+\footskip    .07\paperheight	% FROM END OF TEX TO BASE OF FOOTER. (40pt)
+
+
+\hoffset -1in				% TO ADJUST WITH PAPER:
+	\oddsidemargin .13\paperwidth	% LEFT MARGIN FOR ODD PAGES (10)
+	\evensidemargin .15\paperwidth	% LEFT MARGIN FOR EVEN PAGES (30)
+	\marginparwidth .10\paperwidth	% TEXTWIDTH OF MARGINALNOTES
+	\reversemarginpar		% BECAUSE OF TITLEPAGE.
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[ 1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+\newcommand\PSn{\Phi_{n}}
+\newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
+
+
+
+\newcommand\Lum{{\cal L}}
+\newcommand\matR{{\cal R}}
+\newcommand\Kinnpo{{\bf \Phi}_{n+1}}
+\newcommand\Kinn{{\bf \Phi}_n}
+\newcommand\PSnpo{\Phi_{n+1}}
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\asotpi{\frac{\as}{2\pi}}
+
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\POWHEGBOX{{\tt POWHEG BOX}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\POWHEGpPYTHIA{{\tt POWHEG+PYTHIA}}
+\newcommand\HERWIG{{\tt HERWIG}}
+
+\def\lq{\left[} 
+\def\rq{\right]} 
+\def\rg{\right\}} 
+\def\lg{\left\{} 
+\def\({\left(} 
+\def\){\right)} 
+
+\def\beq{\begin{equation}}
+\def\beqn{\begin{eqnarray}}
+\def\eeq{\end{equation}}
+\def\eeqn{\end{eqnarray}}
+
+\def\mr{\mathrm}
+\def\vbfevmv{VBF $e^+\nu_e\mu^-\bar\nu_\mu jj$\;}
+\def\vbfww{VBF $W^+W^-jj$\;}
+\def\wpm{W^+W^-}
+\def\evmv{e^+\nu_e\mu^+\nu_\mu}
+\def\pbox{{\tt POWHEG BOX}}
+\def\pwg{{\tt POWHEG}}
+\def\mc{\mathcal}
+
+%%%%%%%%%% End TeXmacs macros
+
+\title{Manual for $Zjj$ production via VBF in the \POWHEGBOX{}}
+\date{}
+%\author{}
+%\keywords{}
+%\abstract{}
+%\preprint{}
+
+
+\begin{document}
+\maketitle
+%
+\noindent
+The {\tt VBF\_Z} program is an implementation of the cross section for electroweak
+$Z jj$ production in hadronic collisions within the \pbox{} framework. 
+%
+\\[2ex]
+%
+Special measures have been taken in order to avoid numerical instabilities due to singular configurations of the Born contributions (see Ref.~\cite{JSZ} for a detailed description). We recommend running the code with the flag {\tt withdamp} set to {\tt 1} and using a so-called Born-suppression factor that vanishes whenever a singular region of the Born phase space is approached. To this end, the flag {\tt bornsuppfact} should be set to {\tt 1} in the file {\tt powheg.input}. Collinear $\gamma^\star\to \ell^+\ell^-$ splittings are avoided by requiring a non-vanishing value of the invariant di-lepton mass $m_{\ell\ell}$. This value can be set by the user via the variable {\tt mll\_gencut} in the input file. We recommend a value larger than $10$~GeV. 
+%
+Please note that, because of these measures, the code is not expected to provide reliable results for observables analyzed with very inclusive cuts. 
+%
+\\[2ex]
+%
+This document describes the input parameters that are specific to the
+implementation of $Zjj$ production via VBF. 
+%
+The parameters that are common to all {\tt POWHEG BOX} implementations are given in
+the {\tt manual-BOX.pdf} document, in the {\tt POWHEG-BOX/Docs}
+directory.
+\\[2ex]
+If you use this program, please quote
+Refs.~\cite{JSZ,Alioli:2010xd}.
+
+
+\section*{Running the program}
+%
+Download the {\tt POWHEG BOX}, following the instructions at the web site 
+\\[2ex]
+{\tt http://powhegbox.mib.infn.it/}
+\\[2ex] 
+and go to 
+\\[2ex]
+{\tt \$ cd POWHEG-BOX/VBF\_Z}
+\\[2ex]
+Running is most conveniently done in a separate directory, for instance do
+\\[2ex]
+{\tt \$ mkdir testrun}
+\\[2ex]
+The directory must contain the {\tt powheg.input} file and, for
+parallel running, a {\tt pwgseeds.dat} file (see {\tt manual-BOX.pdf}
+and {\tt Manyseeds.pdf}).
+\\[2ex]
+Before compiling make sure that:
+\begin{itemize}
+\item 
+{\tt fastjet} is installed and {\tt fastjet-config} is in the path,
+\item 
+{\tt lhapdf} is installed and {\tt lhapdf-config} is in the path,
+\item
+{\tt gfortran}, {\tt ifort} or {\tt g77} is in the path, and the
+appropriate libraries are in the environment variable {\tt
+  LD\_LIBRARY\_PATH}. 
+\end{itemize}
+%
+If {\tt LHAPDF} or {\tt fastjet} are not installed, the code can still
+be run using a dummy analysis routine and built-in PDFs, see the {\tt
+  Makefile} in {\tt VBF\_Z}.
+%
+\\[2ex]
+After compiling, enter the testrun directory:
+\\[2ex]
+{\tt \$ cd testrun}
+\\[2ex]
+The program can be run sequentially by deactivating the variable {\tt manyseeds} in {\tt powheg.input},  or in parallel by setting {\tt manyseeds} to {\tt 1} in {\tt powheg.input}. In the latter case, when executing
+\\[2ex]
+{\tt \$../pwhg\_main}
+\\[2ex]
+the program will ask you to
+\\[2ex]
+{\tt enter which seed}
+\\[2ex]
+The program requires you to enter an index that specifies the line
+number in the {\tt pwgseeds.dat} file where the seed of the random
+number generator to be used for the run is stored. All results
+generated by the run will be stored in files named {\tt
+  *-[index].*}. When running on parallel CPUs, make sure that each
+parallel run has a different index.
+\\[2ex]
+The program can be run in several steps. Each new step requires the
+completion of the previous step.
+\\[2ex]
+The timings given in the following refer to the program compiled with
+{\tt gfortran} and run on a cluster with 2.7~GHz Opteron processor.
+% 
+%%%%%%%%%%%%%%%%%%%
+\subsection*{Step 1}
+%%%%%%%%%%%%%%%%%%%
+%
+Consists of a single run to generate the grid. At this point the user
+has to decide whether the $Z$~bosons are to be generated on-shell
+({\tt zerowidth = 1}) or off-shell, distributed according to a
+Breit-Wigner distribution ({\tt zerowidth = 0}). 
+The user can also select the decay modes of
+the weak bosons by assigning appropriate PDG code to the parameter
+{\tt vdecaymode} in {\tt powheg.input}. Note
+that only leptonic decays are supported. The template analysis file
+{\tt pwhg\_analysis.f} needed in subsequent steps of the analysis is
+designed for the $\ell^+\ell^-$ mode, where $\ell$ denotes an electron- or muon-type charged lepton.
+
+We recommend to generate the grid with the option {\tt fakevirt 1} in
+{\tt powheg.input}. When using this option, the virtual contribution
+is replaced by a fake one proportional to the Born term. This speeds
+up the generation of the grid.
+\\[2ex]
+One needs at least 3000000 events and 3 iterations. Set the following
+tokens in the {\tt powheg.input} file:
+\\[2ex]
+{\tt ncall1 3000000
+  \\[2ex]
+  itmx1 3
+  \\[2ex]
+  ncall2 0
+  \\[2ex]
+  fakevirt 1 }
+\\[2ex]
+Run the program via
+\\[2ex]
+{\tt \$../pwhg\_main}
+\\[2ex]
+When prompted
+\\[2ex]
+{\tt enter which seed}
+\\[2ex]
+enter 1 or any other valid seed number.
+\\[2ex]
+This step takes roughly 28 hours of CPU. By setting {\tt ncall2 0} in
+the {\tt powheg.input} file the program stops after the compilation of
+this step.
+
+%%%%%%%%%%%%%%%%%%%
+\subsection*{Step 2}
+%%%%%%%%%%%%%%%%%%%
+%
+Runs in parallel can be performed now. Comment out the {\tt fakevirt}
+token from {\tt powheg.input}.
+\\[2ex]
+The runs must be performed in the directory where the previously generated grid is stored.
+\\[2ex]
+The integration and upper bound for the generation of btilde can be
+performed with 50-100 runs with 5000-10000 calls each. Set for
+instance
+\\[2ex]
+{\tt ncall2 5000}
+\\[2ex]
+{\tt itmx2 1}
+\\[2ex]
+in {\tt powheg.input}.
+\\[2ex]
+Folding numbers that are appropriate for runs at LHC energy are:
+\\[2ex]
+{\tt foldcsi 5 ! number of folds on csi integration}
+\\[2ex]
+{\tt foldy 5 ! number of folds on y integration}
+\\[2ex]
+{\tt foldphi 10 ! number of folds on phi integration}
+\\[2ex]
+Time is about 2 hours of CPU for each run with {\tt ncall2=5000}.
+\\[2ex]
+Setting
+\\[2ex]
+{\tt nubound 0}
+\\[2ex]
+in {\tt powheg.input} causes the program to stop after the completion
+of this step.
+\\[2ex]
+In order to run, for example, 100 processes in parallel do:
+\\[2ex]
+{\tt \$../pwhg\_main}
+\\[2ex]
+When prompted
+\\[2ex]
+{\tt enter which seed}
+\\[2ex]
+enter an index for each run (from 1 to 100). The {\tt pwgseeds.dat}
+must contain at least 100 lines, each with a different seed.
+\\[2ex]
+Upon the completion of this step, for each parallel run a file {\tt
+  pwgNLO-*.top} is generated (where the * denotes the integer
+identifier of the run).  These files contain the histograms defined in
+{\tt pwhg\_analysis.f} at NLO-QCD accuracy, if the variable {\tt
+  bornonly} is set to zero in {\tt powheg.input}.  Setting {\tt
+  bornonly} to 1 yields the respective LO results. In either case, the
+individual results of the parallel runs can be combined with the help
+of the {\tt combineplots.f} file contained in the {\tt testrun}
+directory.  To this end, just compile the file by typing, e.g.,
+\\[2ex]
+{\tt \$ gfortran combineplots.f}
+\\[2ex]
+and run the resulting executable. The program will ask for the 
+number of {\tt pwgNLO-*.top} files in the directory and the number
+of calls per run which are set by {\tt ncall2} in {\tt
+  powheg.input}. Finally, enter the integer identifier of the first
+file. The program will then generate the files {\tt combinedNLO.top}
+and {\tt combinedNLO-gnu.top} which contain the combined histograms
+in two different formats (topdrawer or gnuplot friendly). 
+
+%%%%%%%%%%
+\subsection*{Step 3}
+%%%%%%%%%%
+%
+Also this step can be run in parallel. The number of processes can 
+not be larger than the one used in the previous step. Setting
+\\[2ex]
+{\tt numevts 0}
+\\[2ex]
+{\tt nubound 100000}
+\\[2ex]
+takes roughly 2.5 hours per process.
+\\[2ex]
+The setting {\tt numevts 0} causes the program to stop after
+completion of this step.  The parallel execution of the program is
+performed as in the previous step.
+
+%%%%%%%%%%%%
+\subsection*{Step 4}
+%%%%%%%%%%%%
+%
+Set {\tt numevts} to the number of events you want to generate per
+process, for example
+\\[2ex]
+{\tt numevts 1000}
+\\[2ex]
+and run in parallel. Again, the number of processes must not be larger than
+the one used in the previous step. Generating the specified number of
+events takes about 65 hours per process.
+\\[2ex]
+At this point, files of the form {\tt pwgevents-[index].lhe} are
+present in the run directory.
+\\[2ex]
+Count the events:
+\\[2ex]
+{\tt \$ grep '/event' pwgevents-*.lhe | wc}
+\\[2ex]
+The events can be merged into a single event file by
+\\[2ex]
+{\tt cat pwgevents-*.lhe | grep -v '/LesHouchesEvents' >
+  pwgevents.lhe}
+
+
+%%%%%%%%%%%%%%%%%%
+\section*{Analyzing the events}
+%%%%%%%%%%%%%%%%%%
+%
+It is straightforward to feed the {\tt *.lhe} events into a generic
+shower Monte Carlo program, within the analysis framework of each
+experiment. We also provide a sample analysis that computes several
+histograms and stores them in topdrawer output files.
+\\[2ex]
+Doing (from the {\tt VBF\_Z} directory)
+\\[2ex]
+{\tt \$ make lhef\_analysis}
+\\[2ex]
+{\tt \$ cd testrun}
+\\[2ex]
+{\tt ../lhef\_analysis}
+\\[2ex]
+analyzes the bare {\tt POWHEG BOX} output, creating the topdrawer file
+{\tt LHEF\_analysis.top}. The targets {\tt main-HERWIG-lhef} and {\tt
+  main-PYTHIA-lhef} are instead used to perform the analysis on events
+fully showered using {\tt HERWIG} or {\tt PYTHIA}. Various setting of
+the respective parton shower Monte Carlo can be modified by editing the files {\tt
+  setup-PYTHIA-lhef.f} and {\tt setup-HERWIG-lhef.f} respectively.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\begin{thebibliography}{99}
+
+\bibitem{JSZ} B.~J\"ager, S.~Schneider, G.~Zanderighi, {\em
+    Next-to-leading order QCD corrections to electroweak $Zjj$ 
+    production in the POWHEG BOX}, arXiv:1207.2626 [hep-ph].
+  
+\bibitem{Alioli:2010xd} S.~Alioli, P.~Nason, C.~Oleari and E. Re, {\em
+    A general framework for implementing NLO calculations in shower
+    Monte Carlo programs: the POWHEG BOX}, JHEP {\bf 1006} (2010)
+  043  [arXiv:1002.2581 [hep-ph]].
+
+\end{thebibliography}
+%%%%%%%%%%%%%%%%%%
+\end{document}

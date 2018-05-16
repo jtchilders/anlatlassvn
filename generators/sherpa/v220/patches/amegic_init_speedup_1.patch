@@ -1,0 +1,511 @@
+Index: AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.C
+===================================================================
+--- AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.C	(revision 28120)
++++ AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.C	(revision 28129)
+@@ -5,9 +5,10 @@
+ #include "ATOOLS/Org/Exception.H"
+ #include "ATOOLS/Org/Message.H"
+ #include "ATOOLS/Org/Shell_Tools.H"
+-#include "ATOOLS/Org/Data_Reader.H"
+ #include "ATOOLS/Org/MyStrStream.H"
+ 
++#include <typeinfo>
++
+ using namespace ATOOLS;
+ using namespace AMEGIC;
+ using namespace MODEL;
+@@ -43,22 +44,8 @@
+   m_k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
+   m_k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
+   m_es=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
+-  double helpd;
+-  Data_Reader reader(" ",";","!","=");
+-  reader.AddComment("#");
+-  reader.SetInputPath(rpa->GetPath());
+-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+-
+-  if (reader.ReadFromFile(helpd,"DIPOLE_AMIN")) {
+-    m_amin = helpd;
+-    msg_Tracking()<<"Set dipole cut alphamin="<<m_amin<<"."<<std::endl;
+-  }
+-
+-  m_kappa=2./3.;
+-  if (reader.ReadFromFile(helpd,"DIPOLE_KAPPA")) {
+-    m_kappa = helpd;
+-    msg_Tracking()<<"Set massive dipole kappa="<<m_kappa<<"."<<std::endl;
+-  }
++  m_amin=ToType<double>(rpa->gen.Variable("DIPOLE_AMIN"));
++  m_kappa=ToType<double>(rpa->gen.Variable("DIPOLE_KAPPA"));
+ }
+ 
+ void DipoleSplitting_Base::SetCoupling(const MODEL::Coupling_Map *cpls)
+Index: AMEGIC++/DipoleSubtraction/Single_DipoleTerm.C
+===================================================================
+--- AMEGIC++/DipoleSubtraction/Single_DipoleTerm.C	(revision 28120)
++++ AMEGIC++/DipoleSubtraction/Single_DipoleTerm.C	(revision 28129)
+@@ -11,7 +11,6 @@
+ #include "ATOOLS/Org/Run_Parameter.H"
+ #include "ATOOLS/Org/Shell_Tools.H"
+ #include "ATOOLS/Org/MyStrStream.H"
+-#include "ATOOLS/Org/Data_Reader.H"
+ #include "ATOOLS/Org/Exception.H"
+ 
+ #include "AMEGIC++/DipoleSubtraction/FF_DipoleSplitting.H"
+@@ -46,11 +45,7 @@
+ 
+   m_name+= "_RS"+ToString(m_pi)+"_"+ToString(m_pj)+"_"+ToString(m_pk);
+ 
+-  Data_Reader reader(" ",";","!","=");
+-  reader.AddComment("#");
+-  reader.SetInputPath(rpa->GetPath());
+-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+-  int helpi=reader.GetValue<int>("DIPOLE_NF_GSPLIT",Flavour(kf_quark).Size()/2);
++  int helpi=ToType<int>(rpa->gen.Variable("DIPOLE_NF_GSPLIT"));
+   Flavour flav((kf_code)(helpi));
+   m_maxgsmass=flav.Mass();
+ 
+@@ -142,44 +137,28 @@
+ 
+   p_LO_process->SetSubEvt(&m_subevt);
+ 
+-  m_dalpha = 1.;
++  m_dalpha = ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA"));
++  m_dkt2max = ToType<double>(rpa->gen.Variable("DIPOLE_KT2MAX"));
+   double helpd;
+-  m_dkt2max = std::numeric_limits<double>::max();
+-  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {
+-    m_dalpha = helpd;
+-    msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<"."<<std::endl;
+-  }
+-  if (reader.ReadFromFile(helpd,"DIPOLE_KT2MAX")) {
+-    m_dkt2max = helpd;
+-    msg_Tracking()<<"Set dipole cut kt2max="<<m_dkt2max<<"."<<std::endl;
+-  }
+   switch (m_dipoletype) {
+   case dpt::f_f:
+   case dpt::f_fm:
+-    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) {
+-      m_dalpha = helpd;
+-      msg_Tracking()<<"Set ff dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
+-    }
++    helpd=ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_FF"));
++    if (helpd) m_dalpha = helpd;
+     break;
+   case dpt::f_i:
+   case dpt::f_im:
+-    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) {
+-      m_dalpha = helpd;
+-      msg_Tracking()<<"Set fi dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
+-    }
++    helpd=ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_FI"));
++    if (helpd) m_dalpha = helpd;
+     break;
+   case dpt::i_f:
+   case dpt::i_fm:
+-    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) {
+-      m_dalpha = helpd;
+-      msg_Tracking()<<"Set if dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
+-    }
++    helpd=ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_IF"));
++    if (helpd) m_dalpha = helpd;
+     break;
+   case dpt::i_i:
+-    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) {
+-      m_dalpha = helpd;
+-      msg_Tracking()<<"Set ii dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
+-    }
++    helpd=ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_II"));
++    if (helpd) m_dalpha = helpd;
+     break;
+   default:
+     break;
+Index: AMEGIC++/DipoleSubtraction/Single_LOProcess.C
+===================================================================
+--- AMEGIC++/DipoleSubtraction/Single_LOProcess.C	(revision 28120)
++++ AMEGIC++/DipoleSubtraction/Single_LOProcess.C	(revision 28129)
+@@ -10,7 +10,7 @@
+ #include "ATOOLS/Org/Run_Parameter.H"
+ #include "ATOOLS/Org/Shell_Tools.H"
+ #include "ATOOLS/Org/MyStrStream.H"
+-#include "ATOOLS/Org/Data_Reader.H"
++#include "ATOOLS/Org/My_File.H"
+ 
+ #include <unistd.h>
+ 
+@@ -350,14 +350,11 @@
+   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
+ 
+   bool directload = true;
+-  int libchk=0; 
+-  Data_Reader reader(" ",";","!","=");
+-  if (reader.ReadFromFile(libchk,"ME_LIBCHECK")) {
++  int libchk=ToType<int>(rpa->gen.Variable("ME_LIBCHECK")); 
+     if (libchk==1) {
+       msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
+       directload = false;
+     }
+-  }  
+   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
+   if (m_libname=="0") {
+     return 0;
+@@ -374,7 +371,7 @@
+ 
+  
+   int ntchanmin(m_ntchanmin);
+-  bool cvp(reader.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1));
++  bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
+   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
+                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
+   m_ntchanmin=ntchanmin;
+Index: AMEGIC++/DipoleSubtraction/Single_Real_Correction.C
+===================================================================
+--- AMEGIC++/DipoleSubtraction/Single_Real_Correction.C	(revision 28120)
++++ AMEGIC++/DipoleSubtraction/Single_Real_Correction.C	(revision 28129)
+@@ -14,7 +14,6 @@
+ 
+ #include "ATOOLS/Org/Shell_Tools.H"
+ #include "ATOOLS/Org/MyStrStream.H"
+-#include "ATOOLS/Org/Data_Reader.H"
+ 
+ using namespace AMEGIC;
+ using namespace MODEL;
+@@ -40,17 +39,9 @@
+   rpa->gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
+  terms in Amegic is published under \\cite{Gleisberg:2007md}.");
+   }
+-  int helpi;
+-  Data_Reader reader(" ",";","!","=");
+-  reader.AddComment("#");
+-  reader.SetInputPath(rpa->GetPath());
+-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+-  if (reader.ReadFromFile(helpi,"OS_SUB")) {
+-    m_ossubon = helpi;
+-    if (m_ossubon==1) msg_Tracking()<<"Set on shell subtraction on. "<<std::endl;
+-  }
+-  m_smear_threshold=reader.GetValue<double>("NLO_SMEAR_THRESHOLD",0.0);
+-  m_smear_power=reader.GetValue<double>("NLO_SMEAR_POWER",0.5);
++  m_ossubon = ToType<int>(rpa->gen.Variable("OS_SUB"));
++  m_smear_threshold=ToType<double>(rpa->gen.Variable("NLO_SMEAR_THRESHOLD"));
++  m_smear_power=ToType<double>(rpa->gen.Variable("NLO_SMEAR_POWER"));
+   m_no_tree=false;
+ }
+ 
+Index: AMEGIC++/Amplitude/Amplitude_Generator.C
+===================================================================
+--- AMEGIC++/Amplitude/Amplitude_Generator.C	(revision 28120)
++++ AMEGIC++/Amplitude/Amplitude_Generator.C	(revision 28129)
+@@ -68,11 +68,13 @@
+     p->b  = b[*perm];
+     if (p->Lorentz) p->Lorentz->Delete();
+     if (p->fl.IsBoson()) {
+-      p->Lorentz = LF_Getter::GetObject("Pol",LF_Key());
++      if (p->Color==NULL) p->Color = new Color_Function();
++      p->Lorentz = LF_Pol::New();
+       p->Lorentz->SetParticleArg(0);
+     }
+     else {
+-      p->Lorentz = LF_Getter::GetObject("None",LF_Key());
++      if (p->Color==NULL) p->Color = new Color_Function();
++      p->Lorentz = LF_None::New();
+       p->Lorentz->SetParticleArg();
+     }
+ 
+@@ -190,6 +192,7 @@
+ 	p->cpl.clear();
+ 	for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
+ 	p->v = vl[j];
++	if (p->Color==NULL) p->Color = new Color_Function();
+ 	*p->Color = vl[j]->Color.back();
+ 	if (p->Lorentz) p->Lorentz->Delete();
+ 	p->Lorentz = vl[j]->Lorentz.front()->GetCopy();
+@@ -320,6 +323,7 @@
+ 	  if (p->left->fl==Flavour(kf_none))  p->left->fl  = flav[1];
+ 	  if (p->right->fl==Flavour(kf_none)) p->right->fl = flav[2];
+ 	  p->v          = vl[i];
++	  if (p->Color==NULL) p->Color = new Color_Function();
+ 	  *p->Color = vl[i]->Color.back();
+ 	  if (p->Lorentz) p->Lorentz->Delete();
+ 	  p->Lorentz = vl[i]->Lorentz.front()->GetCopy();
+Index: AMEGIC++/Amplitude/Lorentz_Functions.C
+===================================================================
+--- AMEGIC++/Amplitude/Lorentz_Functions.C	(revision 28120)
++++ AMEGIC++/Amplitude/Lorentz_Functions.C	(revision 28129)
+@@ -1,33 +1,8 @@
+ #include "AMEGIC++/Amplitude/Lorentz_Function.H"
+-#include "ATOOLS/Org/STL_Tools.H"
+ 
+ using namespace MODEL;
+ using namespace ATOOLS;
+ 
+-class LF_None: public Lorentz_Function {
+-public:
+-  LF_None(): Lorentz_Function("None") {}
+-  int NofIndex() const { return 0; }
+-  std::string String(int shortversion) const 
+-  { return "0"; }
+-  Lorentz_Function *GetCopy() const 
+-  {
+-    Lorentz_Function *copy(LF_None::New());
+-    *copy=*this;
+-    return copy;
+-  }
+-  static ATOOLS::AutoDelete_Vector<LF_None> s_objects;
+-  static Lorentz_Function *New() {
+-    if (s_objects.empty()) return new LF_None();
+-    LF_None *lf(s_objects.back());
+-    s_objects.pop_back();
+-    return lf;
+-  }
+-  void Delete() { s_objects.push_back(this); }
+-};
+-ATOOLS::AutoDelete_Vector<LF_None> LF_None::s_objects;
+-DEFINE_LF_GETTER(LF_None,"None","")
+-
+ class LF_Gamma: public Lorentz_Function {
+ public:  
+   LF_Gamma(): Lorentz_Function("FFV")
+@@ -410,32 +385,6 @@
+ };
+ ATOOLS::AutoDelete_Vector<LF_FFS> LF_FFS::s_objects;
+ DEFINE_LF_GETTER(LF_FFS,"FFS","")
+-class LF_Pol: public Lorentz_Function {
+-public:  
+-  LF_Pol(): Lorentz_Function("Pol") {}
+-  int NofIndex() const { return 1; }
+-  std::string String(int shortversion) const 
+-  {
+-    // Eps[0]
+-    return "Eps["+Str(0)+"]";
+-  }
+-  Lorentz_Function *GetCopy() const 
+-  {
+-    Lorentz_Function *copy(LF_Pol::New());
+-    *copy=*this;
+-    return copy;
+-  }
+-  static ATOOLS::AutoDelete_Vector<LF_Pol> s_objects;
+-  static Lorentz_Function *New() {
+-    if (s_objects.empty()) return new LF_Pol();
+-    LF_Pol *lf(s_objects.back());
+-    s_objects.pop_back();
+-    return lf;
+-  }
+-  void Delete() { s_objects.push_back(this); }
+-};
+-ATOOLS::AutoDelete_Vector<LF_Pol> LF_Pol::s_objects;
+-DEFINE_LF_GETTER(LF_Pol,"Pol","")
+ class LF_VVSS: public Lorentz_Function {
+ public:  
+   LF_VVSS(): Lorentz_Function("VVSS")
+Index: AMEGIC++/Amplitude/Lorentz_Function.C
+===================================================================
+--- AMEGIC++/Amplitude/Lorentz_Function.C	(revision 28120)
++++ AMEGIC++/Amplitude/Lorentz_Function.C	(revision 28129)
+@@ -133,3 +133,70 @@
+ { 
+   return false; 
+ }
++
++LF_None::LF_None(): Lorentz_Function("None") {}
++
++int LF_None::NofIndex() const
++{
++  return 0;
++}
++
++std::string LF_None::String(int shortversion) const 
++{
++  return "0";
++}
++
++Lorentz_Function *LF_None::GetCopy() const 
++{
++  return LF_None::New();
++}
++
++Lorentz_Function *LF_None::New()
++{
++  if (s_objects.empty()) return new LF_None();
++  LF_None *lf(s_objects.back());
++  s_objects.pop_back();
++  return lf;
++}
++
++void LF_None::Delete()
++{
++  s_objects.push_back(this);
++}
++
++ATOOLS::AutoDelete_Vector<LF_None> LF_None::s_objects;
++
++DEFINE_LF_GETTER(LF_None,"None","")
++
++LF_Pol::LF_Pol(): Lorentz_Function("Pol") {}
++
++int LF_Pol::NofIndex() const { return 1; }
++
++std::string LF_Pol::String(int shortversion) const 
++{
++  // Eps[0]
++  return "Eps["+Str(0)+"]";
++}
++
++Lorentz_Function *LF_Pol::GetCopy() const 
++{
++  Lorentz_Function *copy(LF_Pol::New());
++  *copy=*this;
++  return copy;
++}
++
++Lorentz_Function *LF_Pol::New()
++{
++  if (s_objects.empty()) return new LF_Pol();
++  LF_Pol *lf(s_objects.back());
++  s_objects.pop_back();
++  return lf;
++}
++void LF_Pol::Delete()
++{
++  s_objects.push_back(this);
++}
++
++ATOOLS::AutoDelete_Vector<LF_Pol> LF_Pol::s_objects;
++
++DEFINE_LF_GETTER(LF_Pol,"Pol","")
+Index: AMEGIC++/Amplitude/Lorentz_Function.H
+===================================================================
+--- AMEGIC++/Amplitude/Lorentz_Function.H	(revision 28120)
++++ AMEGIC++/Amplitude/Lorentz_Function.H	(revision 28129)
+@@ -3,6 +3,7 @@
+ 
+ #include "ATOOLS/Org/MyStrStream.H"
+ #include "ATOOLS/Org/Getter_Function.H"
++#include "ATOOLS/Org/STL_Tools.H"
+ #include <vector>
+ 
+ namespace MODEL {
+@@ -64,6 +65,27 @@
+ 
+   typedef ATOOLS::Getter_Function<Lorentz_Function,LF_Key> LF_Getter;
+ 
++  class LF_None: public Lorentz_Function {
++  public:
++    LF_None();
++    int NofIndex() const;
++    std::string String(int shortversion) const;
++    Lorentz_Function *GetCopy() const;
++    static ATOOLS::AutoDelete_Vector<LF_None> s_objects;
++    static Lorentz_Function *New();
++    void Delete();
++  };
++
++  class LF_Pol: public Lorentz_Function {
++  public:
++    LF_Pol();
++    int NofIndex() const;
++    std::string String(int shortversion) const;
++    Lorentz_Function *GetCopy() const;
++    static ATOOLS::AutoDelete_Vector<LF_Pol> s_objects;
++    static Lorentz_Function *New();
++    void Delete();
++  };
+ 
+  /*! 
+     \file
+Index: AMEGIC++/Main/Point.C
+===================================================================
+--- AMEGIC++/Main/Point.C	(revision 28120)
++++ AMEGIC++/Main/Point.C	(revision 28129)
+@@ -9,7 +9,7 @@
+ 
+ Point::Point(const Point& copy) { 
+   extrafl = 0;
+-  Color   = new Color_Function;
++  Color   = NULL;
+   Lorentz = NULL;
+   middle  = 0;
+   nextra = 0;
+@@ -22,7 +22,7 @@
+   propid  = 0;
+   extrafl = 0;
+   v       = 0;
+-  Color   = new Color_Function;
++  Color   = NULL;
+   Lorentz = NULL;
+   middle  = 0;
+   if (nextra>0) extrafl = new ATOOLS::Flavour[nextra]; 
+@@ -37,8 +37,11 @@
+     propid = p.propid;
+     m      = p.m;
+     fl     = p.fl;
+-      
+-    *Color = *p.Color; 
++
++    if (p.Color) {
++      if (Color==NULL) Color = new Color_Function();
++      *Color = *p.Color; 
++    }
+     if (Lorentz) Lorentz->Delete();
+     Lorentz=NULL;
+     if (p.Lorentz) Lorentz = p.Lorentz->GetCopy(); 
+Index: AMEGIC++/Main/Point.H
+===================================================================
+--- AMEGIC++/Main/Point.H	(revision 28120)
++++ AMEGIC++/Main/Point.H	(revision 28129)
+@@ -36,7 +36,7 @@
+     
+     ~Point() {
+       if (nextra>0) delete[] extrafl;
+-      delete Color;
++      if (Color) delete Color;
+       if (Lorentz) Lorentz->Delete();
+     }
+     void Print();
+Index: AMEGIC++/Main/Amegic.C
+===================================================================
+--- AMEGIC++/Main/Amegic.C	(revision 28120)
++++ AMEGIC++/Main/Amegic.C	(revision 28129)
+@@ -117,6 +117,43 @@
+   p_int->SetBeam(beamhandler);
+   p_int->SetISR(isrhandler);
+   SetPSMasses(&read);
++  double helpd;
++  if (!read.ReadFromFile(helpd,"DIPOLE_AMIN")) helpd=Max(rpa->gen.Accu(),1.0e-8);
++  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{cut} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_AMIN",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
++  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) helpd=0.0;
++  else msg_Info()<<METHOD<<"(): Set FF dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA_FF",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) helpd=0.0;
++  else msg_Info()<<METHOD<<"(): Set FI dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA_FI",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) helpd=0.0;
++  else msg_Info()<<METHOD<<"(): Set IF dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA_IF",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) helpd=0.0;
++  else msg_Info()<<METHOD<<"(): Set II dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA_II",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
++  else msg_Info()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
++  rpa->gen.SetVariable("DIPOLE_KAPPA",ToString(helpd));
++  int helpi;
++  if (!read.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT"))
++    helpi=Flavour(kf_jet).Size()/2;
++  else msg_Info()<<METHOD<<"(): Set dipole N_f="<<helpi<<"\n.";
++  rpa->gen.SetVariable("DIPOLE_NF_GSPLIT",ToString(helpi));
++  if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
++  else msg_Info()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_KT2MAX",ToString(helpd));
++  rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD",
++		       ToString(read.GetValue("NLO_SMEAR_THRESHOLD",0.0)));
++  rpa->gen.SetVariable("NLO_SMEAR_POWER",
++		       ToString(read.GetValue("NLO_SMEAR_POWER",0.5)));
++  int ossub=read.GetValue<int>("OS_SUB",0);
++  if (ossub==1) msg_Info()<<"Set on shell subtraction on. "<<std::endl;
++  rpa->gen.SetVariable("OS_SUB",ToString(ossub));
+   int sort=read.GetValue<int>("AMEGIC_SORT_LOPROCESS",1);
+   rpa->gen.SetVariable("AMEGIC_SORT_LOPROCESS",ToString(sort));
+   int libcheck=read.GetValue<int>("ME_LIBCHECK",0);

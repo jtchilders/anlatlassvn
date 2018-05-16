@@ -1,0 +1,1615 @@
+Index: ATOOLS/Org/Run_Parameter.C
+===================================================================
+--- ATOOLS/Org/Run_Parameter.C	(revision 27934)
++++ ATOOLS/Org/Run_Parameter.C	(working copy)
+@@ -235,7 +235,7 @@
+   setenv(LD_PATH_NAME,(gen.m_variables[LD_PATH_NAME]+std::string(":")+
+ 			    gen.m_variables["SHERPA_LIB_PATH"]).c_str(),1);
+ #endif
+-  MakeDir(gen.m_variables["HOME"]+"/.sherpa/",true);
++  gen.m_variables["EVENT_GENERATION_MODE"]="-1";
+   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
+   dr.SetAllowUnits(true);
+   gen.m_nevents            = dr.GetValue<long int>("EVENTS",100);
+@@ -288,6 +288,9 @@
+     for (int i(1);i<4;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
+   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
+ 
++  gen.SetVariable("PB_USE_FMM",ToString(dr.GetValue<int>("PB_USE_FMM",1)));
++  gen.SetVariable("SELECTION_WEIGHT_MODE",ToString
++		  (dr.GetValue<int>("SELECTION_WEIGHT_MODE",0)));
+   dr.SetAllowUnits(true);
+   gen.SetVariable("MEMLEAK_WARNING_THRESHOLD",
+ 		  ToString(dr.GetValue<int>("MEMLEAK_WARNING_THRESHOLD",1<<24)));
+Index: COMIX/Amplitude/Amplitude.C
+===================================================================
+--- COMIX/Amplitude/Amplitude.C	(revision 27934)
++++ COMIX/Amplitude/Amplitude.C	(working copy)
+@@ -14,8 +14,8 @@
+ #include "ATOOLS/Org/My_Limits.H"
+ #include "ATOOLS/Org/STL_Tools.H"
+ #include "ATOOLS/Org/Shell_Tools.H"
+-#include "ATOOLS/Org/Data_Reader.H"
+ #include "ATOOLS/Org/Run_Parameter.H"
++#include "ATOOLS/Org/My_File.H"
+ #include "ATOOLS/Org/My_MPI.H"
+ 
+ using namespace COMIX;
+@@ -25,66 +25,39 @@
+ 
+ static const double invsqrttwo(1.0/sqrt(2.0));
+ 
++template<typename Type> inline Type
++GetParameter(const std::string &name)
++{ return ToType<Type>(rpa->gen.Variable(name)); }
++
+ Amplitude::Amplitude():
+-  p_model(NULL), m_nin(0), m_nout(0), m_n(0), m_wfmode(0), m_ngpl(3),
++  p_model(NULL), m_nin(0), m_nout(0), m_dec(0), m_n(0), m_wfmode(0), m_ngpl(3),
+   m_maxcpl(2,99), m_mincpl(2,0), m_minntc(0), m_maxntc(99),
+   m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
+   m_trig(true), p_loop(NULL)
+ {
+   p_dinfo->SetType(0);
+   p_dinfo->SetMassive(0);
+-  Data_Reader read(" ",";","!","=");
+-  std::string prec;
+-  if (!read.ReadFromFile(prec,"COMIX_PMODE")) prec="D";
+-  else msg_Tracking()<<METHOD<<"(): Set precision "<<prec<<".\n";
+-  if (prec!="D") THROW(not_implemented,"Invalid precision mode");
+-  m_pmode=prec[0];
+-  int helpi(0);
+-  if (!read.ReadFromFile(helpi,"COMIX_WF_MODE")) helpi=0;
+-  else msg_Info()<<METHOD<<"(): Set wave function mode "<<helpi<<".\n";
+-  m_wfmode=helpi;
+-  if (!read.ReadFromFile(helpi,"COMIX_PG_MODE")) helpi=0;
+-  else msg_Info()<<METHOD<<"(): Set print graph mode "<<helpi<<".\n";
+-  m_pgmode=helpi;
+-  if (!read.ReadFromFile(helpi,"COMIX_VL_MODE")) helpi=0;
+-  else msg_Info()<<METHOD<<"(): Set vertex label mode "<<helpi<<".\n";
+-  Vertex::SetVLMode(helpi);
+-  if (!read.ReadFromFile(helpi,"COMIX_N_GPL")) helpi=3;
+-  else msg_Info()<<METHOD<<"(): Set graphs per line "<<helpi<<".\n";
+-  m_ngpl=Max(1,Min(helpi,5));
+-  double helpd;
+-  if (!read.ReadFromFile(helpd,"DIPOLE_AMIN")) helpd=Max(rpa->gen.Accu(),1.0e-8);
+-  else msg_Tracking()<<METHOD<<"(): Set dipole \\alpha_{cut} "<<helpd<<".\n";
+-  p_dinfo->SetAMin(helpd);
+-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
+-  else msg_Tracking()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
+-  double amax(helpd);
+-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) helpd=amax;
+-  else msg_Tracking()<<METHOD<<"(): Set FF dipole \\alpha_{max} "<<helpd<<".\n";
+-  p_dinfo->SetAMax(0,helpd);
+-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) helpd=amax;
+-  else msg_Tracking()<<METHOD<<"(): Set FI dipole \\alpha_{max} "<<helpd<<".\n";
+-  p_dinfo->SetAMax(2,helpd);
+-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) helpd=amax;
+-  else msg_Tracking()<<METHOD<<"(): Set IF dipole \\alpha_{max} "<<helpd<<".\n";
+-  p_dinfo->SetAMax(1,helpd);
+-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) helpd=amax;
+-  else msg_Tracking()<<METHOD<<"(): Set II dipole \\alpha_{max} "<<helpd<<".\n";
+-  p_dinfo->SetAMax(3,helpd);
+-  if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
+-  else msg_Tracking()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
+-  p_dinfo->SetKappa(helpd);
+-  if (!read.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT"))
+-    helpi=Flavour(kf_jet).Size()/2;
+-  else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<helpi<<"\n.";
+-  p_dinfo->SetNf(helpi);
+-  if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
+-  else msg_Tracking()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
+-  p_dinfo->SetKT2Max(helpd);
++  m_pmode=rpa->gen.Variable("COMIX_PMODE")[0];
++  m_wfmode=GetParameter<int>("COMIX_WF_MODE");
++  m_pgmode=GetParameter<int>("COMIX_PG_MODE");
++  m_ngpl=Max(1,Min(GetParameter<int>("COMIX_N_GPL"),5));
++  p_dinfo->SetAMin(GetParameter<double>("DIPOLE_AMIN"));
++  double amax(GetParameter<double>("DIPOLE_ALPHA")), cur;
++  cur=GetParameter<double>("DIPOLE_ALPHA_FF");
++  p_dinfo->SetAMax(0,cur?cur:amax);
++  cur=GetParameter<double>("DIPOLE_ALPHA_FI");
++  p_dinfo->SetAMax(2,cur?cur:amax);
++  cur=GetParameter<double>("DIPOLE_ALPHA_IF");
++  p_dinfo->SetAMax(1,cur?cur:amax);
++  cur=GetParameter<double>("DIPOLE_ALPHA_II");
++  p_dinfo->SetAMax(3,cur?cur:amax);
++  p_dinfo->SetKappa(GetParameter<double>("DIPOLE_KAPPA"));
++  p_dinfo->SetNf(GetParameter<int>("DIPOLE_NF_GSPLIT"));
++  p_dinfo->SetKT2Max(GetParameter<double>("DIPOLE_KT2MAX"));
+   p_dinfo->SetDRMode(0);
+-  m_sccmur=read.GetValue("USR_WGT_MODE",1);
+-  m_smth=read.GetValue("NLO_SMEAR_THRESHOLD",0.0);
+-  m_smpow=read.GetValue("NLO_SMEAR_POWER",0.5);
++  m_sccmur=GetParameter<int>("USR_WGT_MODE");
++  m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");
++  m_smpow=GetParameter<double>("NLO_SMEAR_POWER");
+ }
+ 
+ Amplitude::~Amplitude()
+@@ -235,19 +208,20 @@
+   jkt->SetSub(jijt);
+   jkt->SetKey(m_scur.size());
+   m_scur.push_back(jkt);
+-  Vertex_Key svkey(cin->J(),jijt,p_model);
+-  svkey.m_p=std::string(1,m_pmode);
+-  svkey.p_dinfo=p_dinfo;
+-  svkey.p_k=s;
+-  svkey.p_kt=jkt;
+-  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey.ID()));
++  Vertex_Key *svkey(Vertex_Key::New(cin->J(),jijt,p_model));
++  svkey->m_p=std::string(1,m_pmode);
++  svkey->p_dinfo=p_dinfo;
++  svkey->p_k=s;
++  svkey->p_kt=jkt;
++  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey->ID()));
+   for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
+        vit!=vmp.second;++vit) {
+-    svkey.p_mv=vit->second;
+-    Vertex *v(new Vertex(svkey));
+-    v->AddJ(svkey.m_j);
+-    v->SetJC(svkey.p_c);
++    svkey->p_mv=vit->second;
++    Vertex *v(new Vertex(*svkey));
++    v->AddJ(svkey->m_j);
++    v->SetJC(svkey->p_c);
+   }
++  svkey->Delete();
+ #ifdef DEBUG__BG
+   jijt->Print();
+   jkt->Print();
+@@ -300,30 +274,31 @@
+   m_scur.push_back(jkt);
+   Current_Vector j(2,c);
+   j[1]=NULL;
+-  Vertex_Key svkey(j,jijt,p_model);
+-  svkey.m_p=std::string(1,m_pmode);
+-  svkey.p_dinfo=p_dinfo;
+-  svkey.p_k=s;
+-  svkey.p_kt=jkt;
+-  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey.ID()));
++  Vertex_Key *svkey(Vertex_Key::New(j,jijt,p_model));
++  svkey->m_p=std::string(1,m_pmode);
++  svkey->p_dinfo=p_dinfo;
++  svkey->p_k=s;
++  svkey->p_kt=jkt;
++  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey->ID()));
+   for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
+        vit!=vmp.second;++vit) {
+-    svkey.p_mv=vit->second;
+-    Vertex *v(new Vertex(svkey));
+-    v->AddJ(svkey.m_j);
+-    v->SetJC(svkey.p_c);
+-  }
+-  if (svkey.p_mv==NULL) {
+-    std::swap<Current*>(svkey.m_j[0],svkey.m_j[1]);
+-    vmp=p_model->GetVertex(svkey.ID());
++    svkey->p_mv=vit->second;
++    Vertex *v(new Vertex(*svkey));
++    v->AddJ(svkey->m_j);
++    v->SetJC(svkey->p_c);
++  }
++  if (svkey->p_mv==NULL) {
++    std::swap<Current*>(svkey->m_j[0],svkey->m_j[1]);
++    vmp=p_model->GetVertex(svkey->ID());
+     for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
+ 	 vit!=vmp.second;++vit) {
+-      svkey.p_mv=vit->second;
+-      Vertex *v(new Vertex(svkey));
+-      v->AddJ(svkey.m_j);
+-      v->SetJC(svkey.p_c);
++      svkey->p_mv=vit->second;
++      Vertex *v(new Vertex(*svkey));
++      v->AddJ(svkey->m_j);
++      v->SetJC(svkey->p_c);
+     }
+   }
++  svkey->Delete();
+ #ifdef DEBUG__BG
+   jijt->Print();
+   jkt->Print();
+@@ -331,37 +306,23 @@
+   return true;
+ }
+ 
+-bool Amplitude::MatchIndices
+-(const Int_Vector &ids,const Vertex_Key &vkey) const
++bool Amplitude::MatchDecay(const Vertex_Key &vkey) const
+ {
+-  size_t n(ids.size());
+-  for (size_t o(0);o<n;++o) {
+-    bool found(false);
+-    for (size_t m(0);m<vkey.m_j.size();++m) 
+-      for (size_t p(0);p<vkey.m_j[m]->Id().size();++p) 
+-	if (vkey.m_j[m]->Id()[p]==ids[o]) {
+-	  if (found) return false;
+-	  found=true;
+-	}
+-    if (!found) return false;
+-  }
+-  if (!m_decid.empty()) {
+-    std::vector<size_t> c(vkey.m_j.size());
+-    for (size_t j(0);j<c.size();++j) {
+-      size_t jid(vkey.m_j[j]->CId());
+-      for (size_t i(0);i<m_decid.size();++i) {
+-	size_t did(m_decid[i]->m_id);
+-	if ((did&jid) && (did&~jid)) c[j]|=(1<<i);
+-      }
++  std::vector<size_t> c(vkey.m_j.size());
++  for (size_t j(0);j<c.size();++j) {
++    size_t jid(vkey.m_j[j]->CId());
++    for (size_t i(0);i<m_decid.size();++i) {
++      size_t did(m_decid[i]->m_id);
++      if ((did&jid) && (did&~jid)) c[j]|=(1<<i);
+     }
+-    for (size_t i(1);i<c.size();++i)
+-      if (c[i]!=c[0]) return false;
+   }
++  for (size_t i(1);i<c.size();++i)
++    if (c[i]!=c[0]) return false;
+   return true;
+ }
+ 
+ int Amplitude::CheckDecay(const ATOOLS::Flavour &fl,
+-			       const Int_Vector &ids) const
++			  const Int_Vector &ids) const
+ {
+   size_t cid(0);
+   if (m_decid.empty() && m_ndc.empty()) return 0;
+@@ -490,6 +451,8 @@
+   std::vector<int> maxcpl, mincpl;
+   int dec(CheckDecay(fl,ids));
+   if (dec<0) return;
++  size_t cid(0);
++  for (size_t i(0);i<ids.size();++i) cid|=1<<ids[i];
+   std::map<std::string,Current*> curs;
+   Current_Key ckey(dir>0?fl.Bar():fl,p_model,ids.size());
+   Current *cur(Current_Getter::GetObject
+@@ -519,6 +482,7 @@
+       if ((jj.back()=m_cur[jc.back()]).empty()) continue;
+       Int_Vector cc(jj.size(),0);
+       Current_Vector cj(cc.size(),NULL);
++      Vertex_Key *vkey(Vertex_Key::New(cj,cur,p_model));
+       for (size_t i(0);i<cj.size();++i) cj[i]=jj[i].front();
+       for (size_t cl(cc.size()-1);cc[0]<jj[0].size();++cc[cl]) {
+         if (cc[cl]==jj[cl].size()) { cc[cl--]=0; continue; }
+@@ -526,24 +490,32 @@
+ 	if (cl<cc.size()-1) { --cc[++cl]; continue; }
+ 	bool ord(true);
+ 	for (size_t i(0);i<cj.size()-1;++i)
+-	  if (cj[i]->Id().front()>cj[i+1]->Id().front())
++	  if (cj[i]->Id().front()>=cj[i+1]->Id().front())
+ 	    { ord=false; break; }
+ 	if (!ord) continue;
+-	Vertex_Key vkey(cj,cur,p_model);
+-	if (!MatchIndices(ids,vkey)) continue;
++	size_t tid(cid);
++	for (size_t i(0);i<cj.size();++i) {
++	  vkey->m_j[i]=cj[i];
++	  size_t cur(cj[i]->CId());
++	  if ((tid&cur)!=cur) break;
++	  tid&=~cur;
++	}
++	if (tid) continue;
++	if (m_dec && !MatchDecay(*vkey)) continue;
+ 	Permutation perm(cj.size());
+ 	for (int nperm(perm.MaxNumber()), i(0);i<nperm;++i) {
+ 	  int f(0), *p(perm.Get(i));
+-	  for (size_t i(0);i<cj.size();++i) vkey.m_j[i]=cj[p[i]];
+-	  MODEL::VMIterator_Pair vmp(p_model->GetVertex(vkey.ID()));
++	  for (size_t i(0);i<cj.size();++i) vkey->m_j[i]=cj[p[i]];
++	  MODEL::VMIterator_Pair vmp(p_model->GetVertex(vkey->ID()));
+ 	  for (MODEL::Vertex_Map::const_iterator
+ 		 vit(vmp.first);vit!=vmp.second;++vit) {
+-	    vkey.p_mv=vit->second;
+-	    if (AddCurrent(ckey,vkey,n,dec,maxcpl,mincpl,curs)) f=true;
++	    vkey->p_mv=vit->second;
++	    if (AddCurrent(ckey,*vkey,n,dec,maxcpl,mincpl,curs)) f=true;
+ 	  }
+ 	  if (f) { one=true; break; }
+ 	}
+       }
++      vkey->Delete();
+     }
+   }
+   if (!one && n>1) {
+@@ -600,9 +572,12 @@
+     }
+     else {
+       if (m_affm.size()) {
+-	for (size_t i(0);i<m_affm[n].size();++i) {
+-	  Flavour cfl((kf_code)abs(m_affm[n][i]),m_affm[n][i]<0);
+-	  if (fls[i].IsOn()) AddCurrent(ids,n,cfl,0);
++	size_t cid(0);
++	for (size_t i(0);i<ids.size();++i) cid|=1<<ids[i];
++	const std::vector<long int> &caffm(m_affm[n][cid]);
++	for (size_t i(0);i<caffm.size();++i) {
++	  Flavour cfl((kf_code)std::abs(caffm[i]),caffm[i]<0);
++	  if (cfl.IsOn()) AddCurrent(ids,n,cfl,0);
+ 	}
+       }
+       else {
+@@ -737,9 +712,15 @@
+     THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
+   m_affm.resize(m_n);
+   for (size_t size, i(2);i<m_n;++i) {
+-    *amp>>size;
+-    m_affm[i].resize(size);
+-    for (size_t j(0);j<size;++j) *amp>>m_affm[i][j];
++    while (true) {
++      long int kfc;
++      *amp>>kfc;
++      if (kfc==0) break;
++      std::vector<long int> &caffm(m_affm[i][kfc]);
++      *amp>>size;
++      caffm.resize(size);
++      for (size_t j(0);j<size;++j) *amp>>caffm[j];
++    }
+   }
+   *amp>>cname;
+   if (cname!="eof")
+@@ -760,16 +741,22 @@
+   *amp<<name<<" "<<name<<"\n";
+   m_affm.resize(m_n);
+   for (size_t i(2);i<m_n;++i) {
+-    std::set<long int> kfcs;
++    std::map<size_t,std::set<long int> > kfcs;
+     m_affm[i].clear();
+     for (size_t j(0);j<m_cur[i].size();++j) {
++      std::set<long int> &ckfcs(kfcs[m_cur[i][j]->CId()]);
++      std::vector<long int> &caffm(m_affm[i][m_cur[i][j]->CId()]);
+       long int kfc(m_cur[i][j]->Flav());
+-      if (kfcs.find(kfc)==kfcs.end()) m_affm[i].push_back(kfc);
+-      kfcs.insert(kfc);
++      if (ckfcs.find(kfc)==ckfcs.end()) caffm.push_back(kfc);
++      ckfcs.insert(kfc);
+     }
+-    *amp<<m_affm[i].size();
+-    for (size_t j(0);j<m_affm[i].size();++j) *amp<<" "<<m_affm[i][j];
+-    *amp<<"\n";
++    for (size_t j(0);j<m_affm[i].size();++j)
++      for (std::map<size_t,std::vector<long int> >::const_iterator
++	     it(m_affm[i].begin());it!=m_affm[i].end();++it) {
++	*amp<<it->first<<" "<<it->second.size()<<" ";
++	for (size_t k(0);k<it->second.size();++k) *amp<<it->second[k]<<" ";
++      }
++    *amp<<"0\n";
+   }
+   *amp<<"eof\n";
+ }
+@@ -1103,6 +1090,14 @@
+ #endif
+ }
+ 
++void Amplitude::ResetJ()
++{
++  for (size_t n(1);n<=m_n-1;--n) {
++    for (size_t i(0);i<m_cur[n].size();++i) 
++      m_cur[n][i]->ResetJ();
++  }
++}
++
+ void Amplitude::ResetZero()
+ {
+   for (size_t n(m_n-2);n>=2;--n) {
+Index: COMIX/Amplitude/Amplitude.H
+===================================================================
+--- COMIX/Amplitude/Amplitude.H	(revision 27934)
++++ COMIX/Amplitude/Amplitude.H	(working copy)
+@@ -66,7 +66,7 @@
+     Int_Vector   m_ch, m_dirs, m_sid, m_cchirs;
+     Int_Matrix   m_cl;
+ 
+-    size_t m_nin, m_nout;
++    size_t m_nin, m_nout, m_dec;
+     size_t m_n, m_wfmode, m_pgmode, m_ngpl, m_sccmur;
+     size_t m_minntc, m_maxntc;
+     char   m_pmode;
+@@ -101,7 +101,7 @@
+     ATOOLS::NLO_subevtlist    m_subs;
+     PHASIC::Virtual_ME2_Base *p_loop;  
+ 
+-    std::vector<std::vector<long int> > m_affm;
++    std::vector<std::map<size_t,std::vector<long int> > > m_affm;
+ 
+     ATOOLS::NLO_subevt *p_sub;
+ 
+@@ -115,7 +115,7 @@
+     void ConstructDSijMap();
+ 
+     int  CheckDecay(const ATOOLS::Flavour &fl,const Int_Vector &ids) const;
+-    bool MatchIndices(const Int_Vector &ids,const Vertex_Key &vkey) const;
++    bool MatchDecay(const Vertex_Key &vkey) const;
+     Vertex *AddCurrent(const Current_Key &ckey,Vertex_Key &vkey,
+ 		       const size_t &n,const int dec,
+ 		       std::vector<int> &maxcpl,std::vector<int> &mincpl,
+@@ -171,6 +171,7 @@
+ 		    const size_t &minntc,const size_t &maxntc,
+ 		    const std::string &name);
+ 
++    void ResetJ();
+     void ResetZero();
+ 
+     bool Evaluate(const Int_Vector &chirs);
+@@ -234,7 +235,7 @@
+     inline const Current_Matrix &Currents() const { return m_cur; }
+ 
+     inline void SetDecayInfos(const ATOOLS::DecayInfo_Vector &id) 
+-    { m_decid=id; }
++    { m_decid=id; m_dec=m_decid.size(); }
+     inline const ATOOLS::DecayInfo_Vector &DecayInfos() const
+     { return m_decid; }
+ 
+Index: COMIX/Main/Comix.C
+===================================================================
+--- COMIX/Main/Comix.C	(revision 27934)
++++ COMIX/Main/Comix.C	(working copy)
+@@ -163,6 +163,56 @@
+   SetPSMasses(&read);
+   PrintLogo(msg->Info());
+   PrintVertices();
++  rpa->gen.SetVariable
++    ("COMIX_PMODE",read.GetValue<std::string>("COMIX_PMODE","D"));
++  int helpi;
++  if (!read.ReadFromFile(helpi,"COMIX_WF_MODE")) helpi=0;
++  else msg_Info()<<METHOD<<"(): Set wave function mode "<<helpi<<".\n";
++  rpa->gen.SetVariable("COMIX_WF_MODE",ToString(helpi));
++  if (!read.ReadFromFile(helpi,"COMIX_PG_MODE")) helpi=0;
++  else msg_Info()<<METHOD<<"(): Set print graph mode "<<helpi<<".\n";
++  rpa->gen.SetVariable("COMIX_PG_MODE",ToString(helpi));
++  if (!read.ReadFromFile(helpi,"COMIX_VL_MODE")) helpi=0;
++  else msg_Info()<<METHOD<<"(): Set vertex label mode "<<helpi<<".\n";
++  Vertex::SetVLMode(helpi);
++  if (!read.ReadFromFile(helpi,"COMIX_N_GPL")) helpi=3;
++  else msg_Info()<<METHOD<<"(): Set graphs per line "<<helpi<<".\n";
++  rpa->gen.SetVariable("COMIX_N_GPL",ToString(helpi));
++  double helpd;
++  if (!read.ReadFromFile(helpd,"DIPOLE_AMIN")) helpd=Max(rpa->gen.Accu(),1.0e-8);
++  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{cut} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_AMIN",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
++  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) helpd=0.0;
++  else msg_Info()<<METHOD<<"(): Set FF dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA_FF",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) helpd=0.0;
++  else msg_Info()<<METHOD<<"(): Set FI dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA_FI",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) helpd=0.0;
++  else msg_Info()<<METHOD<<"(): Set IF dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA_IF",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) helpd=0.0;
++  else msg_Info()<<METHOD<<"(): Set II dipole \\alpha_{max} "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_ALPHA_II",ToString(helpd));
++  if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
++  else msg_Info()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
++  rpa->gen.SetVariable("DIPOLE_KAPPA",ToString(helpd));
++  if (!read.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT"))
++    helpi=Flavour(kf_jet).Size()/2;
++  else msg_Info()<<METHOD<<"(): Set dipole N_f="<<helpi<<"\n.";
++  rpa->gen.SetVariable("DIPOLE_NF_GSPLIT",ToString(helpi));
++  if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
++  else msg_Info()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
++  rpa->gen.SetVariable("DIPOLE_KT2MAX",ToString(helpd));
++  rpa->gen.SetVariable("USR_WGT_MODE",
++		       ToString(read.GetValue("USR_WGT_MODE",1)));
++  rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD",
++		       ToString(read.GetValue("NLO_SMEAR_THRESHOLD",0.0)));
++  rpa->gen.SetVariable("NLO_SMEAR_POWER",
++		       ToString(read.GetValue("NLO_SMEAR_POWER",0.5)));
+ #ifdef USING__MPI
+   if (MPI::COMM_WORLD.Get_rank()==0)
+ #endif
+Index: COMIX/Main/Single_Process.C
+===================================================================
+--- COMIX/Main/Single_Process.C	(revision 27934)
++++ COMIX/Main/Single_Process.C	(working copy)
+@@ -30,19 +30,6 @@
+   p_loop(NULL), p_kpterms(NULL),
+   m_checkpoles(false), m_allowmap(true)
+ {
+-  int helpi;
+-  Data_Reader reader(" ",";","!","=");
+-  reader.AddComment("#");
+-  reader.SetInputPath(rpa->GetPath());
+-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+-  if (reader.ReadFromFile(helpi,"COMIX_ALLOW_MAPPING")) {
+-    m_allowmap=helpi;
+-    msg_Tracking()<<"Set mapping mode "<<m_allowmap<<".\n";
+-  }
+-  if (reader.ReadFromFile(helpi,"CHECK_POLES")) {
+-    m_checkpoles=helpi;
+-    msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
+-  }
+ }
+ 
+ COMIX::Single_Process::~Single_Process()
+@@ -167,6 +154,15 @@
+       p_loop->SetCouplings(m_cpls);
+       p_loop->SetNorm(1.0/(isf*fsf));
+       m_mewgtinfo.m_type|=mewgttype::VI;
++      int helpi;
++      Data_Reader reader(" ",";","!","=");
++      reader.AddComment("#");
++      reader.SetInputPath(rpa->GetPath());
++      reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
++      if (reader.ReadFromFile(helpi,"CHECK_POLES")) {
++	m_checkpoles=helpi;
++	msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
++      }
+     }
+     p_bg->SetLoopME(p_loop);
+     nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
+Index: COMIX/Phasespace/PS_Generator.C
+===================================================================
+--- COMIX/Phasespace/PS_Generator.C	(revision 27934)
++++ COMIX/Phasespace/PS_Generator.C	(working copy)
+@@ -228,7 +228,9 @@
+     if (csub) break;
+   }
+   if (csub==NULL) return;
+-  PS_Vertex *vtx(new PS_Vertex(vkey));
++  Vertex_Key *dummy(Vertex_Key::New(Current_Vector(),NULL,NULL));
++  PS_Vertex *vtx(new PS_Vertex(*dummy));
++  dummy->Delete();
+   vtx->AddJ(vkey.m_j);
+   vtx->SetJC(vkey.p_c);
+   vtx->SetDip(csub);
+@@ -250,6 +252,7 @@
+     m_cl.resize(m_n,Int_Vector(2));
+     m_cur.resize(m_n);
+   }
++  Vertex_Key *dummy(Vertex_Key::New(Current_Vector(),NULL,NULL));
+   for (size_t n(1);n<m_n;++n) {
+     for (size_t j(0);j<curs[n].size();++j) {
+       if (curs[n][j]->Sub() ||
+@@ -288,7 +291,7 @@
+ 		Current_Vector jj(2);
+ 		jj[0]=ait->second;
+ 		jj[1]=bit->second;
+-		Vertex_Key vkey(jj,cit->second,NULL);
++		Vertex_Key *vkey(Vertex_Key::New(jj,cit->second,NULL));
+ 		int type(DecayType(cit->second,ait->second,bit->second)), mtype(0);
+ 		bool vf(false);
+ 		for (size_t k(0);k<rin.size();++k)
+@@ -298,20 +301,21 @@
+ 		    mtype|=((PS_Vertex*)rin[k])->Type();
+ 		    vf=true;
+ 		  }
+-		if ((vf && type==mtype) || v3.find(vkey)!=v3.end()) continue;
+-		v3.insert(vkey);
+-		PS_Vertex *vtx(new PS_Vertex(vkey));
+-		vtx->AddJ(vkey.m_j);
+-		vtx->SetJC(vkey.p_c);
++		if ((vf && type==mtype) || v3.find(*vkey)!=v3.end()) continue;
++		v3.insert(*vkey);
++		PS_Vertex *vtx(new PS_Vertex(*dummy));
++		vtx->AddJ(vkey->m_j);
++		vtx->SetJC(vkey->p_c);
+ 		vtx->SetType(type);
+ 		if (type==(2|4)) {
+ 		  vtx->SetType(2);
+-		  vtx = new PS_Vertex(vkey);
+-		  vtx->AddJ(vkey.m_j);
+-		  vtx->SetJC(vkey.p_c);
++		  vtx = new PS_Vertex(*dummy);
++		  vtx->AddJ(vkey->m_j);
++		  vtx->SetJC(vkey->p_c);
+ 		  vtx->SetType(4);
+ 		}
+-		AddSubChannel(subs,vkey);
++		AddSubChannel(subs,*vkey);
++		vkey->Delete();
+ 	      }
+ 	  }
+ 	}
+@@ -346,22 +350,23 @@
+ 	      Current_Vector jj(2);
+ 	      jj[0]=ait->second;
+ 	      jj[1]=bit->second;
+-	      Vertex_Key vkey(jj,cit->second,NULL);
+-	      if (v3.find(vkey)!=v3.end()) continue;
+-	      v3.insert(vkey);
+-	      PS_Vertex *vtx(new PS_Vertex(vkey));
+-	      vtx->AddJ(vkey.m_j);
+-	      vtx->SetJC(vkey.p_c);
++	      Vertex_Key *vkey(Vertex_Key::New(jj,cit->second,NULL));
++	      if (v3.find(*vkey)!=v3.end()) continue;
++	      v3.insert(*vkey);
++	      PS_Vertex *vtx(new PS_Vertex(*dummy));
++	      vtx->AddJ(vkey->m_j);
++	      vtx->SetJC(vkey->p_c);
+ 	      int type(DecayType(curs[n][j],ja,jb));
+ 	      vtx->SetType(type);
+ 	      if (type==(2|4)) {
+ 		vtx->SetType(2);
+-		vtx = new PS_Vertex(vkey);
+-		vtx->AddJ(vkey.m_j);
+-		vtx->SetJC(vkey.p_c);
++		vtx = new PS_Vertex(*dummy);
++		vtx->AddJ(vkey->m_j);
++		vtx->SetJC(vkey->p_c);
+ 		vtx->SetType(4);
+ 	      }
+-	      AddSubChannel(subs,vkey);
++	      AddSubChannel(subs,*vkey);
++	      vkey->Delete();
+ 	    }
+       }
+       for (CB_MMap::const_iterator cit(m_cmap.lower_bound(curs[n][j]));
+@@ -369,6 +374,7 @@
+ 	cit->second->Print();
+     }
+   }
++  dummy->Delete();
+   }
+   msg_Debugging()<<"}\n";
+   for (size_t j(m_n-2);j>1;--j)
+@@ -518,12 +524,12 @@
+   msg_Debugging()<<"  Add "<<m_cur[n].back()->PSInfo()
+ 		 <<(scc?" ("+scc->PSInfo()+") ":"")<<" {\n";
+ #endif
++  Vertex_Key *dummy(Vertex_Key::New(Current_Vector(),NULL,NULL));
+   const Vertex_Vector &in(cur->In());
+   for (size_t i(0);i<in.size();++i) {
+-    Vertex_Key vkey(in[i]->J(),m_cur[n].back(),NULL);
+-    PS_Vertex *vtx(new PS_Vertex(vkey));
+-    vtx->AddJ(vkey.m_j);
+-    vtx->SetJC(vkey.p_c);
++    PS_Vertex *vtx(new PS_Vertex(*dummy));
++    vtx->AddJ(in[i]->J());
++    vtx->SetJC(m_cur[n].back());
+     vtx->SetDip(((PS_Vertex*)in[i])->Dip());
+     vtx->SetType(((PS_Vertex*)in[i])->Type());
+ #ifdef DEBUG__BG
+@@ -538,16 +544,16 @@
+     Current_Vector j(out[i]->J());
+     if (j[0]==cur) j[0]=m_cur[n].back();
+     else j[1]=m_cur[n].back();
+-    Vertex_Key vkey(j,out[i]->JC(),NULL);
+-    PS_Vertex *vtx(new PS_Vertex(vkey));
+-    vtx->AddJ(vkey.m_j);
+-    vtx->SetJC(vkey.p_c);
++    PS_Vertex *vtx(new PS_Vertex(*dummy));
++    vtx->AddJ(j);
++    vtx->SetJC(out[i]->JC());
+     vtx->SetDip(((PS_Vertex*)out[i])->Dip());
+     vtx->SetType(((PS_Vertex*)out[i])->Type());
+ #ifdef DEBUG__BG
+     msg_Debugging()<<"    "<<*vtx<<"\n";
+ #endif
+   }
++  dummy->Delete();
+ #ifdef DEBUG__BG
+   msg_Debugging()<<"  }\n";
+ #endif
+Index: COMIX/Phasespace/PS_Vertex.C
+===================================================================
+--- COMIX/Phasespace/PS_Vertex.C	(revision 27934)
++++ COMIX/Phasespace/PS_Vertex.C	(working copy)
+@@ -7,7 +7,7 @@
+ using namespace ATOOLS;
+ 
+ PS_Vertex::PS_Vertex(const Vertex_Key &key):
+-  Vertex(Vertex_Key(Current_Vector(),NULL,NULL)), 
++  Vertex(key), 
+   m_alpha(1.0), m_oldalpha(1.0), m_weight(1.0),
+   m_np(0.0), m_sum(0.0), m_sum2(0.0),
+   m_mnp(0.0), m_msum(0.0), m_msum2(0.0),
+Index: EXTRA_XS/Main/ME_Tools.C
+===================================================================
+--- EXTRA_XS/Main/ME_Tools.C	(revision 27934)
++++ EXTRA_XS/Main/ME_Tools.C	(working copy)
+@@ -14,29 +14,31 @@
+   curs[1]=cur2;
+ 
+   // try first rotation
+-  Vertex_Key vkey(curs,prop,MODEL::s_model);
+-  MODEL::VMIterator_Pair keyrange(MODEL::s_model->GetVertex(vkey.ID()));
++  Vertex_Key *vkey(Vertex_Key::New(curs,prop,MODEL::s_model));
++  MODEL::VMIterator_Pair keyrange(MODEL::s_model->GetVertex(vkey->ID()));
+   for (MODEL::Vertex_Map::const_iterator it=keyrange.first; it!=keyrange.second; ++it) {
+-    vkey.p_mv=it->second;
+-    vkey.m_p=std::string(1,'D');
+-    ret.push_back(new Vertex(vkey));
+-    ret.back()->AddJ(vkey.m_j);
++    vkey->p_mv=it->second;
++    vkey->m_p=std::string(1,'D');
++    ret.push_back(new Vertex(*vkey));
++    ret.back()->AddJ(vkey->m_j);
+     ret.back()->SetJC(prop);
+   }
++  vkey->Delete();
+ 
+   //try second rotation
+   std::swap<Current*>(curs[0],curs[1]);
+-  vkey=Vertex_Key(curs,prop,MODEL::s_model);
+-  keyrange=MODEL::s_model->GetVertex(vkey.ID());
++  vkey=Vertex_Key::New(curs,prop,MODEL::s_model);
++  keyrange=MODEL::s_model->GetVertex(vkey->ID());
+   for (MODEL::Vertex_Map::const_iterator it=keyrange.first; it!=keyrange.second; ++it) {
+-    vkey.p_mv=it->second;//fixme!!
+-    vkey.m_p=std::string(1,'D');
+-    ret.push_back(new Vertex(vkey));
+-    ret.back()->AddJ(vkey.m_j);
++    vkey->p_mv=it->second;//fixme!!
++    vkey->m_p=std::string(1,'D');
++    ret.push_back(new Vertex(*vkey));
++    ret.back()->AddJ(vkey->m_j);
+     ret.back()->SetJC(prop);
+   }
++  vkey->Delete();
+ 
+-  if (ret.size()==0) THROW(fatal_error, "vertex not found: "+vkey.ID());
++  if (ret.size()==0) THROW(fatal_error, "vertex not found: "+vkey->ID());
+ 
+   return ret;
+ }
+Index: METOOLS/Explicit/C_Object.H
+===================================================================
+--- METOOLS/Explicit/C_Object.H	(revision 27934)
++++ METOOLS/Explicit/C_Object.H	(working copy)
+@@ -10,9 +10,7 @@
+   class CObject {
+   protected:
+ 
+-    int m_c[2];
+-
+-    size_t m_h, m_s;
++    int m_c[2], m_h, m_s;
+ 
+   public:
+ 
+@@ -39,11 +37,11 @@
+ 
+     inline int operator()(const int i) const { return m_c[i]; }
+ 
+-    inline void SetH(const size_t &h) { m_h=h; }
+-    inline void SetS(const size_t &s) { m_s=s; }
++    inline void SetH(const int &h) { m_h=h; }
++    inline void SetS(const int &s) { m_s=s; }
+ 
+-    inline const size_t &H() const { return m_h; }
+-    inline const size_t &S() const { return m_s; }
++    inline const int &H() const { return m_h; }
++    inline const int &S() const { return m_s; }
+ 
+     inline bool operator==(const CObject &o) const
+     { return m_c[0]==o.m_c[0] && m_c[1]==o.m_c[1] && m_s==o.m_s; }
+Index: METOOLS/Explicit/Color_Calculator.H
+===================================================================
+--- METOOLS/Explicit/Color_Calculator.H	(revision 27934)
++++ METOOLS/Explicit/Color_Calculator.H	(working copy)
+@@ -18,7 +18,7 @@
+ 
+     Complex m_cpl;
+ 
+-    size_t m_stat;
++    int m_stat;
+ 
+     static size_t s_cimin, s_cimax;
+ 
+@@ -45,7 +45,7 @@
+ 
+     inline Complex Coupling() const { return m_cpl; }
+ 
+-    inline size_t Stat() const { return m_stat; }
++    inline int Stat() const { return m_stat; }
+ 
+   };// end of class Color_Calculator
+ 
+Index: METOOLS/Explicit/Vertex.C
+===================================================================
+--- METOOLS/Explicit/Vertex.C	(revision 27934)
++++ METOOLS/Explicit/Vertex.C	(working copy)
+@@ -7,6 +7,8 @@
+ #include "ATOOLS/Org/STL_Tools.H"
+ #include "ATOOLS/Org/MyStrStream.H"
+ #include "ATOOLS/Org/Shell_Tools.H"
++
++#include <algorithm>
+ #include <typeinfo>
+ 
+ using namespace METOOLS;
+@@ -36,19 +38,18 @@
+ 
+ size_t Vertex::s_vlmode(0);
+ 
++std::map<std::string,Int_Vector> Vertex::s_h;
++
+ Vertex::Vertex(const Vertex_Key &key): 
+   p_v(key.p_mv), p_c(NULL),
+-  p_info(key.p_dinfo), p_kin(NULL),
+-  m_sign(false), m_act(true), 
+-  m_fperm(0), m_order(2,0),
+-  m_icplfac(1.0)
++  p_info(key.p_dinfo), p_kin(NULL), p_h(NULL),
++  m_sign(false), m_fperm(0), m_icplfac(1.0)
+ {
+   if (key.p_mv==NULL) return;
+   if (p_info)
+     p_kin = new Dipole_Kinematics
+       (p_info,key.m_j[0],key.m_j[1],key.p_k,key.p_c,key.p_kt);
+   key.p_v=this;
+-  m_order=key.p_mv->order;
+   Vertex_Key ckey(key);
+   for (ckey.m_n=0;ckey.m_n<key.p_mv->Lorentz.size();++ckey.m_n) {
+     std::string ctag(ToString(ckey.p_mv->Color[ckey.m_n].PID()));
+@@ -56,7 +57,12 @@
+       if (abs(ckey.p_c->Flav().StrongCharge())==3) ctag="S-T";
+       else if (key.p_c->Flav().StrongCharge()==8) ctag="S-F";
+       else {
+-	m_act=false;
++	for (size_t i(0);i<m_lc.size();++i) {
++	  delete m_lc[i];
++	  delete m_cc[i];
++	}
++	m_lc.clear();
++	m_cc.clear();
+ 	return;
+       }
+     }
+@@ -108,13 +114,42 @@
+   msg_Debugging()<<METHOD<<"():\n";
+   msg_Indent();
+ #endif
++  if (m_j.size()==2) {
++    size_t hid(0), sh0(m_j[0]->J().size()), sh1(m_j[1]->J().size());
++    for (size_t h0(0);h0<sh0;++h0) {
++      const CObject_Vector *hjj0(&m_j[0]->J()[h0]);
++      if (hjj0->empty()) { hid+=sh1; continue; }
++      for (size_t h1(0);h1<sh1;++h1) {
++	const CObject_Vector *hjj1(&m_j[1]->J()[h1]);
++	if (hjj1->empty()) { ++hid; continue; }
++	for (size_t c0(0);c0<hjj0->size();++c0) {
++	  m_cjj[0]=(*hjj0)[c0];
++	  for (size_t c1(0);c1<hjj1->size();++c1) {
++	    m_cjj[1]=(*hjj1)[c1];
++	    for (size_t k(0);k<m_cc.size();++k)
++	      if (m_cc[k]->Evaluate(m_cjj)) {
++		CObject *j(m_lc[k]->Evaluate(m_cjj));
++		if (j==NULL) continue;
++		j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
++		j->SetH(H(hid));
++		m_cc[k]->AddJ(j);
++		SetZero(false);
++	      }
++	  }
++	}
++	++hid;
++      }
++    }
++    return;
++  }
+   size_t hid(0);
+-  for (SizeT_Vector::iterator i(m_hjc.begin());i!=m_hjc.end();++i) *i=0;
++  Int_Vector m_cjc(m_j.size()), m_hjc(m_j.size(),0);
++  std::vector<const CObject_Vector*> m_hjj(m_j.size());
+   for (size_t j(0);j<m_hjj.size();++j) m_hjj[j]=&m_j[j]->J().front();
+   for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->J().size();) {
+     if(m_hjc[hc]==m_j[hc]->J().size()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
+     m_hjj[hc]=&m_j[hc]->J()[m_hjc[hc]];if(hc<m_hjc.size()-1){++hc;continue;}
+-    for (SizeT_Vector::iterator i(m_cjc.begin());i!=m_cjc.end();++i) *i=0;
++    for (Int_Vector::iterator i(m_cjc.begin());i!=m_cjc.end();++i) *i=0;
+     bool zero(false);
+     for (size_t i(0);i<m_cjj.size();++i)
+       if (m_hjj[i]->empty()) {zero=true;break;}
+@@ -183,17 +218,45 @@
+ #ifdef DEBUG__BG
+   msg_Debugging()<<METHOD<<"() {\n";
+ #endif
+-  m_hjc.resize(m_j.size(),0);
+-  m_cjc.resize(m_j.size());
+-  m_hjj.resize(m_j.size());
+   m_cjj.resize(m_j.size());
+-  m_h.clear();
++  int nmax(0);
++  std::string id;
++  for (size_t i(0);i<m_j.size();++i) {
++    id+=m_j[i]->H().SpinID();
++    nmax=Max(nmax,m_j[i]->Id().back());
++  }
++  static std::map<int,std::string> s_imap;
++  for (size_t i(0);i<=nmax;++i)
++    for (size_t j(0);j<m_j.size();++j)
++      if (std::find(m_j[j]->Id().begin(),
++		    m_j[j]->Id().end(),i)!=
++	  m_j[j]->Id().end()) {
++	std::map<int,std::string>::iterator iit(s_imap.find(j));
++	if (iit==s_imap.end()) iit=s_imap.insert(make_pair(j,ToString(j))).first;
++	id+="_"+iit->second;
++	break;
++      }
++  std::map<std::string,Int_Vector>::iterator hit(s_h.find(id));
++  if (hit!=s_h.end()) {
++    p_h=&hit->second;
++#ifdef DEBUG__BG
++    msg_Debugging()<<"  "<<id<<" mapped to '"<<p_h<<"'\n}\n";
++#endif
++    return;
++  }
++  p_h=&s_h.insert(make_pair(id,Int_Vector())).first->second;
++#ifdef DEBUG__BG
++  msg_Debugging()<<"  "<<id<<" stored in '"<<p_h<<"'\n";
++#endif
++  Int_Vector m_hjc(m_j.size(),0);
+   std::vector<Int_Vector> hjj(m_j.size());
+   for (size_t i(0);i<hjj.size();++i) hjj[i]=m_j[i]->H()(0);
+   for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->H().N();) {
+     if(m_hjc[hc]==m_j[hc]->H().N()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
+     hjj[hc]=m_j[hc]->H()(m_hjc[hc]);if(hc<m_hjc.size()-1){++hc;continue;}
+     Int_Vector ch(hjj.back()), id(m_j.back()->Id());
++    id.reserve(p_c->Id().size());
++    ch.reserve(p_c->Id().size());
+     for (size_t i(0);i<hjj.size()-1;++i) {
+       for (size_t m(0);m<hjj[i].size();++m) {
+ 	Int_Vector::iterator cit(ch.begin()), iit(id.begin());
+@@ -203,10 +266,10 @@
+       }
+     }
+ #ifdef DEBUG__BG
+-    msg_Debugging()<<"  ["<<m_h.size()<<"]: j = "<<m_hjc
++    msg_Debugging()<<"  ["<<p_h->size()<<"]: j = "<<m_hjc
+ 		   <<", h = "<<ch<<" -> id = "<<p_c->H()(ch)<<"\n";
+ #endif
+-    m_h.push_back(p_c->H()(ch));
++    p_h->push_back(p_c->H()(ch));
+     ++m_hjc[hc];
+   }
+ #ifdef DEBUG__BG
+@@ -282,6 +345,16 @@
+   for (size_t i(0);i<m_j.size();++i) m_j[i]->CollectGraphs(graph);
+ }
+ 
++const std::vector<int> &Vertex::Order() const
++{
++  return p_v->order;
++}
++
++int Vertex::Order(const size_t &id) const
++{
++  return p_v->order[id];
++}
++
+ std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
+ {
+   for (size_t i(0);i<v.J().size();++i) {
+Index: METOOLS/Explicit/Vertex.H
+===================================================================
+--- METOOLS/Explicit/Vertex.H	(revision 27934)
++++ METOOLS/Explicit/Vertex.H	(working copy)
+@@ -28,20 +28,19 @@
+     LC_Vector m_lc;
+     CC_Vector m_cc;
+ 
+-    SizeT_Vector m_h, m_hjc, m_cjc;
++    CObject_Vector m_cjj;
+ 
+-    bool   m_sign, m_act, m_zero;
+-    size_t m_fperm;
++    Int_Vector *p_h;
+ 
+-    std::vector<int> m_order;
++    bool   m_sign, m_zero;
++    size_t m_fperm;
+ 
+     double m_icplfac;
+ 
+-    std::vector<const CObject_Vector*> m_hjj;
+-    CObject_Vector m_cjj;
+-
+     static size_t s_vlmode;
+ 
++    static std::map<std::string,Int_Vector> s_h;
++
+     std::string CVLabel() const;
+ 
+     friend class Lorentz;
+@@ -70,6 +69,9 @@
+ 
+     void AddJ(const Current_Vector &j);
+ 
++    const std::vector<int> &Order() const;
++    int Order(const size_t &id) const;
++
+     // inline functions
+     inline void AddJ(Current *const j) 
+     { if (j) { m_j.push_back(j); j->AttachOut(this); } }
+@@ -100,13 +102,10 @@
+ 
+     inline bool Sign() const { return m_sign; }
+ 
+-    inline bool Active() const { return m_act; }
++    inline bool Active() const { return m_lc.size() && m_cc.size(); }
+ 
+     inline size_t FPerm() const { return m_fperm; }
+ 
+-    inline const std::vector<int> &Order() const { return m_order; }
+-    inline int Order(const size_t &id) const { return m_order[id]; }
+-
+     inline static void SetVLMode(const size_t &mode) { s_vlmode=mode; }
+ 
+     inline static size_t VLMode() { return s_vlmode; }
+@@ -114,7 +113,7 @@
+     inline const LC_Vector &Lorentz() const { return m_lc; }
+     inline const CC_Vector &Color() const   { return m_cc; }
+ 
+-    inline size_t H(const size_t &i) const { return m_h[i]; }
++    inline size_t H(const size_t &i) const { return (*p_h)[i]; }
+ 
+     inline MODEL::Single_Vertex *V() const { return p_v; }
+ 
+Index: METOOLS/Explicit/Vertex_Key.C
+===================================================================
+--- METOOLS/Explicit/Vertex_Key.C	(revision 27934)
++++ METOOLS/Explicit/Vertex_Key.C	(working copy)
+@@ -7,6 +7,8 @@
+ using namespace METOOLS;
+ using namespace ATOOLS;
+ 
++AutoDelete_Vector<Vertex_Key> Vertex_Key::s_objects;
++
+ Vertex_Key::Vertex_Key
+ (const std::vector<Current*> &j,
+  Current *const c,MODEL::Model_Base *const model,
+@@ -20,6 +22,38 @@
+ {
+ }
+ 
++Vertex_Key *Vertex_Key::New
++(const std::vector<Current*> &j,
++ Current *const c,MODEL::Model_Base *const model,
++ MODEL::Single_Vertex *const mv,const std::string &p,
++ Vertex *const v,Color_Calculator *const cc,
++ Lorentz_Calculator *const lc)
++{
++  if (s_objects.empty()) {
++    return new Vertex_Key(j,c,model,mv,p,v,cc,lc);
++  }
++  Vertex_Key *k(s_objects.back());
++  s_objects.pop_back();
++  k->m_j=j;
++  k->p_c=c;
++  k->p_k=k->p_kt=NULL;
++  k->p_model=model;
++  k->p_mv=mv;
++  k->m_p=p;
++  k->m_n=0;
++  k->m_d=0;
++  k->p_v=v;
++  k->p_cc=cc;
++  k->p_lc=lc;
++  k->p_dinfo=NULL;
++  return k;
++}
++
++void Vertex_Key::Delete()
++{
++  s_objects.push_back(this);
++}
++
+ std::string Vertex_Key::Type() const
+ {
+   std::string estr;
+@@ -27,14 +61,14 @@
+   return estr+p_c->Type();
+ }
+ 
+-std::string Vertex_Key::ID() const
++const std::string &Vertex_Key::ID() const
+ {
+-  std::string estr;
++  m_id.clear();
+   for (size_t i(0);i<m_j.size();++i)
+-    estr+="{"+(m_j[i]?m_j[i]->Flav().IDName():
+-	       Flavour(p_dinfo->Type()?kf_photon:kf_gluon).IDName())+"}";
+-  if (p_c!=NULL) estr+="{"+p_c->Flav().Bar().IDName()+"}";
+-  return estr;
++    m_id+=(m_j[i]?m_j[i]->Flav().IDName():
++	   Flavour(p_dinfo->Type()?kf_photon:kf_gluon).IDName())+"|";
++  if (p_c!=NULL) m_id+=p_c->Flav().Bar().IDName();
++  return m_id;
+ }
+ 
+ ATOOLS::Flavour Vertex_Key::Fl(const size_t &i) const
+Index: METOOLS/Explicit/Vertex_Key.H
+===================================================================
+--- METOOLS/Explicit/Vertex_Key.H	(revision 27934)
++++ METOOLS/Explicit/Vertex_Key.H	(working copy)
+@@ -3,6 +3,7 @@
+ 
+ #include "METOOLS/Explicit/Dipole_Info.H"
+ #include "ATOOLS/Phys/Flavour.H"
++#include "ATOOLS/Org/STL_Tools.H"
+ 
+ #include <string>
+ 
+@@ -19,6 +20,16 @@
+   class Lorentz_Calculator;
+ 
+   struct Vertex_Key {
++  private:
++
++    Vertex_Key
++    (const std::vector<Current*> &j,
++     Current *const c,MODEL::Model_Base *const model,
++     MODEL::Single_Vertex *const mv=NULL,const std::string &p="",
++     Vertex *const v=NULL,Color_Calculator *const cc=NULL,
++     Lorentz_Calculator *const lc=NULL);
++
++  public:
+ 
+     Current *p_c, *p_k, *p_kt;
+     std::vector<Current*> m_j;
+@@ -30,6 +41,8 @@
+     size_t      m_n;
+     mutable int m_d;
+ 
++    mutable std::string m_id;
++
+     mutable Vertex *p_v;
+ 
+     mutable Color_Calculator   *p_cc;
+@@ -37,16 +50,20 @@
+ 
+     Dipole_Info *p_dinfo;
+ 
+-    Vertex_Key
++    static ATOOLS::AutoDelete_Vector<Vertex_Key> s_objects;
++
++    static Vertex_Key *New
+     (const std::vector<Current*> &j,
+      Current *const c,MODEL::Model_Base *const model,
+      MODEL::Single_Vertex *const mv=NULL,const std::string &p="",
+      Vertex *const v=NULL,Color_Calculator *const cc=NULL,
+      Lorentz_Calculator *const lc=NULL);
+ 
++    void Delete();
++
+     std::string Type() const;
+ 
+-    std::string ID() const;
++    const std::string &ID() const;
+ 
+     ATOOLS::Flavour Fl(const size_t &i) const;
+ 
+Index: METOOLS/Main/Polarization_Index.C
+===================================================================
+--- METOOLS/Main/Polarization_Index.C	(revision 27934)
++++ METOOLS/Main/Polarization_Index.C	(working copy)
+@@ -1,12 +1,15 @@
+ #include "METOOLS/Main/Polarization_Index.H"
+ 
++#include "ATOOLS/Org/MyStrStream.H"
+ #include "ATOOLS/Org/Exception.H"
+ 
+ using namespace METOOLS;
++using namespace ATOOLS;
+ 
+ void Polarization_Index::Init(const std::vector<int> &spins)
+ {
+   m_spins=spins;
++  m_id=ToString(spins);
+   if (m_spins.empty()) THROW(fatal_error,"No spin information");
+   m_n=1;
+   for(size_t i=0;i<m_spins.size();++i) m_n*=m_spins[i];
+Index: METOOLS/Main/Polarization_Index.H
+===================================================================
+--- METOOLS/Main/Polarization_Index.H	(revision 27934)
++++ METOOLS/Main/Polarization_Index.H	(working copy)
+@@ -3,6 +3,7 @@
+ 
+ #include <vector>
+ #include <cstddef>
++#include <string>
+ 
+ namespace METOOLS {
+ 
+@@ -10,6 +11,7 @@
+   protected:
+ 
+     std::vector<int> m_spins;
++    std::string      m_id;
+ 
+     size_t m_n;
+ 
+@@ -26,6 +28,8 @@
+     
+     inline const std::vector<int> &Spins() const { return m_spins; }
+ 
++    inline const std::string &SpinID() const { return m_id; }
++
+     inline size_t N() const { return m_n; }
+ 
+   };// end of class Polarization_Index
+Index: MODEL/Main/Single_Vertex.C
+===================================================================
+--- MODEL/Main/Single_Vertex.C	(revision 27934)
++++ MODEL/Main/Single_Vertex.C	(working copy)
+@@ -36,8 +36,8 @@
+ 
+ std::string Single_Vertex::PID() const
+ {
+-  std::string name('{'+in[0].IDName()+'}');
+-  for (int i(1);i<NLegs();++i) name+='{'+in[i].IDName()+'}';
++  std::string name(in[0].IDName());
++  for (int i(1);i<NLegs();++i) name+='|'+in[i].IDName();
+   return name;
+ }
+ 
+Index: PHASIC++/Main/Process_Integrator.C
+===================================================================
+--- PHASIC++/Main/Process_Integrator.C	(revision 27934)
++++ PHASIC++/Main/Process_Integrator.C	(working copy)
+@@ -50,11 +50,11 @@
+   p_momenta.resize(m_nin+m_nout);
+   p_beamhandler=beamhandler;
+   p_isrhandler=isrhandler;
+-  Data_Reader read(" ",";","!","=");
+-  m_swmode=read.GetValue<int>("SELECTION_WEIGHT_MODE", 0);
++  m_swmode=ToType<int>(rpa->gen.Variable("SELECTION_WEIGHT_MODE"));
+   static bool minit(false);
+   if (!minit) {
+     int smode;
++    Data_Reader read(" ",";","!","=");
+     if (read.ReadFromFile(smode,"IB_SMODE")) {
+       m_smode=smode;
+       msg_Info()<<METHOD<<"(): Set sum mode = "<<m_smode<<".\n";
+Index: PHASIC++/Process/Process_Base.C
+===================================================================
+--- PHASIC++/Process/Process_Base.C	(revision 27934)
++++ PHASIC++/Process/Process_Base.C	(working copy)
+@@ -16,12 +16,15 @@
+ #include "ATOOLS/Org/Shell_Tools.H"
+ #include "PDF/Main/Shower_Base.H"
+ #include "PDF/Main/ISR_Handler.H"
++#include "ATOOLS/Org/Run_Parameter.H"
+ #include <algorithm>
+ 
+ using namespace PHASIC;
+ using namespace MODEL;
+ using namespace ATOOLS;
+ 
++int Process_Base::s_usefmm(-1);
++
+ Process_Base::Process_Base():
+   p_parent(NULL), p_selected(this), p_mapproc(NULL),
+   p_sproc(NULL), p_proc(this),
+@@ -33,6 +36,7 @@
+   m_lookup(false), m_use_biweight(true), p_apmap(NULL)
+ {
+   m_last=m_lastb=0.0;
++  if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
+ }
+ 
+ Process_Base::~Process_Base() 
+@@ -178,69 +182,52 @@
+ {
+ }
+ 
+-class Order_KF {
+-public:
+-  bool operator()(const Subprocess_Info &a,const Subprocess_Info &b)
+-  { return a.m_fl.Kfcode()<b.m_fl.Kfcode(); }
+-  bool operator()(const Cluster_Leg *a,const Cluster_Leg *b)
+-  { return a->Flav().Kfcode()<b->Flav().Kfcode(); }
+-};// end of class Order_KF
+-
+-class Order_Anti {
+-public:
+-  bool operator()(const Subprocess_Info &a,const Subprocess_Info &b)
+-  { return !a.m_fl.IsAnti() && b.m_fl.IsAnti(); }
+-  bool operator()(const Cluster_Leg *a,const Cluster_Leg *b)
+-  { return !a->Flav().IsAnti() && b->Flav().IsAnti(); }
+-};// end of class Order_Anti
+-
+-class Order_SVFT {
+-public:
+-  bool operator()(const Subprocess_Info &a,const Subprocess_Info &b) 
++class Order_Flavour {
++  FMMap* p_fmm;
++  int Order_SVFT(const Flavour &a,const Flavour &b) 
+   {
+-    if (a.m_fl.IsScalar() && !b.m_fl.IsScalar()) return true;
+-    if (a.m_fl.IsVector() && !b.m_fl.IsScalar() && 
+-	!b.m_fl.IsVector()) return true;
+-    if (a.m_fl.IsFermion() && !b.m_fl.IsFermion() && 
+-	!b.m_fl.IsScalar() && !b.m_fl.IsVector()) return true;
+-    return false;
++    if (a.IsScalar() && !b.IsScalar()) return 1;
++    if (a.IsVector() && !b.IsScalar() && 
++	!b.IsVector()) return 1;
++    if (a.IsFermion() && !b.IsFermion() && 
++	!b.IsScalar() && !b.IsVector()) return 1;
++    return 0;
+   }
+-  bool operator()(const Cluster_Leg *a,const Cluster_Leg *b) 
++  int Order_Multi(const Flavour &a,const Flavour &b)
+   {
+-    if (a->Flav().IsScalar() && !b->Flav().IsScalar()) return true;
+-    if (a->Flav().IsVector() && !b->Flav().IsScalar() && 
+-	!b->Flav().IsVector()) return true;
+-    if (a->Flav().IsFermion() && !b->Flav().IsFermion() && 
+-	!b->Flav().IsScalar() && !b->Flav().IsVector()) return true;
+-    return false;
++    if ((*p_fmm)[int(a.Kfcode())]==0 || 
++	(*p_fmm)[int(b.Kfcode())]==0) return 0;
++    if ((*p_fmm)[int(a.Kfcode())]>
++	(*p_fmm)[int(b.Kfcode())]) return 1;
++    return 0;
++  }
++  int operator()(const Flavour &a,const Flavour &b)
++  {
++    if (a.Priority()>b.Priority()) return 1;
++    if (a.Priority()<b.Priority()) return 0;
++    if (!a.Strong()&&b.Strong()) return 1;
++    if (a.Strong()&&!b.Strong()) return 0;
++    if (p_fmm) {
++      if (Order_Multi(a,b)) return 1;
++      if (Order_Multi(b,a)) return 0;
++    }
++    if (a.Mass()>b.Mass()) return 1;
++    if (a.Mass()<b.Mass()) return 0;
++    if (Order_SVFT(a,b)) return 1;
++    if (Order_SVFT(b,a)) return 0;
++    if (!a.IsAnti()&&b.IsAnti()) return 1;
++    if (a.IsAnti()&&!b.IsAnti()) return 0;
++    return a.Kfcode()<b.Kfcode();
+   }
+-};// end of class Order_SVFT
+-
+-class Order_Mass {
+-public:
+-  int operator()(const Subprocess_Info &a,const Subprocess_Info &b) 
+-  { return a.m_fl.Mass()>b.m_fl.Mass(); }
+-  int operator()(const Cluster_Leg *a,const Cluster_Leg *b) 
+-  { return a->Flav().Mass()>b->Flav().Mass(); }
+-};// end of class Order_Mass
+-
+-class Order_Coupling {
+-public:
+-  int operator()(const Subprocess_Info &a,const Subprocess_Info &b) 
+-  { return !a.m_fl.Strong() && b.m_fl.Strong(); }
+-  int operator()(const Cluster_Leg *a,const Cluster_Leg *b) 
+-  { return !a->Flav().Strong() && b->Flav().Strong(); }
+-};// end of class Order_Coupling
+-
+-class Order_Priority {
+ public:
+-  int operator()(const Subprocess_Info &a,const Subprocess_Info &b) 
+-  { return a.m_fl.Priority() > b.m_fl.Priority(); }
+-  int operator()(const Cluster_Leg *a,const Cluster_Leg *b) 
+-  { return a->Flav().Priority() > b->Flav().Priority(); }
+-};// end of class Order_Priority
++  Order_Flavour(FMMap* fmm): p_fmm(fmm) {}
++  int operator()(const Subprocess_Info &a,const Subprocess_Info &b)
++  { return (*this)(a.m_fl,b.m_fl); }
++  int operator()(const Cluster_Leg *a,const Cluster_Leg *b)
++  { return (*this)(a->Flav(),b->Flav()); }
++};// end of class Order_Flavour
+ 
+-void Process_Base::SortFlavours(Subprocess_Info &info)
++void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
+ {
+   if (info.m_ps.empty()) return;
+   ATOOLS::Flavour heaviest(kf_photon);
+@@ -249,19 +236,30 @@
+     else if (info.m_ps[i].m_fl.Mass()==heaviest.Mass() &&
+ 	     !info.m_ps[i].m_fl.IsAnti()) heaviest=info.m_ps[i].m_fl;
+   }
+-  std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_KF());
+-  std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Anti());
+-  std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_SVFT());
+-  std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Mass());
+-  std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Coupling());
+-  std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Priority());
++  std::sort(info.m_ps.begin(),info.m_ps.end(),Order_Flavour(fmm));
+   for (size_t i(0);i<info.m_ps.size();++i) SortFlavours(info.m_ps[i]);
+ }
+ 
+ void Process_Base::SortFlavours(Process_Info &pi,const int mode)
+ {
+-  if (mode&1) SortFlavours(pi.m_ii);
+-  SortFlavours(pi.m_fi);
++  FMMap fmm;
++  for (size_t i(0);i<pi.m_ii.m_ps.size();++i) {
++    const Flavour *hfl=&pi.m_ii.m_ps[i].m_fl;
++    if (fmm.find(int(hfl->Kfcode()))==fmm.end()) 
++      fmm[int(hfl->Kfcode())]=0;
++    if (hfl->IsFermion()) {
++      fmm[int(hfl->Kfcode())]+=10;
++      if (!hfl->IsAnti()) fmm[int(hfl->Kfcode())]+=10;
++    }
++  }
++  for (size_t i(0);i<pi.m_fi.m_ps.size();++i) {
++    const Flavour *hfl=&pi.m_fi.m_ps[i].m_fl;
++    if (fmm.find(int(hfl->Kfcode()))==fmm.end()) 
++      fmm[int(hfl->Kfcode())]=0;
++    if (hfl->IsFermion()) fmm[int(hfl->Kfcode())]++;
++  }
++  if (mode&1) SortFlavours(pi.m_ii,s_usefmm?&fmm:NULL);
++  SortFlavours(pi.m_fi,s_usefmm?&fmm:NULL);
+ }
+ 
+ void Process_Base::Init(const Process_Info &pi,
+@@ -336,7 +334,8 @@
+   { return IdCount(a->m_id)>IdCount(b->m_id); }
+ };// end of class Order_NDecay
+ 
+-void Process_Base::SortFlavours(std::vector<Cluster_Leg*> &legs)
++void Process_Base::SortFlavours
++(std::vector<Cluster_Leg*> &legs,FMMap *const fmm)
+ {
+   if (legs.empty()) return;
+   ATOOLS::Flavour heaviest(kf_photon);
+@@ -345,17 +344,13 @@
+     else if (legs[i]->Flav().Mass()==heaviest.Mass() &&
+ 	     !legs[i]->Flav().IsAnti()) heaviest=legs[i]->Flav();
+   }
+-  std::stable_sort(legs.begin(),legs.end(),Order_KF());
+-  std::stable_sort(legs.begin(),legs.end(),Order_Anti());
+-  std::stable_sort(legs.begin(),legs.end(),Order_SVFT());
+-  std::stable_sort(legs.begin(),legs.end(),Order_Mass());
+-  std::stable_sort(legs.begin(),legs.end(),Order_Coupling());
+-  std::stable_sort(legs.begin(),legs.end(),Order_Priority());
++  std::sort(legs.begin(),legs.end(),Order_Flavour(fmm));
+ }
+ 
+ void Process_Base::SortFlavours
+ (Cluster_Amplitude *const ampl,const int mode)
+ {
++  FMMap fmm;
+   DecayInfo_Vector cs;
+   ClusterLeg_Vector il, fl;
+   std::vector<int> dec(ampl->Legs().size(),0);
+@@ -376,23 +371,38 @@
+ 	break;
+       }
+     if (!core) continue;
++    int kfc(cdi->m_fl.Kfcode());
++    if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
++    if (cdi->m_fl.IsFermion()) {
++      fmm[kfc]+=10;
++      if (!cdi->m_fl.IsAnti()) fmm[kfc]+=10;
++    }
+     cs.push_back(cdi);
+   }
+   for (size_t i(0);i<ampl->Legs().size();++i)
+     if (i<ampl->NIn()) {
+       ampl->Leg(i)->SetFlav(ampl->Leg(i)->Flav().Bar());
+       il.push_back(ampl->Leg(i));
++      int kfc(ampl->Leg(i)->Flav().Kfcode());
++      if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
++      if (ampl->Leg(i)->Flav().IsFermion()) {
++	fmm[kfc]+=10;
++	if (!ampl->Leg(i)->Flav().IsAnti()) fmm[kfc]+=10;
++      }
+     }
+     else {
+       if (dec[i]) continue;
+       fl.push_back(ampl->Leg(i));
++      int kfc(ampl->Leg(i)->Flav().Kfcode());
++      if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
++      if (ampl->Leg(i)->Flav().IsFermion()) ++fmm[kfc];
+     }
+-  if (mode&1) SortFlavours(il);
++  if (mode&1) SortFlavours(il,s_usefmm?&fmm:NULL);
+   for (size_t i(0);i<cs.size();++i) {
+     ampl->CreateLeg(Vec4D(),cs[i]->m_fl,ColorID(),cs[i]->m_id);
+     fl.push_back(ampl->Legs().back());
+   }
+-  SortFlavours(fl);
++  SortFlavours(fl,s_usefmm?&fmm:NULL);
+   if (cs.size()) {
+     cs=ampl->Decays();
+     std::sort(cs.begin(),cs.end(),Order_NDecay());
+@@ -413,7 +423,7 @@
+ 	    cl.push_back(ampl->Legs().back());
+ 	    inc|=cs[i]->m_id;
+ 	  }
+-	  SortFlavours(cl);
++	  SortFlavours(cl,s_usefmm?&fmm:NULL);
+ 	  (*fit)->Delete();
+ 	  fit=fl.erase(fit);
+ 	  fl.insert(fit,cl.begin(),cl.end());
+Index: PHASIC++/Process/Process_Base.H
+===================================================================
+--- PHASIC++/Process/Process_Base.H	(revision 27934)
++++ PHASIC++/Process/Process_Base.H	(working copy)
+@@ -28,6 +28,8 @@
+ 
+ namespace PHASIC {
+ 
++  typedef std::map<int,int> FMMap;
++
+   class Process_Integrator;
+   class Phase_Space_Handler;
+   class Combined_Selector;
+@@ -77,8 +79,11 @@
+ 
+     NLOTypeStringProcessMap_Map *p_apmap;
+ 
+-    static void SortFlavours(Subprocess_Info &info);
+-    static void SortFlavours(std::vector<ATOOLS::Cluster_Leg*> &legs);
++    static int s_usefmm;
++
++    static void SortFlavours(Subprocess_Info &info,FMMap *const fmm=0);
++    static void SortFlavours(std::vector<ATOOLS::Cluster_Leg*> &legs,
++			     FMMap *const fmm=0);
+ 
+   public:
+ 
+Index: PHASIC++/Process/Process_Group.C
+===================================================================
+--- PHASIC++/Process/Process_Group.C	(revision 27934)
++++ PHASIC++/Process/Process_Group.C	(working copy)
+@@ -202,16 +202,26 @@
+ bool Process_Group::CheckFlavours
+ (const Subprocess_Info &ii,const Subprocess_Info &fi,int mode) const
+ {
+-  std::vector<Flavour> cfl;
+-  for (size_t i(0);i<ii.m_ps.size();++i) cfl.push_back(ii.m_ps[i].m_fl);
+-  for (size_t i(0);i<fi.m_ps.size();++i) cfl.push_back(fi.m_ps[i].m_fl);
+   int charge(0), strong(0);
+-  size_t quarks(0), nin(ii.m_ps.size());
+-  for (size_t i(0);i<cfl.size();++i) {
+-    charge+=i<nin?-cfl[i].IntCharge():cfl[i].IntCharge();
+-    if (abs(cfl[i].StrongCharge())!=8)
+-      strong+=i<nin?-cfl[i].StrongCharge():cfl[i].StrongCharge();
+-    quarks+=cfl[i].IsQuark();
++  size_t quarks(0), nin(ii.m_ps.size()), nout(fi.m_ps.size());
++  for (size_t i(0);i<nin;++i) {
++    const Flavour &fl(ii.m_ps[i].m_fl);
++    charge+=-fl.IntCharge();
++    if (abs(fl.StrongCharge())!=8)
++      strong+=-fl.StrongCharge();
++    quarks+=fl.IsQuark();
++    if (mode==0 && quarks>m_pinfo.m_nmaxq) {
++      msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q > "
++		     <<m_pinfo.m_nmaxq<<". Skip process.\n";
++      return false;
++    }
++  }
++  for (size_t i(0);i<nout;++i) {
++    const Flavour &fl(fi.m_ps[i].m_fl);
++    charge+=fl.IntCharge();
++    if (abs(fl.StrongCharge())!=8)
++      strong+=fl.StrongCharge();
++    quarks+=fl.IsQuark();
+     if (mode==0 && quarks>m_pinfo.m_nmaxq) {
+       msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q > "
+ 		     <<m_pinfo.m_nmaxq<<". Skip process.\n";
+@@ -244,14 +254,15 @@
+   else cfi.SetExternal(fl,i-m_nin);
+ }
+ 
+-bool Process_Group::ConstructProcesses(Process_Info pi,const size_t &ci)
++bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
+ {
+   if (ci==m_nin+m_nout) {
+     if (!CheckFlavours(pi.m_ii,pi.m_fi)) return false;
+-    SortFlavours(pi);
+-    std::string name(GenerateName(pi.m_ii,pi.m_fi));
++    Process_Info cpi(pi);
++    SortFlavours(cpi);
++    std::string name(GenerateName(cpi.m_ii,cpi.m_fi));
+     if (m_procmap.find(name)!=m_procmap.end()) return false;
+-    Process_Base *proc(GetProcess(pi));
++    Process_Base *proc(GetProcess(cpi));
+     if (!proc) return false;
+     proc->SetGenerator(Generator());
+     proc->Init(pi,p_int->Beam(),p_int->ISR());
+Index: PHASIC++/Process/Process_Group.H
+===================================================================
+--- PHASIC++/Process/Process_Group.H	(revision 27934)
++++ PHASIC++/Process/Process_Group.H	(working copy)
+@@ -18,7 +18,7 @@
+ 		       const Subprocess_Info &fi,int mode=0) const;
+     void SetFlavour(Subprocess_Info &cii,Subprocess_Info &cfi,
+ 		    const ATOOLS::Flavour &fl,const size_t i) const;
+-    bool ConstructProcesses(Process_Info pi,const size_t &ci);
++    bool ConstructProcesses(Process_Info &pi,const size_t &ci);
+ 
+   public:
+ 

@@ -1,0 +1,189 @@
+\documentclass[paper]{JHEP3}
+\usepackage{amsmath,amssymb,enumerate,url}
+\bibliographystyle{JHEP}
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\POWHEGBOX{{\tt POWHEG BOX}}
+\newcommand\HERWIG{{\tt HERWIG}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\MCatNLO{{\tt MC@NLO}}
+
+\newcommand\kt{k_{\sss\rm T}}
+
+\newcommand\pt{p_{\sss\rm T}}
+\newcommand\LambdaQCD{\Lambda_{\scriptscriptstyle QCD}}
+%%%%%%%%%% End TeXmacs macros
+
+
+\title{The POWHEG BOX user manual:\\
+  Higgs boson production in vector-boson fusion} \vfill
+\author{Paolo Nason\\
+  INFN, Sezione di Milano-Bicocca,
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Paolo.Nason@mib.infn.it}}
+\author{Carlo Oleari\\
+  Universit\`a di Milano-Bicocca and INFN, Sezione di Milano-Bicocca\\
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Carlo.Oleari@mib.infn.it}}
+\vskip -0.5truecm
+
+\keywords{POWHEG, Shower Monte Carlo, NLO}
+
+\abstract{This note documents the use of the package \POWHEGBOX{}
+  for Higgs boson production in vector-boson fusion processes.  Results can
+  be easily interfaced to shower Monte Carlo programs, in such a way that
+  both NLO and shower accuracy are maintained.}  \preprint{\today\\
+  \tmtexttt{POWHEG BOX} 1.0}
+
+\begin{document}
+
+
+\section{Introduction}
+
+The \POWHEGBOX{} program is a framework for implementing NLO
+calculations in Shower Monte Carlo programs according to the
+\POWHEG{} method. An explanation of the method and a discussion of
+how the code is organized can be found in
+refs.~\cite{Nason:2004rx,Frixione:2007vw,Alioli:2010xd}.  The code is
+distributed according to the ``MCNET GUIDELINES for Event Generator
+Authors and Users'' and can be found at the web page 
+%
+\begin{center}
+ \url{http://powhegbox.mib.infn.it}.
+\end{center}
+%
+In this manual, we describe the \POWHEG{} NLO implementation of Higgs boson
+production in vector-boson fusion processes, as described in
+ref.~\cite{Nason:2009ai}
+
+
+\section{Generation of events}
+
+Build the executable\\
+\tmtexttt{\$ cd POWHEG-BOX/VBF\_H \\
+\$ make pwhg\_main }\\
+
+\noindent
+Then do (for example) \\
+\tmtexttt{\$
+cd testrun-lhc\\
+\$ ../pwhg\_main}\\
+
+\noindent
+At the end of the run, the file \tmtexttt{pwgevents.lhe} will contain 500000
+events for Higgs boson production in vector-boson fusion processes in the Les
+Houches format.  
+
+\noindent
+In order to shower them with \PYTHIA{} do\\
+\tmtexttt{\$
+cd POWHEG-BOX/VBF\_H \\ 
+\$ make main-PYTHIA-lhef \\ 
+\$ cd testrun-lhc \\
+\$ ../main-PYTHIA-lhef}
+
+\section{Process specific input parameters}
+
+In order to improve the efficiency for the generation of events,
+the optional parameter  \tmtexttt{withdamp} should be set to 1, i.e.~there
+should be the following line in the input file \tmtexttt{powheg.input}
+
+\tmtexttt{withdamp    1      ! (default 0, do not use) use Born-zero damping factor}
+\\
+
+\noindent
+The dafault invariant Higgs boson mass is distributed according to a
+Breit-Wigner~(BW) with a running width. In case one is interested in the
+generation of a Higgs boson invariant mass with a fixed width, the following
+line should be present in the \tmtexttt{powheg.input} file
+
+\tmtexttt{
+whiggsfixedwidth    1  ! if 1, use old behaviour with fixed width Breit-Wigner
+\mbox{}\hspace{44mm} ! default is running width
+}
+
+\noindent
+The complex-pole scheme according to Passarino et al. is activated by the
+flag
+
+\tmtexttt{ complexpolescheme    1   ! complex-pole scheme according to
+  Passarino et al.}\\ \\
+
+
+
+\noindent
+In case the \POWHEGBOX{} is interfaced to \PYTHIA{} or \HERWIG{}, it is
+possible to select the Higgs boson decay products by setting the optional
+parameter \tmtexttt{hdecaymode} to one of the allowed values
+
+~\\
+\tmtexttt{
+  hdecaymode -1 \phantom{aa} ! -1 no decay\\
+  \phantom{aaaaaaaaaaaaaaaaa}!  0 all decay channels open\\
+\phantom{aaaaaaaaaaaaaaaaa}!	               1-6 d dbar, u ubar,..., t tbar\\
+\phantom{aaaaaaaaaaaaaaaaa}!	               7-9 e+ e-, mu+ mu-, tau+ tau-\\
+\phantom{aaaaaaaaaaaaaaaaa}!		       10  W+W-\\
+\phantom{aaaaaaaaaaaaaaaaa}!	               11  ZZ\\
+\phantom{aaaaaaaaaaaaaaaaa}!	               12  gamma gamma\\     
+}
+\\
+
+
+
+\begin{thebibliography}{10}
+
+\bibitem{Nason:2004rx}
+  P.~Nason,
+  ``A new method for combining NLO QCD with shower Monte Carlo algorithms,''
+  JHEP {\bf 0411} (2004) 040
+  [arXiv:hep-ph/0409146].
+  %%CITATION = JHEPA,0411,040;%%
+
+%\cite{Frixione:2007vw}
+\bibitem{Frixione:2007vw}
+  S.~Frixione, P.~Nason and C.~Oleari,
+``Matching NLO QCD computations with Parton Shower simulations: the POWHEG
+method,''
+  JHEP {\bf 0711} (2007) 070
+  [arXiv:0709.2092 [hep-ph]].
+  %%CITATION = JHEPA,0711,070;%%
+
+%\cite{Alioli:2010xd}
+\bibitem{Alioli:2010xd}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+``A general framework for implementing NLO calculations in shower Monte Carlo
+  programs: the POWHEG BOX,''
+  [arXiv:1002.2581 [hep-ph]].
+  %%CITATION = ARXIV:1002.2581;%%
+
+%\cite{Nason:2009ai}
+\bibitem{Nason:2009ai}
+  P.~Nason and C.~Oleari,
+  ``NLO Higgs boson production via vector-boson fusion matched with shower in
+  POWHEG,''
+  JHEP {\bf 1002} (2010) 037
+  [arXiv:0911.5299 [hep-ph]].
+  %%CITATION = JHEPA,1002,037;%%
+
+
+
+\end{thebibliography}
+
+\end{document}
+
+
+
+
+

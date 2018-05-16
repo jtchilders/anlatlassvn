@@ -1,0 +1,55 @@
+ W b bbar + 1  jets
+ W-> ell nu
+ =======================================
+  b mass: 4.70000000000000018
+ Generation cuts for the partonic event sample:
+      Light jets:
+ ptmin= 15.0000000000000000  |etamax|= 6.00000000000000000  dR(j-j),dR(Q-j)> 0.400000000000000022
+  b quarks:
+ ptmin= 0.000000000000000000E+00  |etamax|= 6.00000000000000000  dR(QQ)> 0.000000000000000000E+00
+      Leptons:
+ ptmin(lep)= 0.000000000000000000E+00  |etamax|= 10.0000000000000000  Et(miss)> 0.000000000000000000E+00  dR(l-j)> 0.000000000000000000E+00
+ pthrmin= -1.00000000000000000  pthrmax= -1.00000000000000000
+************** run parameters
+   1 ! hard process code
+   1.400   4.700 172.500  80.419  91.188 120.000 ! mc,mb,mt,mw,mz,mh
+   2         1.00000 !  ih2
+   3      6500.00000 !  ebeam
+   4         9.00000 !  ndns
+   5         1.00000 !  iqopt
+   6         1.00000 !  qfac
+   7         1.00000 !  ickkw
+   8         1.00000 !  ktfac
+  10         1.00000 !  njets
+  11         5.00000 !  ihvy
+  20         1.40000 !  mc
+  21         4.70000 !  mb
+  30        15.00000 !  ptjmin
+  31         0.00000 !  ptbmin
+  33         0.00000 !  ptlmin
+  34         0.00000 !  metmin
+  37        -1.00000 !  pthrmin
+  38        -1.00000 !  pthrmax
+  40         6.00000 !  etajmax
+  41         6.00000 !  etabmax
+  43        10.00000 !  etalmax
+  47        -1.00000 !  ptj1min
+  48        -1.00000 !  ptj1max
+  50         0.40000 !  drjmin
+  51         0.00000 !  drbmin
+  55         0.00000 !  drlmin
+  90     20709.00000 !  iseed1
+  91     54712.00000 !  iseed2
+ 110         0.26000 !  xlclu
+ 111         1.00000 !  lpclu
+ 151         3.00000 !  iwdecmod
+ 160         1.00000 !  cluopt
+ 190     31717.00000 !  iseed3
+ 191      1955.00000 !  iseed4
+ 501        20.00000 ! min ETCLUS used for parton-jet matching (Normally ETCLUS = ptjmin + 5)
+ 502         0.40000 ! min RCLUS value for parton-jet matching
+ 503         6.00000 ! max ETACLUS value for parton-jet matching
+ 504         1.00000 ! Jet Matching: 0 inclusive 1 exclusive
+************** end parameters
+              82.53245480               1.40258765  ! Crosssection +- error (pb)
+     16000       193.86312983  ! unwtd events, lum (pb-1)

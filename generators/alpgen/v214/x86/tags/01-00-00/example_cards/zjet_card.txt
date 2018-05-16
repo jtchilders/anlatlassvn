@@ -1,0 +1,35 @@
+1                ! generate weighted events, write to file
+ZJET_TEST        ! base name for all output files
+0                ! generate new grid
+200000 3       ! warm up grid with 3 iterations of 200K events
+1e5       ! number of events to generate
+njets 1      ! select number of jets to be generated
+ilep  0     ! lep(0) or nu(1)
+iseed1 60908    ! random seed 1
+iseed2 7219    ! random seed 2
+iseed3 29433    ! random seed 3
+iseed4 10714    ! random seed 4
+ih2          1.000000000000000        ! ih2
+ebeam        4000.000000000000        ! ebeam
+ndns         9.000000000000000        ! ndns
+iqopt        1.000000000000000        ! iqopt
+qfac         1.000000000000000        ! qfac
+ickkw        1.000000000000000        ! ickkw
+ktfac        1.00000000000000         ! ktfac
+ptjmin       15.00000000000000        ! ptjmin
+ptlmin       0.000000000000000        ! ptlmin
+metmin       0.00000000000000         ! metmin
+ptcen        20.0000000000000         ! ptcen
+etajmax      6.000000000000000        ! etajmax
+etalmax      10.0000000000000         ! etalmax
+irapgap      0.00000000000000         ! irapgap
+etagap       2.50000000000000         ! etagap
+drjmin       0.7000000000000000       ! drjmin
+drlmin       0.000000000000000        ! drlmin
+cluopt       1.000000000000000        ! cluopt
+mllmin       40.00000000000000        ! m(ll) min
+mllmax       10000.0000000000         ! m(ll) max
+xlclu        -1.00000000000000        ! xlclu
+lpclu        -1.00000000000000        ! lpclu
+pthrmin      70.0000000000000         ! pthrmin
+pthrmax      140.0000000000000        ! pthrmax

@@ -1,0 +1,16 @@
+This is The BOX version of the POWHEG-hvq package.
+The output of the BOX version should be equivalent
+(within statistics) to the POWHEG-hvq version.
+There are slight changes of syntax in the powheg
+input files. Samples are given in the example
+directories c-lhc, c-tev, b-lhc, b-tev, tde-lhc,
+t-dec.
+
+Only one example analysis file is provided for now,
+that deals with top, and was used to test the
+equivalence with the POWHEG-hvq version.
+The Makefile targets pwhg_main-top and lhef_analysis-top
+use this analysis files.
+The pwhg_main is a generic program for the generation of
+a Les Houches file for either charm, top or bottom. It
+does not perform any NLO analysis.

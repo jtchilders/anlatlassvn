@@ -1,0 +1,40 @@
+0               ! imode
+alpout          ! label for files
+0               ! start with: 0=new grid, 1=previous warmup grid, 2=previous generation grid
+3000 3       ! Nevents/iteration,  N(warm-up iterations) 
+3000         ! Nevents generated after warm-up 
+njets 2 
+ebeam 6500.000000         ! E beam
+ndns 9               ! PDF CTEQ6L1 
+ih2 1                ! LHC
+iqopt 1              ! Qscale, 1 is generator default for all the processes 
+qfac  1              ! Qscale factor 
+ickkw 1              ! enable jet-parton matching, determine scale of alpha_s 
+iewopt 3             ! EW parameter scheme (3=MW 80.419, MZ 91.188, GF 1.16639e-5)
+mt 172.5             ! top mass
+ktfac 1              ! ckkw alphs scale 
+ptjmin 15.           ! jet min pT
+ptbmin 20.           ! b-quark min pT
+ptcmin 20.           ! c-quark min pT
+ptlmin 0.            ! lepton min pt                  
+ptphmin 20.          ! photon min pt
+metmin 0.0           ! missing et cut 
+etajmax 6.0          ! parton max eta
+etabmax 6.0          ! max eta for b-quarks
+etacmax 6.0          ! max eta for c-quarks
+etalmax 10.0         ! lepton max eta   
+etaphmax 6.0         ! max eta for photons
+drjmin 0.7           ! min dR between jets
+drlmin 0.0           ! min delta r between leptons  
+cluopt 1             ! kt scale option. 1:kt propto pt, 2:kt propto mt
+iseed1 1       ! first  random seed for weighting process 
+iseed2 124       ! second random seed for weighting process 
+iseed3 457       ! first  random seed for unweighting process 
+iseed4 790       ! second random seed for unweighting process 
+iwdecmode 4          ! W decay mode (1: el, 2: mu, 3: tau, 4:all leptons)
+ihvy 5        ! Select W+bb
+mc      1.4           ! quark c mass
+mb      4.7           ! quark b mass
+ptbmin  0.            ! quark b pt min
+drbmin  0.            ! deltar b
+ 

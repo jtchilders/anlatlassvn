@@ -1,0 +1,162 @@
+\documentclass[paper]{JHEP3}
+\usepackage{amsmath,amssymb,enumerate,url}
+\bibliographystyle{JHEP}
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\POWHEGBOX{{\tt POWHEG BOX}}
+\newcommand\HERWIG{{\tt HERWIG}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\MCatNLO{{\tt MC@NLO}}
+
+\newcommand\kt{k_{\sss\rm T}}
+
+\newcommand\pt{p_{\sss\rm T}}
+\newcommand\LambdaQCD{\Lambda_{\scriptscriptstyle QCD}}
+%%%%%%%%%% End TeXmacs macros
+
+
+\title{The POWHEG BOX user manual:\\
+  $\boldsymbol{Z+1}$~jet production} \vfill
+\author{Simone Alioli\\
+  Deutsches Elektronen-Synchrotron DESY\\
+  Platanenallee 6, D-15738 Zeuthen, Germany\\
+  E-mail: \email{simone.alioli@desy.de}}
+\author{Paolo Nason\\
+  INFN, Sezione di Milano-Bicocca,
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Paolo.Nason@mib.infn.it}}
+\author{Carlo Oleari\\
+  Universit\`a di Milano-Bicocca and INFN, Sezione di Milano-Bicocca\\
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Carlo.Oleari@mib.infn.it}}
+\author{Emanuele Re\\
+  Institute for Particle Physics Phenomenology, Department of Physics\\
+  University of Durham, Durham, DH1 3LE, UK\\
+  E-mail: \email{emanuele.re@durham.ac.uk}}
+
+\vskip -0.5truecm
+
+\keywords{POWHEG, Shower Monte Carlo, NLO}
+
+\abstract{This note documents the use of the package
+  \POWHEGBOX{} for $Z+1$~jet production processes.
+  Results can be easily interfaced to shower Monte Carlo programs, in
+  such a way that both NLO and shower accuracy are maintained.}
+\preprint{\today\\ \tmtexttt{POWHEG BOX} 1.0}
+
+\begin{document}
+
+
+\section{Introduction}
+
+The \POWHEGBOX{} program is a framework for implementing NLO
+calculations in Shower Monte Carlo programs according to the
+\POWHEG{} method. An explanation of the method and a discussion of
+how the code is organized can be found in
+refs.~\cite{Nason:2004rx,Frixione:2007vw,Alioli:2010xd}.  The code is
+distributed according to the ``MCNET GUIDELINES for Event Generator
+Authors and Users'' and can be found at the web page 
+%
+\begin{center}
+ \url{http://powhegbox.mib.infn.it}.
+\end{center}
+%
+In this manual, we describe the \POWHEG{} NLO implementation of $Z+1$~jet
+hadroproduction, with $Z \to \ell^+ \ell^-$ fully taken into account at
+leading order, as described in ref.~\cite{Alioli:2010qp}
+
+
+\section{Generation of events}
+
+Build the executable\\
+\tmtexttt{\$ cd POWHEG-BOX/Zj \\
+\$ make pwhg\_main }\\
+
+\noindent
+Then do (for example) \\
+\tmtexttt{\$
+cd testrun-lhc\\
+\$ ../pwhg\_main}\\
+
+\noindent
+At the end of the run, the file \tmtexttt{pwgevents.lhe} will contain 50000
+events for $Z+1$~jet hadroproduction in the Les Houches format.
+By replacing the \tmtexttt{powheg.input} file with the alternative
+\tmtexttt{alt-powheg.input}, the program is run in the weighted-event mode
+(see ref.~\cite{Alioli:2010qp}).
+
+\noindent
+In order to shower them with \PYTHIA{} do\\
+\tmtexttt{\$
+cd POWHEG-BOX/Zj \\ 
+\$ make main-PYTHIA-lhef \\ 
+\$ cd testrun-lhc \\
+\$ ../main-PYTHIA-lhef}
+
+\section{Process specific input parameters}
+
+The decay of the $Z$ boson is controlled by the token \tmtexttt{vdecaymode},
+in this way:
+
+\begin{itemize}
+\item[-] 1 for $e^+ e^-$
+\item[-] 2 for $\mu^+ \mu^-$
+\item[-] 3 for $\tau^+ \tau^-$
+\end{itemize}
+whose masses ({\tt physpar\_ml}), together with all other input physical
+parameters, are set in the \tmtexttt{init\_couplings.f} file.
+
+
+\begin{thebibliography}{10}
+
+\bibitem{Nason:2004rx}
+  P.~Nason,
+  ``A new method for combining NLO QCD with shower Monte Carlo algorithms,''
+  JHEP {\bf 0411} (2004) 040
+  [arXiv:hep-ph/0409146].
+  %%CITATION = JHEPA,0411,040;%%
+
+%\cite{Frixione:2007vw}
+\bibitem{Frixione:2007vw}
+  S.~Frixione, P.~Nason and C.~Oleari,
+``Matching NLO QCD computations with Parton Shower simulations: the POWHEG
+method,''
+  JHEP {\bf 0711} (2007) 070
+  [arXiv:0709.2092 [hep-ph]].
+  %%CITATION = JHEPA,0711,070;%%
+
+%\cite{Alioli:2010xd}
+\bibitem{Alioli:2010xd}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+``A general framework for implementing NLO calculations in shower Monte Carlo
+  programs: the POWHEG BOX,''
+  [arXiv:1002.2581 [hep-ph]].
+  %%CITATION = ARXIV:1002.2581;%%
+
+%\cite{Alioli:2008gx}
+\bibitem{Alioli:2010qp} S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+  ``Vector boson plus one jet production in POWHEG,''
+  JHEP {\bf 1101}, 005 (2011)
+  [arXiv:1009.5594 [hep-ph]].
+
+
+\end{thebibliography}
+
+\end{document}
+
+
+
+
+

@@ -1,0 +1,13 @@
+The present version of the HJJ package has been updated with
+the features that have first appeared in 	
+
+W and Z bosons in association with two jets using the POWHEG method
+John M. Campbell, R. Keith Ellis, Paolo Nason, Giulia Zanderighi.
+Mar 21, 2013. 35 pp.
+e-Print: arXiv:1303.5447 [hep-ph]
+
+The previous version can be downloaded as svn revision 2239.
+
+The use of the new features is documented in
+POWHEG-BOX/W2jet/Docs/manual-BOX-WZ2jet.pdf
+

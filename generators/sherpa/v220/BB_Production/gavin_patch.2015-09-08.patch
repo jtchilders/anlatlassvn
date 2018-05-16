@@ -1,0 +1,122 @@
+Index: AHADIC++/Main/Ahadic.C
+===================================================================
+--- AHADIC++/Main/Ahadic.C (revision 26208)
++++ AHADIC++/Main/Ahadic.C (working copy)
+@@ -55,10 +55,32 @@
+     if ((*blit)->Has(blob_status::needs_hadronization) &&
+   (*blit)->Type()==btp::Fragmentation) {
+       blob   = (*blit);
+-      // msg_Out()<<"====================================================\n"
+-      //     <<"====================================================\n"
+-      //     <<"====================================================\n"
+-      //     <<(*blob)<<"\n";
++      if(!hadpars->GetTriggerFlavours()->empty()) {
++  Blob * cblob(blob->InParticle(0)->ProductionBlob()->
++          InParticle(0)->ProductionBlob());
++  //msg_Out()<<cblob->Type()<<"\n";
++  if (cblob->Type()!=btp::code(8192)) {
++    //msg_Out()<<"====================================================\n"
++    //     <<"====================================================\n"
++    //     <<"====================================================\n"
++    //     <<(*blob)<<"\n";
++    for (list<pair<int,int> >::iterator 
++      trigs=hadpars->GetTriggerFlavours()->begin();
++         trigs!=hadpars->GetTriggerFlavours()->end(); trigs++) {
++      int flav(trigs->first);
++      int numb(trigs->second);
++      //msg_Out()<<"   Look for "<<numb<<" flavour code "<<flav<<".\n";
++      for (size_t i=0;i<blob->NInP();i++) {
++        if (((blob->InParticle(i)->Flav().IsAnti()?-1:1)*
++        int(blob->InParticle(i)->Flav().Kfcode()))==flav) numb--;
++      }
++      if (numb>0) {
++        //msg_Out()<<"   Did not find enough of them.\n";
++        return Return_Value::New_Event;
++      }
++    }
++  }
++      }
+       moveon = false;
+       Reset();
+       for (short int i=0;i<m_maxtrials;i++) {
+Index: AHADIC++/Tools/Hadronisation_Parameters.C
+===================================================================
+--- AHADIC++/Tools/Hadronisation_Parameters.C   (revision 26208)
++++ AHADIC++/Tools/Hadronisation_Parameters.C   (working copy)
+@@ -72,6 +72,7 @@
+   ReadGluonSplittingParameters(dataread);
+   ReadClusterDecayParameters(dataread);
+   ReadClusterToMesonParameters(dataread);
++  ReadTriggerFlavours(dataread);
+ }
+ 
+ double Hadronisation_Parameters::Get(string keyword) 
+@@ -245,6 +246,21 @@
+     dataread.GetValue<int>("COLOUR_RECONNECTIONS",0);
+ }
+ 
++void Hadronisation_Parameters::
++ReadTriggerFlavours(Data_Reader & dataread) {
++  vector<int> trigs;
++  dataread.VectorFromFile<int>(trigs,"HADRONISATION_TRIGGER");
++  if (trigs.empty()) return;
++  //msg_Out()<<"trigs not empty.\n";
++  for (size_t i=0;i<trigs.size();i+=2) {
++    //msg_Out()<<"   Add trigger for "<<trigs[i+1]<<" of "<<trigs[i]<<".\n";
++    m_triggerflavs.push_back(std::make_pair<int,int>(trigs[i],trigs[i+1]));
++  }
++  //for (list<pair<int, int> >::iterator trig=m_triggerflavs.begin();
++  //     trig!=m_triggerflavs.end();trig++) 
++  //  msg_Out()<<"Trigger for "<<trig->second<<" flavour(s) "
++  //      <<"with code = "<<trig->first<<".\n";
++}
+ 
+ bool Hadronisation_Parameters::
+ AdjustMomenta(const int n,ATOOLS::Vec4D * moms,const double * masses)
+Index: AHADIC++/Tools/Hadronisation_Parameters.H
+===================================================================
+--- AHADIC++/Tools/Hadronisation_Parameters.H   (revision 26208)
++++ AHADIC++/Tools/Hadronisation_Parameters.H   (working copy)
+@@ -29,6 +29,8 @@
+     StringDoubleMap          m_parametermap;
+     SDiter                   m_piter;
+ 
++    std::list<std::pair<int, int> >     m_triggerflavs;     
++
+     void ReadParameters(std::string,std::string);
+     void ReadGeneralSwitches(ATOOLS::Data_Reader & dataread);
+     void ReadMassParameters(ATOOLS::Data_Reader & dataread);
+@@ -38,6 +40,7 @@
+     void ReadClusterDecayParameters(ATOOLS::Data_Reader & dataread);
+     void ReadClusterToMesonParameters(ATOOLS::Data_Reader & dataread);
+     void ReadDeprecatedParameters(ATOOLS::Data_Reader & dataread);
++    void ReadTriggerFlavours(ATOOLS::Data_Reader & dataread);
+   public:
+     Hadronisation_Parameters();
+     ~Hadronisation_Parameters();
+@@ -46,11 +49,18 @@
+     double Get(std::string keyword);
+     const bool & AnaOn() const { return m_ana; }
+ 
+-    Constituents           * GetConstituents()       { return p_constituents;      }
+-    All_Hadron_Multiplets  * GetMultiplets()         { return p_multiplets;        }
+-    Single_Transitions     * GetSingleTransitions()  { return p_singletransitions; }
+-    Double_Transitions     * GetDoubleTransitions()  { return p_doubletransitions; }
+-    Soft_Cluster_Handler   * GetSoftClusterHandler() { return p_softclusters;      }
++    Constituents * GetConstituents()       
++    { return p_constituents;      }
++    All_Hadron_Multiplets * GetMultiplets()         
++    { return p_multiplets;        }
++    Single_Transitions * GetSingleTransitions()  
++    { return p_singletransitions; }
++    Double_Transitions * GetDoubleTransitions()  
++    { return p_doubletransitions; }
++    Soft_Cluster_Handler * GetSoftClusterHandler() 
++    { return p_softclusters;      }
++    std::list<std::pair<int,int> > * GetTriggerFlavours()    
++    { return &m_triggerflavs; }     
+ 
+     bool AdjustMomenta(const int,ATOOLS::Vec4D *,const double *);  
+   };
+
+

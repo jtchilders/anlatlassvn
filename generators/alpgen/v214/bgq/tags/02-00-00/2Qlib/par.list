@@ -1,0 +1,149 @@
+ ------
+ hard process code (not to be changed):
+ ihrd=           6
+ ------
+ Select pp (1) or ppbar (-1) collisions:
+ ih2=          -1
+ ------
+ beam energy in CM frame (e.g. 7000 for LHC):
+ ebeam=   980.00000000000000     
+ ------
+ parton density set:
+ ndns=           5
+ NDNS     Set         Lambda_4    Lambda_5_2loop   Scheme
+
+    1     CTEQ4M       .298        .202              MS  
+    2     CTEQ4L       .298        .202              MS  
+    3     CTEQ4HJ      .298        .202              MS  
+
+    4     CTEQ5M       .326        .226  (as=0.118)  MS  
+    5     CTEQ5L *     .192        .144  (asLO=0.127)  MS  
+    6     CTEQ5HJ      .326        .226  (as=0.118)  MS  
+
+    7     CTEQ6M       .326        .226  (as=0.118)  MS  
+    8     CTEQ6L       .326        .226  (as=0.118)  MS  
+    9     CTEQ6L1      .215        .167  (asLO=0.130)  MS  
+ 10-50    CTEQ6xx      .326        .226  (as=0.118)  MS  
+
+  101     MRST99 COR01 .321        .220              MS  
+
+  102     MRST2001     .342        .239  (as=0.119 ) MS  
+  103     MRST2001     .310        .214  (as=0.117 ) MS  
+  104     MRST2001     .378        .267  (as=0.121 ) MS  
+  105     MRST2001J    .378        .267  (as=0.121)  MS  
+  106     MRST2002LO * .215         .167  (asLO=0.13) MS  
+
+  201     MSTW2008LO *  .322*      .255* (asLO=0.139 ) MS  
+  202     MSTW2008NLO   .365       .255  (as=0.120 ) MS  
+  203-42  MSTW2008LO68CL * .322    .255* (asLO=0.139 ) MS  
+  243     MRST-LOstar *  .365      .255  (as=0.120 ) MS  
+  244     MRST-LOstarstar *  .280  .190  (as=0.115 ) MS  
+
+  301     CTQ66        .326        .226 (as=0.118 ) MS  
+  302-45  CTQ66        .326        .226 (as=0.118 ) MS  
+  346     CT09MC1 *    .215*       .167*(asLO=0.130 ) MS  
+  347     CT09MC2 *    .326        .226 (as=0.118 ) MS  
+
+   PDF sets followed by * are obtained from a 1-loop analysis,
+   and the relative values of Lambda  refer to 1-loop. 
+   The MSbar scheme is used by default with 1-loop
+   structure functions.
+   In all cases the values of Lambda and loop order are set
+   automatically by the code, The user only needs to input ndns
+
+ ------
+ scale option (process dependent):
+ iqopt=           1
+ Options for Factorization/renormalization scale Q:
+ iqopt=0 => Q=qfac
+ iqopt=1 => Q=qfac*sqrt{sum(m_tr^2)}
+ iqopt=2 => Q=qfac*sqrt(x1*x2*S)
+ where:
+ - m_tr^2=m^2+pt^2, summed over heavy quarks and light jets
+ To select CKKW scale input 'ickkw 1' 
+ (mandatory for later use of jet matching)
+ In imode=2 select clustering option 'cluopt':
+ cluopt=1: kperp propto pt(cluster) (default)
+ cluopt=2: kperp propto mt(cluster)
+ kperp is then rescaled by ktfac
+ ------
+ Q scale rescaling factor:
+ qfac=   1.0000000000000000     
+ ------
+ CKKW scale option: set to 1 to enable jet-parton matching:
+ ickkw=           0
+ ------
+ scale factor for ckkw alphas scale:
+ ktfac=   1.0000000000000000     
+ ------
+ number of light jets:
+ njets=           0
+ ------
+ heavy flavour type for procs like WQQ, ZQQ, 2Q, etc(4=c, 5=b, 6=t):
+ ihvy=           5
+ ------
+ charm mass:
+ mc=   1.5000000000000000     
+ ------
+ bottom mass:
+ mb=   4.7000000000000002     
+ ------
+ top mass:
+ mt=   174.30000000000001     
+ ------
+ minimum pt for light jets:
+ ptjmin=   20.000000000000000     
+ ------
+ ptmin for bottom quarks (in procs with explicit b):
+ ptbmin=   20.000000000000000     
+ ------
+ ptmin for charm quarks (in procs with explicit c):
+ ptcmin=   20.000000000000000     
+ ------
+ max|eta| for light jets:
+ etajmax=   2.5000000000000000     
+ ------
+ max|eta| for b quarks (in procs with explicit b):
+ etabmax=   2.5000000000000000     
+ ------
+ max|eta| for c quarks (in procs with explicit c):
+ etacmax=   2.5000000000000000     
+ ------
+ min deltaR(j-j), deltaR(Q-j) [j=light jet, Q=c/b]:
+ drjmin=  0.69999998807907104     
+ ------
+ min deltaR(b-b) (procs with explicit b):
+ drbmin=  0.69999998807907104     
+ ------
+ min deltaR(c-c) (procs with explicit charm):
+ drcmin=  0.69999998807907104     
+ ------
+ first random number seed (5-digit integer):
+ iseed1=       12345
+ ------
+ second random number seed (5-digit integer):
+ iseed2=       67890
+ ------
+ top-W coupling: cosvma*(V-A)+sinvma*(V+A):
+ cosvma=   1.0000000000000000     
+ ------
+ forces top decays, with spin-correlations:
+ itdec=           1
+ ------
+ lambda value for ckkw alpha (match shower alpha):
+ xlclu=  -1.0000000000000000     
+ ------
+ loop order for ckkw alpha (match shower alpha):
+ lpclu=          -1
+ ------
+ top (or t-tbar) decay modes, in imode=2:
+ itdecmod=           1
+ ------
+ kt scale option. 1:kt propto pt, 2:kt propto mt:
+ cluopt=           1
+ ------
+ first random number seed for unweighting (5-digit integer):
+ iseed3=       12345
+ ------
+ second random number seed for unweighting (5-digit integer):
+ iseed4=       67890

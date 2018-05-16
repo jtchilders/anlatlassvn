@@ -1,0 +1,32 @@
+1         ! generation mode
+alpout     ! string labeling the output files
+0         ! start with: 0=new grid, 1=previous warmup grid, 2=previous generation grid
+100000 4  ! N(events)/iteration and N(iter's) for initial grid optimiz
+10000000  ! number evts to generate
+*** The above 5 lines provide mandatory inputs for all processes
+*** (Comment lines are introduced by the three asteriscs)
+*** The lines below modify existing defaults for the hard process under study
+*** For a complete list of accessible parameters and their values,
+*** input 'print 1' (to display on the screen) or 'print 2' to write to file
+print 2
+ih2    1
+ebeam 50000
+njets 0
+ihvy 6
+itdec 1
+iqopt 0
+qfac 172.5
+itdecmode 7   ! 1 = e+jets, 2 = mu+jets, 3 = tau+jets, 4 = e/mu/tau+jets, 5 = dilepton (e/mu/tau), 6 = fully hadronic, 7 = inclusive
+ndns 9        ! CTEQ6L1
+mt  172.5
+mb  4.75
+ptjmin 20
+etajmax 2.5
+drjmin 0.7
+ptbmin 20
+etabmax 2.5
+drbmin 0.7
+iseed1    11228
+iseed2    72211
+iseed3    54701
+iseed4    79001

@@ -1,0 +1,19 @@
+Hi Taylor, Tom,
+
+attached the patches we were talking about yesterday: one for aggregating the small MPI messages in CS_Dipole, Process_Integrator and Single_Virtual_Correction, and one for buffered file readin. Apply as usual in the top-level directory of Sherpa with
+
+ patch -p0 < buffered_readin_1.patch
+ patch -p0 < mpi_aggregate_1.patch
+ make install
+
+I constructed these patches for release 2.2.0, which has the new MPI communication strategy, using Allreduce. They should also work for a patched 2.1.1, but I have not yet tested it.
+
+However, because of time constraints I'd prefer to work on a 2.2.0 for these tests anyhow. It will save the extra hassle of upgrading the fixes to the new release version later on ;)
+
+Let me know how the timing tests go.
+
+Cheers
+Stefan
+
+
+

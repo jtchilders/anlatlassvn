@@ -1,0 +1,545 @@
+Index: AMEGIC++/Amplitude/Amplitude_Generator.C
+===================================================================
+--- AMEGIC++/Amplitude/Amplitude_Generator.C	(revision 28115)
++++ AMEGIC++/Amplitude/Amplitude_Generator.C	(working copy)
+@@ -66,7 +66,7 @@
+     p->number = *perm;
+     p->fl = fl[*perm];
+     p->b  = b[*perm];
+-    if (p->Lorentz) delete p->Lorentz;
++    if (p->Lorentz) p->Lorentz->Delete();
+     if (p->fl.IsBoson()) {
+       p->Lorentz = LF_Getter::GetObject("Pol",LF_Key());
+       p->Lorentz->SetParticleArg(0);
+@@ -191,7 +191,7 @@
+ 	for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
+ 	p->v = vl[j];
+ 	*p->Color = vl[j]->Color.back();
+-	if (p->Lorentz) delete p->Lorentz;
++	if (p->Lorentz) p->Lorentz->Delete();
+ 	p->Lorentz = vl[j]->Lorentz.front()->GetCopy();
+ 	p->t = vl[j]->t;
+ 	return 1;
+@@ -321,7 +321,7 @@
+ 	  if (p->right->fl==Flavour(kf_none)) p->right->fl = flav[2];
+ 	  p->v          = vl[i];
+ 	  *p->Color = vl[i]->Color.back();
+-	  if (p->Lorentz) delete p->Lorentz;
++	  if (p->Lorentz) p->Lorentz->Delete();
+ 	  p->Lorentz = vl[i]->Lorentz.front()->GetCopy();
+ 	  p->t = vl[i]->t;
+ 	  
+@@ -926,7 +926,7 @@
+ 
+ 	  if ((*v)(i)->Color.size()==1) {
+ 	    *pcopy->Color = (*v)(i)->Color.back();
+-            if (pcopy->Lorentz) delete pcopy->Lorentz;
++            if (pcopy->Lorentz) pcopy->Lorentz->Delete();
+ 	    pcopy->Lorentz = (*v)(i)->Lorentz.front()->GetCopy();
+ 	    pcopy->t = (*v)(i)->t;
+             break;
+@@ -934,7 +934,7 @@
+           else {
+ 	    for (size_t k=0;k<(*v)(i)->Color.size();k++) {
+ 	      *pcopy->Color = (*v)(i)->Color[k];
+-              if (pcopy->Lorentz) delete pcopy->Lorentz;
++              if (pcopy->Lorentz) pcopy->Lorentz->Delete();
+ 	      pcopy->Lorentz = (*v)(i)->Lorentz[k]->GetCopy();
+ 	      pcopy->t = (*v)(i)->t;
+ 
+Index: AMEGIC++/Amplitude/Lorentz_Function.H
+===================================================================
+--- AMEGIC++/Amplitude/Lorentz_Function.H	(revision 28115)
++++ AMEGIC++/Amplitude/Lorentz_Function.H	(working copy)
+@@ -26,12 +26,14 @@
+ 
+     std::string Str(int a) const;
+ 
+-  public:
+-
+     Lorentz_Function(const std::string &type);
+ 
+     virtual ~Lorentz_Function();
+ 
++  public:
++
++    virtual void Delete() = 0;
++
+     virtual int NofIndex() const = 0;
+ 
+     virtual std::string String(int shortversion=0) const = 0;
+@@ -327,7 +329,7 @@
+ #define DEFINE_LF_GETTER(CLASS,TAG,INFO)				\
+   DECLARE_GETTER(CLASS,TAG,Lorentz_Function,LF_Key);			\
+   Lorentz_Function *ATOOLS::Getter<Lorentz_Function,LF_Key,CLASS>::	\
+-  operator()(const LF_Key &key) const { return new CLASS(); }		\
++  operator()(const LF_Key &key) const { return CLASS::New(); }		\
+   void ATOOLS::Getter<Lorentz_Function,LF_Key,CLASS>::			\
+   PrintInfo(std::ostream &str,const size_t width) const { str<<INFO; }
+ 
+Index: AMEGIC++/Amplitude/Lorentz_Functions.C
+===================================================================
+--- AMEGIC++/Amplitude/Lorentz_Functions.C	(revision 28115)
++++ AMEGIC++/Amplitude/Lorentz_Functions.C	(working copy)
+@@ -1,4 +1,5 @@
+ #include "AMEGIC++/Amplitude/Lorentz_Function.H"
++#include "ATOOLS/Org/STL_Tools.H"
+ 
+ using namespace MODEL;
+ using namespace ATOOLS;
+@@ -11,11 +12,20 @@
+   { return "0"; }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_None());
++    Lorentz_Function *copy(LF_None::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_None> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_None();
++    LF_None *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_None> LF_None::s_objects;
+ DEFINE_LF_GETTER(LF_None,"None","")
+ 
+ class LF_Gamma: public Lorentz_Function {
+@@ -30,11 +40,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_Gamma());
++    Lorentz_Function *copy(LF_Gamma::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_Gamma> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_Gamma();
++    LF_Gamma *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_Gamma> LF_Gamma::s_objects;
+ DEFINE_LF_GETTER(LF_Gamma,"FFV","")
+ class LF_Gab: public Lorentz_Function {
+ public:  
+@@ -54,11 +73,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_Gab());
++    Lorentz_Function *copy(LF_Gab::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_Gab> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_Gab();
++    LF_Gab *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_Gab> LF_Gab::s_objects;
+ DEFINE_LF_GETTER(LF_Gab,"VVS","")
+ class LF_Gauge3: public Lorentz_Function {
+ public:  
+@@ -81,11 +109,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_Gauge3());
++    Lorentz_Function *copy(LF_Gauge3::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_Gauge3> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_Gauge3();
++    LF_Gauge3 *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_Gauge3> LF_Gauge3::s_objects;
+ DEFINE_LF_GETTER(LF_Gauge3,"VVV","")
+ class LF_Gauge4: public Lorentz_Function {
+ public:  
+@@ -118,11 +155,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_Gauge4());
++    Lorentz_Function *copy(LF_Gauge4::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_Gauge4> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_Gauge4();
++    LF_Gauge4 *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_Gauge4> LF_Gauge4::s_objects;
+ DEFINE_LF_GETTER(LF_Gauge4,"VVVV","")
+ class LF_Gluon4A: public Lorentz_Function {
+ public:  
+@@ -161,11 +207,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_Gluon4A());
++    Lorentz_Function *copy(LF_Gluon4A::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_Gluon4A> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_Gluon4A();
++    LF_Gluon4A *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_Gluon4A> LF_Gluon4A::s_objects;
+ DEFINE_LF_GETTER(LF_Gluon4A,"VVVVA","")
+ class LF_Gluon4B: public Lorentz_Function {
+ public:  
+@@ -204,11 +259,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_Gluon4B());
++    Lorentz_Function *copy(LF_Gluon4B::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_Gluon4B> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_Gluon4B();
++    LF_Gluon4B *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_Gluon4B> LF_Gluon4B::s_objects;
+ DEFINE_LF_GETTER(LF_Gluon4B,"VVVVB","")
+ class LF_Gluon4C: public Lorentz_Function {
+ public:  
+@@ -247,11 +311,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_Gluon4C());
++    Lorentz_Function *copy(LF_Gluon4C::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_Gluon4C> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_Gluon4C();
++    LF_Gluon4C *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_Gluon4C> LF_Gluon4C::s_objects;
+ DEFINE_LF_GETTER(LF_Gluon4C,"VVVVC","")
+ class LF_SSV: public Lorentz_Function {
+ public:  
+@@ -271,11 +344,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_SSV());
++    Lorentz_Function *copy(LF_SSV::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_SSV> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_SSV();
++    LF_SSV *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_SSV> LF_SSV::s_objects;
+ DEFINE_LF_GETTER(LF_SSV,"SSV","")
+ 
+ class LF_SSS: public Lorentz_Function {
+@@ -288,11 +370,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_SSS());
++    Lorentz_Function *copy(LF_SSS::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_SSS> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_SSS();
++    LF_SSS *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_SSS> LF_SSS::s_objects;
+ DEFINE_LF_GETTER(LF_SSS,"SSS","")
+ class LF_FFS: public Lorentz_Function {
+ public:  
+@@ -304,11 +395,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_FFS());
++    Lorentz_Function *copy(LF_FFS::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_FFS> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_FFS();
++    LF_FFS *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_FFS> LF_FFS::s_objects;
+ DEFINE_LF_GETTER(LF_FFS,"FFS","")
+ class LF_Pol: public Lorentz_Function {
+ public:  
+@@ -321,11 +421,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_Pol());
++    Lorentz_Function *copy(LF_Pol::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_Pol> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_Pol();
++    LF_Pol *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_Pol> LF_Pol::s_objects;
+ DEFINE_LF_GETTER(LF_Pol,"Pol","")
+ class LF_VVSS: public Lorentz_Function {
+ public:  
+@@ -345,11 +454,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_VVSS());
++    Lorentz_Function *copy(LF_VVSS::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_VVSS> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_VVSS();
++    LF_VVSS *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_VVSS> LF_VVSS::s_objects;
+ DEFINE_LF_GETTER(LF_VVSS,"VVSS","")
+ class LF_SSSS: public Lorentz_Function {
+ public:  
+@@ -361,11 +479,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_SSSS());
++    Lorentz_Function *copy(LF_SSSS::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_SSSS> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_SSSS();
++    LF_SSSS *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_SSSS> LF_SSSS::s_objects;
+ DEFINE_LF_GETTER(LF_SSSS,"SSSS","")
+ 
+ class LF_HVV: public Lorentz_Function {
+@@ -386,11 +513,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_HVV());
++    Lorentz_Function *copy(LF_HVV::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_HVV> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_HVV();
++    LF_HVV *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_HVV> LF_HVV::s_objects;
+ DEFINE_LF_GETTER(LF_HVV,"HVV","")
+ class LF_HVVV: public Lorentz_Function {
+ public:
+@@ -414,11 +550,20 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_HVVV());
++    Lorentz_Function *copy(LF_HVVV::New());
+     *copy=*this;
+     return copy;
+   }
++  static ATOOLS::AutoDelete_Vector<LF_HVVV> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_HVVV();
++    LF_HVVV *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
+ };
++ATOOLS::AutoDelete_Vector<LF_HVVV> LF_HVVV::s_objects;
+ DEFINE_LF_GETTER(LF_HVVV,"HVVV","")
+ class LF_C4GS: public Lorentz_Function {
+ public:
+@@ -438,9 +583,18 @@
+   }
+   Lorentz_Function *GetCopy() const 
+   {
+-    Lorentz_Function *copy(new LF_C4GS());
++    Lorentz_Function *copy(LF_C4GS::New());
+     *copy=*this;
+     return copy;
+   }
+-}; 
++  static ATOOLS::AutoDelete_Vector<LF_C4GS> s_objects;
++  static Lorentz_Function *New() {
++    if (s_objects.empty()) return new LF_C4GS();
++    LF_C4GS *lf(s_objects.back());
++    s_objects.pop_back();
++    return lf;
++  }
++  void Delete() { s_objects.push_back(this); }
++};
++ATOOLS::AutoDelete_Vector<LF_C4GS> LF_C4GS::s_objects;
+ DEFINE_LF_GETTER(LF_C4GS,"C4GS","")
+Index: AMEGIC++/Amplitude/Single_Vertex.C
+===================================================================
+--- AMEGIC++/Amplitude/Single_Vertex.C	(revision 28115)
++++ AMEGIC++/Amplitude/Single_Vertex.C	(working copy)
+@@ -21,7 +21,7 @@
+ 
+ Single_Vertex::~Single_Vertex()
+ {
+-  for (size_t i(0);i<Lorentz.size();++i) delete Lorentz[i];
++  for (size_t i(0);i<Lorentz.size();++i) Lorentz[i]->Delete();
+ }
+ 
+ int Single_Vertex::Compare(const Single_Vertex *v) const
+@@ -60,7 +60,7 @@
+ // Operators
+ Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) 
+ {
+-  for (size_t i(0);i<Lorentz.size();++i) delete Lorentz[i];
++  for (size_t i(0);i<Lorentz.size();++i) Lorentz[i]->Delete();
+   Lorentz=std::vector<MODEL::Lorentz_Function*>();
+     
+       if (this!=&v) {
+Index: AMEGIC++/Amplitude/Zfunc_Generator.C
+===================================================================
+--- AMEGIC++/Amplitude/Zfunc_Generator.C	(revision 28115)
++++ AMEGIC++/Amplitude/Zfunc_Generator.C	(working copy)
+@@ -285,7 +285,7 @@
+     }
+   }
+   if (Zh->m_type=="") {
+-    for (size_t i(0);i<lflist.size();++i) delete lflist[i];
++    for (size_t i(0);i<lflist.size();++i) lflist[i]->Delete();
+     return 0;
+     msg_Error()<<METHOD<<"(): Invalid Lorentz function."<<endl;
+     LFPrint(lflist);  
+@@ -293,7 +293,7 @@
+   }
+ 
+   LFFill_Zfunc(Zh,lflist,p,pf,pb);
+-  for (size_t i(0);i<lflist.size();++i) delete lflist[i];
++  for (size_t i(0);i<lflist.size();++i) lflist[i]->Delete();
+   return 1;
+ }
+ 
+Index: AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.C
+===================================================================
+--- AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.C	(revision 28115)
++++ AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.C	(working copy)
+@@ -16,7 +16,7 @@
+ 
+ Zfunc_Calc::~Zfunc_Calc() 
+ {
+-  for (size_t i(0);i<lorentzlist.size();++i) delete lorentzlist[i];
++  for (size_t i(0);i<lorentzlist.size();++i) lorentzlist[i]->Delete();
+ }
+ 
+ Zfunc_Calc *Zfunc_Calc::GetCopy() const
+Index: AMEGIC++/Main/Point.C
+===================================================================
+--- AMEGIC++/Main/Point.C	(revision 28115)
++++ AMEGIC++/Main/Point.C	(working copy)
+@@ -39,7 +39,7 @@
+     fl     = p.fl;
+       
+     *Color = *p.Color; 
+-    if (Lorentz) delete Lorentz;
++    if (Lorentz) Lorentz->Delete();
+     Lorentz=NULL;
+     if (p.Lorentz) Lorentz = p.Lorentz->GetCopy(); 
+  
+Index: AMEGIC++/Main/Point.H
+===================================================================
+--- AMEGIC++/Main/Point.H	(revision 28115)
++++ AMEGIC++/Main/Point.H	(working copy)
+@@ -37,7 +37,7 @@
+     ~Point() {
+       if (nextra>0) delete[] extrafl;
+       delete Color;
+-      if (Lorentz) delete Lorentz;
++      if (Lorentz) Lorentz->Delete();
+     }
+     void Print();
+     void ResetExternalNumbers(int);

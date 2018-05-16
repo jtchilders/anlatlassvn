@@ -1,0 +1,346 @@
+\documentclass[paper]{JHEP3}
+\usepackage{amsmath,amssymb,enumerate,url}
+\bibliographystyle{JHEP}
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\POWHEGBOX{{\tt POWHEG BOX}}
+\newcommand\HERWIG{{\tt HERWIG}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\MCatNLO{{\tt MC@NLO}}
+
+\newcommand\kt{k_{\sss\rm T}}
+
+\newcommand\pt{p_{\sss\rm T}}
+\newcommand\LambdaQCD{\Lambda_{\scriptscriptstyle QCD}}
+%%%%%%%%%% End TeXmacs macros
+
+
+\title{The POWHEG BOX user manual:\\
+  Higgs boson production through  gluon fusion} \vfill
+\author{Simone Alioli\\
+  LBNL \& UC Berkeley,
+  1 Cyclotron Road, MS50A 5104,  94720 CA Berkeley, USA\\
+  E-mail: \email{salioli@lbl.gov}}
+\author{Paolo Nason\\
+  INFN, Sezione di Milano-Bicocca,
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Paolo.Nason@mib.infn.it}}
+\author{Carlo Oleari\\
+  Universit\`a di Milano-Bicocca and INFN, Sezione di Milano-Bicocca\\
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Carlo.Oleari@mib.infn.it}}
+\author{Emanuele Re\\
+  Institute for Particle Physics Phenomenology, Department of Physics\\
+  University of Durham, Durham, DH1 3LE, UK\\
+  E-mail: \email{emanuele.re@durham.ac.uk}}
+
+\vskip -0.5truecm
+
+\keywords{POWHEG, Shower Monte Carlo, NLO}
+
+\abstract{This note documents the use of the package
+  \tmtexttt{POWHEG BOX} for Higgs boson production trough gluon fusion.
+  Results can be easily interfaced to shower Monte Carlo programs, in
+  such a way that both NLO and shower accuracy are maintained.}
+\preprint{\today\\ \tmtexttt{POWHEG BOX} 1.0}
+
+\begin{document}
+
+
+\section{Introduction}
+
+The \tmtexttt{POWHEG BOX} program is a framework for implementing NLO
+calculations in Shower Monte Carlo programs according to the
+\POWHEG{} method. An explanation of the method and a discussion of
+how the code is organized can be found in
+refs.~\cite{Nason:2004rx,Frixione:2007vw,Alioli:2010xd}.  The code is
+distributed according to the ``MCNET GUIDELINES for Event Generator
+Authors and Users'' and can be found at the web page \\
+%
+\begin{center}
+ \url{http://powhegbox.mib.infn.it}.
+\end{center}
+%
+~\\
+%
+
+This program is an implementation of the NLO cross section for Higgs
+boson production via gluon fusion process, first evaluated in
+refs.~\cite{Dawson:1990zj,Djouadi:1991tka,Spira:1995rr}, in the
+\POWHEG{} formalism of refs. \cite{Nason:2004rx,Frixione:2007vw}.  A
+detailed description of the implementation can be found on
+ref.~\cite{Alioli:2008tz}.  We allow either to retain the full
+top-mass dependence in the leading order contribution, either to
+perform the calculation of NLO terms in the large top-mass limit. Spin
+correlations of Higgs boson decay products are not included, being it
+a scalar. This issue can be safely left to the subsequent Shower Monte
+Carlo program. Finite Higgs boson width effects are accounted for.
+The code, that can be found in the \tmtexttt{POWHEG-BOX/gg\_H}
+subdirectory. is based on the subtraction scheme by Frixione, Kunszt
+and Signer implemented in the \tmtexttt{POWHEG BOX}, rather than on the scheme
+discussed in the paper~\cite{Alioli:2008tz}. Please cite it anyhow if
+you use the program.
+
+In order to run the \tmtexttt{POWHEG BOX} program, we recommend the
+reader to start from the \tmtexttt{POWHEG BOX} user manual, which
+contains all the information and settings that are common between
+all subprocesses. In this note we focus on  the settings and
+parameters specific to $gg\to H$ implementation.
+
+\section{Generation of events}
+
+Build the executable\\
+\tmtexttt{\$ cd POWHEG-BOX/gg\_H \\
+\$ make pwhg\_main }\\
+Then do (for example) \\
+\tmtexttt{\$
+cd testrun-lhc\\
+\$ ../pwhg\_main}\\
+At
+the end of the run, the file \tmtexttt{pwgevents.lhe} will contain
+100000 events for $gg\to H$  in the Les Houches format. In
+order to shower them with \PYTHIA{} do\\~\\
+\tmtexttt{\$
+cd POWHEG-BOX/gg\_H \\ \$ make
+main-PYTHIA-lhef \\ \$ cd
+testrun-lhc \\
+\$ ../main-PYTHIA-lhef}
+
+\section{Process specific input parameters}
+
+The  mandatory parameters are \\
+\tmtexttt{
+gfermi 0.116639D-04   ! Fermi constant \\
+hmass 120             ! mass of Higgs boson in GeV \\
+hwidth 0.003605       ! width of Higgs boson in GeV \\ 
+topmass 171.3        ! top quark mass in GeV \\
+}
+\\
+The running of $\as$ is evaluated at two loop order, correctly matching,
+at flavour thresholds, different definitions that depends on the number of
+flavours that can be considered light at the renormalization scale. 
+Examples of \tmtexttt{powheg.input} files are given in the subdirectories
+\tmtexttt{gg\_H/testrun-tev} and \tmtexttt{gg\_H/testrun-lhc}.
+In all examples, the choice of the parameters that control the grid
+generation is such that a reasonably small fraction of negative weights is generated, so they
+can be run as they are. We remind the reader that these negative weights are
+only due to our choice of generating $\tilde{B}$ instead of $\bar B$.
+They indeed correspond to phase
+space points where NLO corrections are bigger than LO contributions. 
+Had we performed the integration over the full radiation phase space these negative weights would have
+disappeared completely. 
+
+In case one is interfacing to \HERWIG{} or \PYTHIA{} SMC programs, we provide a facility to select the Higgs boson decay products in  these programs :  
+~\\
+\tmtexttt{
+  hdecaymode 12 \phantom{aa} ! code for selection of Higgs boson decay products:\\
+\phantom{aaaaaaaaaaaaaaaaa}!  -1 the Higgs boson is left undecayed by the SMC\\ 
+\phantom{aaaaaaaaaaaaaaaaa}!  0 all decay channels are open\\
+\phantom{aaaaaaaaaaaaaaaaa}!  1-6 d dbar, u ubar,..., t tbar (as in HERWIG)\\
+\phantom{aaaaaaaaaaaaaaaaa}!  7-9 e+ e-, mu+ mu-, tau+ tau-\\
+\phantom{aaaaaaaaaaaaaaaaa}!  10, 11, 12  W+W-, ZZ, gamma gamma \\     
+}
+\\
+
+Together with the mandatory parameters, the \POWHEGBOX{} input facility  allows for an easy setting of run parameters, by explicitly adding the relevant lines to the input card. In case one of the following entries is not present in the input card  the reported default value is assumed. In any case, these parameters are printed in the output of the program, so their values can be easily tracked down. 
+\\
+\tmtexttt{masswindow\_low 10   ! M\_H > Hmass - masswindow\_low * Hwidth}\\
+\tmtexttt{masswindow\_high 10  ! M\_H < Hmass + masswindow\_high * Hwidth  }\\
+\tmtexttt{runningscale 0  ! choice for ren and fac scales in Bbar integration}\\
+\phantom{pppppppppppppppppppppppppppppp} \tmtexttt{ 0: fixed scale M\_H}\\
+\phantom{pppppppppppppppppppppppppppppp} \tmtexttt{ 1: running scale inv mass H}\\ 
+
+Of particular importance are the following parameters: 
+\begin{itemize}
+
+\item{\tmtexttt{largemtlim 3} (default 3) controls how the large
+  top-mass approximation is enforced.  The default behaviour is to
+  evaluate the LO contributions with the full mass dependence and the
+  NLO contributions in the large top mass limit. These are then
+  reweighted by a top-mass correction factor $B_{(m_t)} / B_{({m_t}\to \infty)}$,
+  given by the ratio of the LO result in the theory with finite quark masses over
+  the result in the effective theory, where heavy quarks in the loop
+  have been integrated out. This
+  correction factor is evaluated on a event-by-event basis at the
+  actual Higgs boson virtuality, if the zero width approximation 
+  is not enforced (see below). Setting this parameter to 0 one fixes
+  this correction factor to be always evaluated at the Higgs boson
+  mass.  Setting this parameter to 1 the correction factor is instead
+  omitted and the both the LO and NLO contributions are all evaluated
+  in the large top mass limit.  Setting it to 2 the correction factor
+  is again omitted but the LO contributions are evaluated with the
+  full top-mass dependence}
+
+\item{\tmtexttt{includebloop 1} (default 0) Setting
+  this parameter to 1 the correction factor for the \tmtexttt{largemtlim 0} or\tmtexttt{largemtlim 3} cases  will include
+  also the contributions coming from the diagrams with a loop of bottom quarks.
+  
+  The mass of the bottom quark can be set via the \tmtexttt{bmass}  token in the \POWHEGBOX{} input file.
+  If not provided, a default value of $m_b = 4.55 \rm{GeV}$ is assumed.
+This token has no effect if used in combination with the \tmtexttt{largemtlim 1} or\tmtexttt{largemtlim 2} choices.
+}
+
+\item{\tmtexttt{hfact    100d0    ! (default no dumping factor) dump factor for high-pt radiation: > 0 dumpfac=hfact**2/(pt2+hfact**2) } controls how much of real contribution 
+    enters in the \POWHEG{} Sudakov form factor. By default all real
+    contributions are included, but this may lead to a NNLO mismatch in the
+    higher Higgs boson $\pt$ distribution tail, with respect to fixed order NLO
+    results. This actually brings \POWHEGBOX{} results closer to NNLO ones, but if
+    one want to switch-off this feature it's possible to use a reduced real
+    contribution $R^{\scriptscriptstyle{\texttt{red}}}= R\times$ \tmtexttt{dumpfact} in the Sudakov and to generate the
+    remaining $R\times$(1-\tmtexttt{dumpfact}) part without suppression, as documented in Sec. 4.3 of
+    ref.~\cite{Alioli:2008tz}.
+   }
+
+\item{\tmtexttt{zerowidth 1} (default 0 = false) enforce the calculation in the Higgs zero width approximation.
+}
+
+\item{\tmtexttt{bwshape 2} (default 1) choose the functional form of the
+  Breit-Wigner along which the Higgs virtuality is distributed, in case 
+  the zero width approximation has not been chosen. Allowed values are $1$
+  for a BW with a running width,  $2$ for a fixed width $\Gamma_H$ and $3$ for the
+  complex-pole scheme according to Passarino et al.
+}
+
+\end{itemize}
+
+\begin{thebibliography}{10}
+
+\bibitem{Nason:2004rx}
+  P.~Nason,
+``A new method for combining NLO QCD with shower Monte Carlo algorithms,''
+  JHEP {\bf 0411} (2004) 040
+  [arXiv:hep-ph/0409146].
+  %%CITATION = JHEPA,0411,040;%%
+
+%\cite{Frixione:2007vw}
+\bibitem{Frixione:2007vw}
+  S.~Frixione, P.~Nason and C.~Oleari,
+``Matching NLO QCD computations with Parton Shower simulations: the POWHEG
+method,''
+  JHEP {\bf 0711} (2007) 070
+  [arXiv:0709.2092 [hep-ph]].
+  %%CITATION = JHEPA,0711,070;%%
+
+
+%\cite{Alioli:2010xd}
+\bibitem{Alioli:2010xd}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+``A general framework for implementing NLO calculations in shower Monte Carlo
+  programs: the POWHEG BOX,''
+  [arXiv:1002.2581 [hep-ph]].
+  %%CITATION = ARXIV:1002.2581;%%
+
+%\cite{Frixione:2002ik}
+\bibitem{Frixione:2002ik}
+  S.~Frixione and B.~R.~Webber,
+ ``Matching NLO QCD computations and parton shower simulations,''
+  JHEP {\bf 0206} (2002) 029
+  [arXiv:hep-ph/0204244].
+  %%CITATION = JHEPA,0206,029;%%
+
+%\cite{Frixione:2006gn}
+\bibitem{Frixione:2006gn}
+  S.~Frixione and B.~R.~Webber,
+  ``The MC@NLO 3.3 event generator,''
+  arXiv:hep-ph/0612272.
+%  %%CITATION = HEP-PH/0612272;%%
+
+\bibitem{Dawson:1990zj}
+S.~Dawson, {\it {Radiative corrections to Higgs boson production}},  {\em Nucl.
+  Phys.} {\bf B359} (1991) 283--300.
+
+\bibitem{Djouadi:1991tka}
+A.~Djouadi, M.~Spira, and P.~M. Zerwas, {\it {Production of Higgs bosons in
+  proton colliders: QCD corrections}},  {\em Phys. Lett.} {\bf B264} (1991)
+  440--446.
+
+\bibitem{Spira:1995rr}
+M.~Spira, A.~Djouadi, D.~Graudenz, and P.~M. Zerwas, {\it {Higgs boson
+  production at the LHC}},  {\em Nucl. Phys.} {\bf B453} (1995) 17--82,
+  [\href{http://xxx.lanl.gov/abs/hep-ph/9504378}{{\tt hep-ph/9504378}}].
+
+
+
+%\cite{Alioli:2008tz}
+\bibitem{Alioli:2008tz}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+``NLO Higgs boson production via gluon fusion matched with shower in
+  POWHEG,''
+  arXiv:0812.0578 [hep-ph].
+  %%CITATION = ARXIV:0812.0578;%%
+
+\bibitem{mcfm}
+  % citazione nostro lavoro
+  http://mcfm.fnal.gov/
+
+
+\bibitem{Cacciari:2005hq}
+M.~Cacciari and G.~P. Salam, {\it {Dispelling the $N^3$ myth for the $k_T$
+  jet-finder}},  {\em Phys. Lett.} {\bf B641} (2006) 57--61,
+  [\href{http://xxx.lanl.gov/abs/hep-ph/0512210}{{\tt hep-ph/0512210}}].
+
+
+
+
+%\cite{Boos:2001cv}
+\bibitem{Boos:2001cv}
+  E.~Boos {\it et al.},
+  ``Generic user process interface for event generators,''
+  arXiv:hep-ph/0109068.
+  %%CITATION = HEP-PH/0109068;%%
+
+%\cite{Alwall:2006yp}
+\bibitem{Alwall:2006yp}
+  J.~Alwall {\it et al.},
+  ``A standard format for Les Houches event files,''
+  Comput.\ Phys.\ Commun.\  {\bf 176} (2007) 300
+  [arXiv:hep-ph/0609017].
+  %%CITATION = CPHCB,176,300;%%
+
+
+%\cite{Altarelli:1989wu}
+\bibitem{Altarelli:1989wu} T. Sj\"ostrand et~al., in
+  ``Z physics at LEP1: Event generators and software,'',  eds.
+  G.~Altarelli, R.~Kleiss and C.~Verzegnassi, Vol 3, pg. 327.
+  %%CITATION = CERN-89-08-V-3;%%
+
+
+%\cite{Whalley:2005nh}
+\bibitem{Whalley:2005nh}
+  M.~R.~Whalley, D.~Bourilkov and R.~C.~Group,
+  ``The Les Houches accord PDFs (LHAPDF) and LHAGLUE,''
+  arXiv:hep-ph/0508110.
+  %%CITATION = HEP-PH/0508110;%%
+
+
+\bibitem{Alioli:2008gx}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+  ``NLO vector-boson production matched with shower in POWHEG,''
+  JHEP {\bf 0807}, 060 (2008)
+  [arXiv:0805.4802 [hep-ph]].
+  %%CITATION = JHEPA,0807,060;%%
+
+
+
+
+\end{thebibliography}
+
+
+\end{document}
+
+
+
+
+

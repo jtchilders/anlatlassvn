@@ -1,0 +1,16 @@
+Index: PHASIC++/Main/Phase_Space_Integrator.C
+===================================================================
+--- PHASIC++/Main/Phase_Space_Integrator.C	(revision 27859)
++++ PHASIC++/Main/Phase_Space_Integrator.C	(working copy)
+@@ -39,6 +39,11 @@
+   else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
+   addtime=0.0;
+   lastrss=0;
++#ifdef USING__MPI
++  int size=MPI::COMM_WORLD.Get_size();
++  itmin*=size;
++  itmax*=size;
++#endif
+ }
+ 
+ Phase_Space_Integrator::~Phase_Space_Integrator()

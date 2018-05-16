@@ -1,0 +1,35 @@
+1              ! imode 
+alpout         ! label for files
+2              ! start with: 0=new grid, 1=previous warmup grid, 2=previous generation grid
+0            0 ! Num events/iteration, Num warm-up iterations
+1000000        ! Num events generated after warm-up
+*** The above 5 lines provide mandatory inputs for all processes
+*** (Comment lines are introduced by the three asteriscs)
+*** The lines below modify existing defaults for the hard process under study
+*** For a complete list of accessible parameters and their values,
+*** input "print 1" (to display on the screen) or "print 2" to write to file
+cluopt                       1  ! kt scale option. 1:kt propto pt, 2:kt propto mt
+drjmin                     0.4  ! min dR between jets
+drlmin                     0.0  ! min delta r between leptons
+ebeam                     6500  ! Beam energy GeV
+etajmax                    6.0  ! parton max eta
+etalmax                   10.0  ! lepton max eta
+ickkw                        1  ! enable jet-parton matching, determine scale of alpha_s
+ih2                          1  ! LHC
+ihvy                         5  ! heavy flavour type for procs like WQQ, ZQQ, 2Q, etc(4=c, 5=b, 6=t)
+ilep                         0  ! Use leptons in the final state (not neutrinos)
+iqopt                        1  ! Qscale, 1 is generator default for all the processes
+iseed1                   41486  ! first  random seed for weighting process
+iseed2                   41578  ! second random seed for weighting process
+iseed3                   41911  ! first  random seed for unweighting process
+iseed4                   42244  ! second random seed for unweighting process
+izdecmode                    1  ! Z decay mode (1: ee, 2: mumu, 3: tautau, 4: leptonlepton)
+ktfac                        1  ! ckkw alphs scale
+metmin                     0.0  ! missing et cut 
+mllmax                  2000.0  ! Maximum M_ll
+mllmin                    60.0  ! Minimum M_ll
+ndns                         9  ! PDF CTEQ6L1
+njets                        1  ! number of emitted partons
+ptjmin                    15.0  ! jet min pT
+ptlmin                     0.0  ! lepton min pt
+qfac                         1  ! Qscale factor

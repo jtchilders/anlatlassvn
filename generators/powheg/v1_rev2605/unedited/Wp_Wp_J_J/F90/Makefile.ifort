@@ -1,0 +1,177 @@
+VPATH= ./:ifort/:obj-ifort/
+
+PROG =	libWpWp2j.a
+
+SRCS =	assertions.f90 comb.f90 consts_dp.f90 consts_MCFM.f90  \
+	consts_qp.f90 counter.f90 define_ampl.f90 dpampl.f90 \
+	dpaux_functions_weyl.f90 dpauxiliary_functions.f90 dpcut_utils.f90 \
+	dpglobal.f90 dpgram.f90 dpinitialization.f90 dpinitWpWp.f90 \
+	dpmatrix_routines.f90 dpmemory.f90 dpopp.f90 dppol_int.f90 \
+	dprecurrenceG.f90 dprecurrenceGbitsfour.f90 dprecurrenceGbitsone.f90 \
+	dprecurrenceGbitsthree.f90 dprecurrenceGbitstwo.f90 dpspinors.f90 \
+	dpstability.f90 dpvvnbasis.f90 io_utils.f90 lcl_dec.f90 masters.f90 \
+	match.f90 qpampl.f90 \
+	qpaux_functions_weyl.f90 qpauxiliary_functions.f90 qpcut_utils.f90 \
+	qpglobal.f90 qpgram.f90 qpinitialization.f90 \
+	qpinitWpWp.f90 	qpmemory.f90 qpopp.f90 qppol_int.f90 qprecurrenceG.f90 \
+	qprecurrenceGbitsfour.f90 qprecurrenceGbitsone.f90 \
+	qprecurrenceGbitsthree.f90 qprecurrenceGbitstwo.f90 qpspinors.f90 \
+	qptodpglobal.f90 qpvvnbasis.f90 qqqqampl.f90 \
+	qqqqampl_v.f90 qqqqampl_v_qp.f90 qqqqgampl.f90 types.f90 \
+	warnings_and_errors.f90 qqb_wpwp_qqb.f \
+	qqb_wpwp_qqb_g.f qqb_wpwp_qqb_str.f qqb_wpwp_qqb_v.f \
+	qqb_wpwp_qqb_vpolesonly.f 
+
+POSTSRCS =	
+
+OBJS =	assertions.o comb.o consts_dp.o consts_MCFM.o consts_qp.o \
+	counter.o define_ampl.o dpampl.o dpaux_functions_weyl.o \
+	dpauxiliary_functions.o dpcut_utils.o dpglobal.o dpgram.o \
+	dpinitialization.o dpinitWpWp.o dpmatrix_routines.o dpmemory.o \
+	dpopp.o dppol_int.o dprecurrenceG.o dprecurrenceGbitsfour.o \
+	dprecurrenceGbitsone.o dprecurrenceGbitsthree.o \
+	dprecurrenceGbitstwo.o dpspinors.o dpstability.o dpvvnbasis.o \
+	io_utils.o lcl_dec.o masters.o match.o qpampl.o \
+	qpaux_functions_weyl.o qpauxiliary_functions.o qpcut_utils.o \
+	qpglobal.o qpgram.o qpinitialization.o qpinitWpWp.o \
+	qpmatrix_routines.o qpmemory.o qpopp.o qppol_int.o qprecurrenceG.o \
+	qprecurrenceGbitsfour.o qprecurrenceGbitsone.o \
+	qprecurrenceGbitsthree.o qprecurrenceGbitstwo.o qpspinors.o \
+	qptodpglobal.o qpvvnbasis.o qqqqampl.o qqqqampl_v.o \
+	qqqqampl_v_qp.o qqqqgampl.o types.o warnings_and_errors.o \
+	qqb_wpwp_qqb.o qqb_wpwp_qqb_g.o qqb_wpwp_qqb_str.o qqb_wpwp_qqb_v.o \
+	qqb_wpwp_qqb_vpolesonly.o
+
+POSTOBJS =	
+POSTLIB = 
+
+LIBS =  
+
+CC = cc
+CFLAGS = -O
+FC = ifort
+FFLAGS = -O
+F90 = ifort
+F90FLAGS = -O -I obj-ifort -module obj-ifort
+LDFLAGS =  
+
+all: libWpWp2j.a
+
+libWpWp2j.a: $(OBJS)
+	cd obj-ifort ; ar cru libWpWp2j.a $(OBJS)
+	ranlib obj-ifort/libWpWp2j.a
+
+clean:
+	cd obj-ifort ; rm -f  $(OBJS) $(POSTOBJS) *.mod *.d
+
+realclean:
+	cd  obj-ifort ; rm -f $(PROG) $(OBJS) $(POSTOBJS) *.mod *.d
+
+.SUFFIXES: $(SUFFIXES) .f90
+
+%.o: %.f90 
+	$(F90) $(F90FLAGS) -c  -o obj-ifort/$@ $<
+
+
+%.o: %.f 
+	$(F90) $(F90FLAGS) -c  -o obj-ifort/$@ $<
+
+assertions.o: types.o
+consts_dp.o: types.o
+consts_MCFM.o: consts_dp.o define_ampl.o dpaux_functions_weyl.o types.o \
+	ewcharge.f ewcouple.f zcouple.f
+consts_qp.o: types.o
+define_ampl.o: io_utils.o types.o
+dpampl.o: consts_dp.o define_ampl.o dpaux_functions_weyl.o dpcut_utils.o \
+	dpglobal.o dpmemory.o dppol_int.o dprecurrenceG.o dpstability.o \
+	dpvvnbasis.o types.o
+dpaux_functions_weyl.o: consts_dp.o define_ampl.o dpauxiliary_functions.o \
+	dpglobal.o types.o
+dpauxiliary_functions.o: consts_dp.o types.o warnings_and_errors.o
+dpcut_utils.o: assertions.o consts_dp.o dpauxiliary_functions.o \
+	dpmatrix_routines.o dpstability.o types.o warnings_and_errors.o
+dpglobal.o: consts_dp.o types.o
+dpgram.o: consts_dp.o dpaux_functions_weyl.o types.o
+dpinitialization.o: define_ampl.o dpglobal.o dpmemory.o dpspinors.o \
+	io_utils.o types.o
+dpinitWpWp.o: comb.o consts_dp.o define_ampl.o dpampl.o \
+	dpaux_functions_weyl.o dpglobal.o types.o
+dpmatrix_routines.o: consts_dp.o types.o warnings_and_errors.o
+dpmemory.o: consts_dp.o define_ampl.o io_utils.o types.o
+dpopp.o: consts_dp.o define_ampl.o dpampl.o dpaux_functions_weyl.o \
+	dpcut_utils.o dpglobal.o dppol_int.o dpstability.o dpvvnbasis.o \
+	match.o types.o
+dppol_int.o: consts_dp.o dpaux_functions_weyl.o dpspinors.o types.o
+dprecurrenceG.o: dprecurrenceGbitsfour.o dprecurrenceGbitsone.o \
+	dprecurrenceGbitsthree.o dprecurrenceGbitstwo.o types.o
+dprecurrenceGbitsfour.o: consts_dp.o define_ampl.o dpaux_functions_weyl.o \
+	dpauxiliary_functions.o dpmemory.o dprecurrenceGbitsone.o \
+	dprecurrenceGbitsthree.o dprecurrenceGbitstwo.o types.o
+dprecurrenceGbitsone.o: consts_dp.o define_ampl.o dpaux_functions_weyl.o \
+	dpmemory.o types.o
+dprecurrenceGbitsthree.o: consts_dp.o define_ampl.o dpaux_functions_weyl.o \
+	dpmemory.o dprecurrenceGbitsone.o dprecurrenceGbitstwo.o types.o
+dprecurrenceGbitstwo.o: consts_dp.o define_ampl.o dpaux_functions_weyl.o \
+	dpauxiliary_functions.o dpmemory.o dprecurrenceGbitsone.o types.o
+dpspinors.o: consts_dp.o types.o
+dpstability.o: consts_dp.o types.o
+dpvvnbasis.o: consts_dp.o dpaux_functions_weyl.o dpgram.o dpstability.o \
+	types.o
+io_utils.o: 
+masters.o: consts_dp.o define_ampl.o dpaux_functions_weyl.o dpglobal.o \
+	dpstability.o dpvvnbasis.o match.o types.o
+qpampl.o: consts_qp.o define_ampl.o qpaux_functions_weyl.o qpcut_utils.o \
+	qpglobal.o qpmemory.o qppol_int.o qprecurrenceG.o  \
+	qpvvnbasis.o types.o
+qpaux_functions_weyl.o: consts_qp.o define_ampl.o qpauxiliary_functions.o \
+	qpglobal.o types.o
+qpauxiliary_functions.o: consts_qp.o types.o warnings_and_errors.o
+qpcut_utils.o: assertions.o consts_qp.o qpauxiliary_functions.o \
+	qpmatrix_routines.o types.o warnings_and_errors.o
+qpglobal.o: consts_qp.o types.o
+qpgram.o: consts_qp.o qpaux_functions_weyl.o types.o
+qpinitialization.o: define_ampl.o io_utils.o qpglobal.o qpmemory.o \
+	qpspinors.o types.o
+qpinitWpWp.o: comb.o consts_qp.o define_ampl.o qpampl.o \
+	qpaux_functions_weyl.o qpglobal.o types.o
+qpmatrix_routines.o: consts_qp.o types.o warnings_and_errors.o
+qpmemory.o: consts_qp.o define_ampl.o io_utils.o types.o
+qpopp.o: consts_qp.o define_ampl.o match.o qpampl.o qpaux_functions_weyl.o \
+	qpcut_utils.o qpglobal.o qppol_int.o qpvvnbasis.o \
+	types.o
+qppol_int.o: consts_qp.o qpaux_functions_weyl.o qpspinors.o types.o
+qprecurrenceG.o: qprecurrenceGbitsfour.o qprecurrenceGbitsone.o \
+	qprecurrenceGbitsthree.o qprecurrenceGbitstwo.o types.o
+qprecurrenceGbitsfour.o: consts_qp.o define_ampl.o qpaux_functions_weyl.o \
+	qpauxiliary_functions.o qpmemory.o qprecurrenceGbitsone.o \
+	qprecurrenceGbitsthree.o qprecurrenceGbitstwo.o types.o
+qprecurrenceGbitsone.o: consts_qp.o define_ampl.o qpaux_functions_weyl.o \
+	qpmemory.o types.o
+qprecurrenceGbitsthree.o: consts_qp.o define_ampl.o qpaux_functions_weyl.o \
+	qpmemory.o qprecurrenceGbitsone.o qprecurrenceGbitstwo.o types.o
+qprecurrenceGbitstwo.o: consts_qp.o define_ampl.o qpaux_functions_weyl.o \
+	qpauxiliary_functions.o qpmemory.o qprecurrenceGbitsone.o types.o
+qpspinors.o: consts_qp.o types.o
+qptodpglobal.o: consts_dp.o define_ampl.o dpglobal.o types.o
+qpvvnbasis.o: consts_qp.o qpaux_functions_weyl.o qpgram.o  \
+	types.o
+qqqqampl.o: consts_dp.o define_ampl.o dpaux_functions_weyl.o dpmemory.o \
+	dprecurrenceGbitsfour.o types.o
+qqqqampl_v.o: comb.o consts_MCFM.o consts_dp.o counter.o define_ampl.o \
+	dpaux_functions_weyl.o dpglobal.o dpinitWpWp.o dpmemory.o dpopp.o \
+	dprecurrenceG.o dpspinors.o dpstability.o io_utils.o masters.o \
+	qqqqampl_v_qp.o types.o
+qqqqampl_v_qp.o: comb.o consts_MCFM.o consts_qp.o counter.o define_ampl.o \
+	qpaux_functions_weyl.o qpglobal.o qpinitWpWp.o qpmemory.o qpopp.o \
+	qprecurrenceG.o qpspinors.o io_utils.o masters.o \
+	types.o
+qqqqgampl.o: consts_dp.o define_ampl.o dpaux_functions_weyl.o dpmemory.o \
+	dprecurrenceGbitsfour.o types.o
+warnings_and_errors.o: types.o
+qqb_wpwp_qqb.o: consts_MCFM.o consts_dp.o qqqqampl.o
+qqb_wpwp_qqb_g.o: consts_MCFM.o consts_dp.o qqqqgampl.o
+qqb_wpwp_qqb_str.o: consts_MCFM.o consts_dp.o qqqqampl.o
+qqb_wpwp_qqb_v.o: consts_MCFM.o consts_dp.o io_utils.o qqqqampl_v.o epinv.f \
+	epinv2.f qcdcouple.f scale.f
+qqb_wpwp_qqb_vpolesonly.o: constants.f epinv.f epinv2.f qcdcouple.f scale.f \
+	scheme.f

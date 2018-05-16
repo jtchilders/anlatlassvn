@@ -1,0 +1,12 @@
+Hi Tom^2, Taylor,
+
+I've recently worked quite a bit on the initialization part of Comix, and I would hope that most of the problems in LO (and LO ME+PS) setups are gone. For SUSY simulations you cannot use Amegic anyways, so these initializations should be fast.
+
+I'd be curious if the problems on Mira persist after my latest patches for rel-2.2.0. I've managed to get one more speedup (aditional patch for rel-2.2.0 attached), which brings the initialization time for LO W+6j to 3s on my laptop (from ~17min before, and after the Process directory is present, of course ;)).
+
+The remaining issue is Amegic, and I cannot do much about it at the moment, so if you are trying to run a lot of MEPS@NLO sims my latest changes won't be the remedy just yet (but I'll keep thinking about it). In this case I think that Cori in its present form would be a good alternative (possibly using the burst buffer, I haven't checked that out myself).
+
+I have not yet had the chance to benchmark my latest changes on Mira, so if you let me know in case they don't help (enough), I'll go and debug ...
+
+Thanks and Cheers
+Stefan

@@ -1,0 +1,17 @@
+1          ! imode
+zbb        ! label for files
+0 ! start with: 0=new grid, 1=previous warmup grid, 2=previous generation grid
+10000 2  ! Nevents/iteration,  N(warm-up iterations)
+100000      ! Nevents generated after warm-up
+*** The above 5 lines provide mandatory inputs for all processes
+*** (Comment lines are introduced by the three asteriscs)
+*** The lines below modify existing defaults for the hard process under study
+*** For a complete list of accessible parameters and their values,
+*** input 'print 1' (to display on the screen) or 'print 2' to write to file
+print 2
+njets 3
+ihvy 5
+mllmin 80
+mllmax 100
+ptbmin 20
+ptjmin 20

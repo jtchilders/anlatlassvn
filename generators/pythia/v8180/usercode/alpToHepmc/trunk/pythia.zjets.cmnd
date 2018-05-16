@@ -1,0 +1,22 @@
+! 1) Settings used in the main program.
+Main:numberOfEvents   = -1         ! number of events to generate (-1 for all)
+Main:timesAllowErrors = 3          ! how many aborts before run stops
+Main:spareMode1 = 0                ! skip n events at beginning of file
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = on  ! list changed particle data
+Next:numberCount       = 500        ! print message every n events
+Next:numberShowInfo    = 1         ! print event information n times
+Next:numberShowProcess = 1         ! print process record n times
+Next:numberShowEvent   = 1         ! print event record n times
+
+! 3) Enable matching
+JetMatching:merge = on
+
+! Alpgen run
+Alpgen:file = alpout
+Alpgen:setMLM = on
+JetMatching:scheme = 2
+JetMatching:exclusive = 1
+

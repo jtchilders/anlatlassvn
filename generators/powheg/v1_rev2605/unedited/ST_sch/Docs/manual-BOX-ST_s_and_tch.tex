@@ -1,0 +1,433 @@
+\documentclass[paper]{JHEP3}
+\usepackage{amssymb,enumerate,url}
+\bibliographystyle{JHEP}
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}[1.] }{\end{enumerate}}
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\POWHEG{{\tt POWHEG}}
+\newcommand\HERWIG{{\tt HERWIG}}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\MCatNLO{{\tt MC@NLO}}
+
+\newcommand\kt{k_{\sss\rm T}}
+
+\newcommand\pt{p_{\sss\rm T}}
+\newcommand\LambdaQCD{\Lambda_{\scriptscriptstyle QCD}}
+%%%%%%%%%% End TeXmacs macros
+
+
+\title{The \mbox{POWHEG BOX} user manual:\\
+  Single-top s- and t-channel processes} \vfill
+\author{Simone Alioli\\
+  Deutsches Elektronen-Synchrotron DESY\\
+  Platanenallee 6, D-15738 Zeuthen, Germany\\
+  E-mail: \email{simone.alioli@desy.de}}
+\author{Paolo Nason\\
+  INFN, Sezione di Milano-Bicocca,
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Paolo.Nason@mib.infn.it}}
+\author{Carlo Oleari\\
+  Universit\`a di Milano-Bicocca and INFN, Sezione di Milano-Bicocca\\
+  Piazza della Scienza 3, 20126 Milan, Italy\\
+  E-mail: \email{Carlo.Oleari@mib.infn.it}}
+\author{Emanuele Re\\
+  Institute for Particle Physics Phenomenology, Department of Physics\\
+  University of Durham, Durham, DH1 3LE, UK\\
+  E-mail: \email{emanuele.re@durham.ac.uk}}
+
+\vskip -0.5truecm
+
+\keywords{POWHEG, Shower Monte Carlo, NLO}
+
+\abstract{This note documents the use of the package \tmtexttt{POWHEG BOX}
+  for the single-top $s$- and $t$-channel production processes.
+  Results can be easily interfaced to shower Monte Carlo programs, in
+  such a way that both NLO and shower accuracy are maintained.}
+\preprint{\today\\ \tmtexttt{POWHEG BOX} 1.0}
+
+\begin{document}
+
+
+\section{Introduction}
+
+The \tmtexttt{POWHEG BOX} program is a framework for implementing NLO
+calculations in Shower Monte Carlo programs according to the
+\POWHEG{} method. An explanation of the method and a discussion of
+how the code is organized can be found in
+refs.~\cite{Nason:2004rx,Frixione:2007vw,Alioli:2010xd}.  The code is
+distributed according to the ``MCNET GUIDELINES for Event Generator
+Authors and Users'' and can be found at the web page \\
+%
+\begin{center}
+ \url{http://powhegbox.mib.infn.it}.
+\end{center}
+%
+~\\
+%
+In the following we will focus on the implementation of single-top
+($s$- and $t$-channel) production, whose source files can be found in
+the \tmtexttt{POWHEG-BOX/ST\_sch} and \tmtexttt{POWHEG-BOX/ST\_tch}
+subdirectories.
+
+This program is an implementation of the NLO cross section calculated
+in~\cite{Harris:2002md} in the \POWHEG{} formalism of
+refs.~\cite{Nason:2004rx,Frixione:2007vw}.  A detailed description of
+the implementation can be found in ref.~\cite{Alioli:2009je}. Spin
+correlations of the top-quark decay products are included with a
+method analogous to the one described in~\cite{Frixione:2007zp}, and
+the relevant matrix elements for the full decayed amplitudes were
+obtained using MadGraph~\cite{Alwall:2007st}.\footnote{The only
+  difference of the BOX implementation with respect to the one
+  described in~\cite{Alioli:2009je} is the treatment of finite width
+  effects. In the BOX program, we decided to calculate the production
+  cross section keeping always the value of the top-quark offshellness
+  fixed and equal to the mass value. Finite-width effects are included
+  a posteriori, at the same stage of top decay-products generation.}
+
+In this note we give all the necessary information to run the program.
+
+\section{Installation}
+In order to run the \tmtexttt{POWHEG BOX} program, we recommend the
+reader to start from the \tmtexttt{POWHEG BOX} user manual, which
+contains all the information and settings that are common between all
+subprocesses. In this note we focus on the settings and parameters
+specific to the single-top $s$- and $t$-channel implementations.
+
+In the following, we will describe how to run the $s$-channel
+code. Same considerations hold also for the $t$-channel one: in fact,
+the structure of the two codes (and the relevant files) is similar.
+Explicit instructions will be given when there are relevant
+differences.
+
+\section{Generation of events and showering}
+The executable is built with the following commands\\~\\
+\tmtexttt{
+%
+  \$ cd POWHEG-BOX/ST\_sch\\
+% 
+  \$ make pwhg\_main\\
+%
+}
+\\
+In the \tmtexttt{testrun} folder, there are several examples of input files.
+For example, you can start a run doing\\~\\
+\tmtexttt{
+%
+  \$ cd testrun\\
+% 
+  \$ ../pwhg\_main\\
+%
+}
+\\
+The input file read in this case is \tmtexttt{powheg.input} and
+at the end a file named \tmtexttt{pwgevents.lhe} will contain 100000
+events for single top $s$-channel production at the LHC, in the Les Houches format.
+To shower them with \PYTHIA{} do\\~\\
+\tmtexttt{
+%
+\$ cd POWHEG-BOX/ST\_sch\\
+%
+\$ make main-PYTHIA-lhef \\
+%
+\$ cd testrun \\
+%
+\$ ../main-PYTHIA-lhef\\
+%
+}
+\\
+Similar commands will run the \HERWIG{} shower.
+
+
+\section{Process specific input parameters}
+\tmtexttt{
+  facscfact 1 ! factorization scale factor: mufact=muref*facscfact\\
+  renscfact 1 ! renormalization scale factor: muren=muref*renscfact\\
+}
+\\
+Factorization and renormalization scale factors appearing here have to
+do with the computation of the inclusive cross section (i.e.~the
+$\bar{B}$ function~\cite{Nason:2004rx,Frixione:2007vw,Alioli:2009je}),
+and can be varied by a factor of order 1 to study scale dependence.
+The natural choice for this process is the mass of the top-quark. We
+choose to perform the NLO calculation keeping these scales fixed.  The
+experienced user can change this setting modifying the
+\tmtexttt{set\_fac\_ren\_scales} routine.
+\\~\\
+It follows a description of parameters which are relevant for
+this production process:
+\begin{itemize}
+\item If the fraction of negative weights is large, one may increase
+  \tmtexttt{foldcsi}, \tmtexttt{foldy}, \tmtexttt{foldphi}.  Allowed
+  values are 1, 2, 5, 10, 25, 50. The speed of the program is
+  inversely proportional to the product of these numbers, so that a
+  reasonable compromise should be found.  Our experiences tell us
+  that, even at LHC energies, the fraction of negative weights in
+  $\bar B$ calculation is such that the numbers provided in the
+  examples need not to be changed.  For the $t$- channel case, it is
+  recommended to leave the default foldings on the csi and y
+  variables.\footnote{In all examples, the choice of the parameters
+    that control the grid generation is such that a reasonably small
+    fraction of negative weights is generated, so they can be run as
+    they are. We remind the reader that these negative weights are
+    only due to our choice of generating $\tilde{B}$ instead of $\bar
+    B$.  They indeed correspond to phase space points where NLO
+    corrections are bigger than LO contributions.  Had we performed
+    the integration over the full radiation phase space these negative
+    weights would have disappeared completely.}
+\item For single-top, it is recommended to activate the
+  \tmtexttt{withdamp} option, to enable the Born-zero damping factor.
+\item For the $t$- channel case, it is recommended to leave the
+  default value for \tmtexttt{iymax}, to obtain a good efficiency in
+  the radiation generation.
+\end{itemize}
+
+
+Other parameters are those specifically related to single-top
+processes: from revision 1.0, some of these parameters are mandatory
+(the program stops if they are missing), other are optional (default
+values are assigned in \tmtexttt{init\_couplings.f}, but are
+overwritten if the token is found uncommented in the input file, as in
+previous versions).
+
+
+For the production step, the relevant
+parameters are:\\
+~\\
+\tmtexttt{
+! mandatory production parameters\\
+ttype   1 \phantom{aaaaaaa} ! 1 for t, -1 for tbar\\
+topmass 175.0 \phantom{a}   ! top mass\\
+}
+%
+~\\
+where the value of \tmtexttt{ttype} is used to decide if top or
+antitop quarks will be produced and \tmtexttt{topmass} set the
+top-quark mass.
+
+In the current released version, top-quark decay products are always
+generated by \POWHEG{}, accordingly to a procedure very similar to the
+one of ref.~\cite{Frixione:2007zp}. Therefore, the following
+parameters are mandatory too:\\
+~\\
+\tmtexttt{
+! mandatory parameters used in decay generation\\
+topdecaymode 10000           ! decay mode: the 5 digits correspond to the following\\
+\phantom{topdecaymode 10000} ! top-decay channels (l,mu,tau,u,c) \\
+\phantom{topdecaymode 10000} ! 0 means close, 1 open\\
+tdec/elbranching 0.108  ! W electronic branching fraction\\
+}
+%
+~\\
+where the value of the \tmtexttt{topdecaymode} token is formed by five
+digits, each representing the maximum number of the following
+particles at the (parton level) decay of the $t$ ($\bar{t}$) quark:
+$e^{\pm}$, $\mu^{\pm}$, $\tau^{\pm}$,
+$\stackrel{\scriptscriptstyle{(-)}}{u}$,
+$\stackrel{\scriptscriptstyle{(-)}}{c}$.  Thus, for example, 10000
+means $t \rightarrow e^+ \nu_e b$, 11100 means all semileptonic
+decays, 00011 means fully hadronic.
+
+When all the 5 digits of \tmtexttt{topdecaymode} are set to 0, the
+program will consider the top-quark as a stable particle: its decay
+products will not be generated, and the event file will contain the
+top-quark kinematics. Since there is no information on the top-quark
+spin, obviously spin-correlation effects are lost when these events
+are showered.
+
+The optional parameters are listed below. Their meaning is
+self-explanatory. We remind that it is not allowed to set any entry of
+the CKM matrix exactly equal to zero.\\
+~\\
+\tmtexttt{
+! optional production parameters \\
+! (defaults defined in init\_couplings.f) \\
+\#wmass 80.4                 \phantom{aaaaaaaaaaaaa} ! w mass \\
+\#sthw2 0.23113              \phantom{aaaaaaaaaa} ! (sin(theta\_W))**2 \\
+\#alphaem\_inv  127.011989   \phantom{a} ! 1/alphaem \\
+\#CKM\_Vud 0.9740            \phantom{aaaaaaaaa} ! CKM matrix entries ...\\
+\#CKM\_Vus 0.2225 \\
+\#CKM\_Vub 0.000001 \\
+\#CKM\_Vcd 0.2225 \\
+\#CKM\_Vcs 0.9740 \\
+\#CKM\_Vcb 0.000001 \\
+\#CKM\_Vtd 0.000001 \\
+\#CKM\_Vts 0.000001 \\
+\#CKM\_Vtb 1.0\\
+~\\
+! optional parameters used in decay generation\\
+! (defaults defined in init\_couplings.f)\\
+\#topwidth         1.7      \phantom{aaaaaaa} ! top width \\
+\#wwidth           2.141    \phantom{aaaaaaa} ! w width \\
+\#tdec/emass       0.000511 \phantom{} ! e mass \\
+\#tdec/mumass      0.1056   \phantom{a} ! mu mass \\
+\#tdec/taumass     1.777    \phantom{a} ! tau mass
+}
+
+\section{Generation of a sample with $t$ and $\bar{t}$
+  events}\label{sec:merging}
+
+The user can be interested in the generation of a sample where both
+top and antitop events appear. To this purpose, a script and a
+dedicated executable have been included. The script is named
+\tmtexttt{merge\_ttb.sh} and can be found in the directory
+\tmtexttt{testrun}.  It can be run in any subfolder of
+\tmtexttt{ST\_sch}. Three inputs are mandatory: the first two are the
+prefixes of the input files used to generate $t$ and $\bar{t}$ events. The
+third input has to be an integer and correspond to the total number of
+events that the final \emph{merged} sample will contain. The script has to
+be run twice, using a positive integer value at the first call and
+its opposite afterward.
+ Therefore,
+for example, to produce a sample of 10000 events at Tevatron, starting
+from the
+input files \tmtexttt{tev\_st\_s\_t-powheg.input} and \tmtexttt{tev\_st\_s\_tb-powheg.input}, the invocation lines should be as follows:~\\~\\
+\tmtexttt{\$ sh merge\_ttb.sh tev\_st\_s\_t tev\_st\_s\_tb 10000}\\~\\
+and then~\\~\\
+\tmtexttt{\$ sh merge\_ttb.sh tev\_st\_s\_t tev\_st\_s\_tb -10000}\\~
+
+Few remarks are needed:
+\begin{itemize}
+\item it is responsibility of the user to check that the 2 input files
+  are equal. The \tmtexttt{ttype} tokens have to be different,
+  obviously.
+\item the two values of \tmtexttt{numevts} are not really used: the
+  program re-calculate the needed values as a function of the $t$ and
+  $\bar{t}$ cross sections and of the total number of events to be
+  generated.
+\item the final event file is always named
+  \tmtexttt{t\_tb\_sample-events.lhe}. In the header section it also
+  contains a copy of the two input files used to generate it, for
+  cross-checking purposes
+\end{itemize}
+
+
+\begin{thebibliography}{10}
+
+\bibitem{Nason:2004rx}
+  P.~Nason,
+  ``A new method for combining NLO QCD with shower Monte Carlo algorithms,''
+  JHEP {\bf 0411} (2004) 040
+  [arXiv:hep-ph/0409146].
+  %%CITATION = JHEPA,0411,040;%%
+
+%\cite{Frixione:2007vw}
+\bibitem{Frixione:2007vw}
+  S.~Frixione, P.~Nason and C.~Oleari,
+``Matching NLO QCD computations with Parton Shower simulations: the POWHEG
+method,''
+  JHEP {\bf 0711} (2007) 070
+  [arXiv:0709.2092 [hep-ph]].
+  %%CITATION = JHEPA,0711,070;%%
+
+%\cite{Alioli:2010xd}
+\bibitem{Alioli:2010xd}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+``A general framework for implementing NLO calculations in shower Monte Carlo
+  programs: the POWHEG BOX,''
+  [arXiv:1002.2581 [hep-ph]].
+  %%CITATION = ARXIV:1002.2581;%%
+
+%\cite{Harris:2002md}
+\bibitem{Harris:2002md}
+  B.~W.~Harris, E.~Laenen, L.~Phaf, Z.~Sullivan and S.~Weinzierl,
+  ``The Fully differential single top quark cross-section in next to leading
+  order QCD,''
+  Phys.\ Rev.\  D {\bf 66}, 054024 (2002)
+  [arXiv:hep-ph/0207055].
+  %%CITATION = PHRVA,D66,054024;%%
+
+% %\cite{Frixione:2005vw}
+% \bibitem{Frixione:2005vw}
+%   S.~Frixione, E.~Laenen, P.~Motylinski and B.~R.~Webber,
+%   %``Single-top production in MC@NLO,''
+%   JHEP {\bf 0603}, 092 (2006)
+%   [arXiv:hep-ph/0512250].
+%   %%CITATION = JHEPA,0603,092;%%
+
+%\cite{Alioli:2009je}
+\bibitem{Alioli:2009je}
+  S.~Alioli, P.~Nason, C.~Oleari and E.~Re,
+  ``NLO single-top production matched with shower in POWHEG: s- and t-channel
+  contributions,''
+  JHEP {\bf 0909}, 111 (2009)
+  [arXiv:0907.4076 [hep-ph]].
+  %%CITATION = JHEPA,0909,111;%%
+
+%\cite{Frixione:2007zp}
+\bibitem{Frixione:2007zp}
+  S.~Frixione, E.~Laenen, P.~Motylinski and B.~R.~Webber,
+  ``Angular correlations of lepton pairs from vector boson and top quark decays
+  in Monte Carlo simulations,''
+  JHEP {\bf 0704}, 081 (2007)
+  [arXiv:hep-ph/0702198].
+  %%CITATION = JHEPA,0704,081;%%
+
+%\cite{Alwall:2007st}
+\bibitem{Alwall:2007st}
+  J.~Alwall {\it et al.},
+  ``MadGraph/MadEvent v4: The New Web Generation,''
+  JHEP {\bf 0709}, 028 (2007)
+  [arXiv:0706.2334 [hep-ph]].
+  %%CITATION = JHEPA,0709,028;%%
+
+% %\cite{Cacciari:2005hq}
+% \bibitem{Cacciari:2005hq}
+%   M.~Cacciari and G.~P.~Salam,
+%   ``Dispelling the $N^{3}$ myth for the $k_t$ jet-finder,''
+%   Phys.\ Lett.\  B {\bf 641}, 57 (2006)
+%   [arXiv:hep-ph/0512210].
+%   %%CITATION = PHLTA,B641,57;%%
+
+% %\cite{Boos:2001cv}
+% \bibitem{Boos:2001cv}
+%   E.~Boos {\it et al.},
+%   ``Generic user process interface for event generators,''
+%   [arXiv:hep-ph/0109068].
+%   %%CITATION = HEP-PH/0109068;%%
+
+% %\cite{Alwall:2006yp}
+% \bibitem{Alwall:2006yp}
+%   J.~Alwall {\it et al.},
+%   ``A standard format for Les Houches event files,''
+%   Comput.\ Phys.\ Commun.\  {\bf 176} (2007) 300
+%   [arXiv:hep-ph/0609017].
+%   %%CITATION = CPHCB,176,300;%%
+
+% %\cite{Altarelli:1989wu}
+% \bibitem{Altarelli:1989wu} T. Sj\"ostrand et~al., in
+%   ``Z physics at LEP1: Event generators and software,'',  eds.
+%   G.~Altarelli, R.~Kleiss and C.~Verzegnassi, Vol 3, pg. 327.
+%   %%CITATION = CERN-89-08-V-3;%%
+
+% %\cite{Whalley:2005nh}
+% \bibitem{Whalley:2005nh}
+%   M.~R.~Whalley, D.~Bourilkov and R.~C.~Group,
+%   ``The Les Houches accord PDFs (LHAPDF) and LHAGLUE,''
+%   [arXiv:hep-ph/0508110].
+%   %%CITATION = HEP-PH/0508110;%%
+
+% % %\cite{Yao:2006px}
+% % \bibitem{Yao:2006px}
+% %   W.~M.~Yao {\it et al.}  [Particle Data Group],
+% %   %``Review of particle physics,''
+% %   J.\ Phys.\ G {\bf 33}, 1 (2006).
+% %   %%CITATION = JPHGB,G33,1;%%
+
+\end{thebibliography}
+
+\end{document}
+
+
+
+
+

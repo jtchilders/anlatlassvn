@@ -1,0 +1,229 @@
+/* load("macsyma.mac"); 
+
+
+load("genseq");
+load("msave");
+load("files");
+load("coefs");
+load("new_distr");
+load("linsys");
+load("sympall");
+load("dirac");
+load("multgamma");
+load("diracontr");
+load("new_contract");
+load("epscon");
+load("fortify");
+load("mfortran");
+load("marrays");
+load("densub");
+load("numpartfrac");
+load("makelist");
+load("makelistil");
+load("applylin");
+load("stopex");
+load("listprod");
+load("lappend");
+load("swap");
+load("general");
+*/
+
+display2d:false;
+
+partswitch:true;
+
+writefile("qqborn.log");
+
+t:s*(ro/4-t1);
+t2:1-t1;
+m:sqrt(ro/4*s);
+n_dim:4;
+
+ep:0;
+
+/* sempre, prima di usare il pacchetto: */
+declare(d,symmetric);
+declare(epsilon,antisymmetric);
+/* gamma_prod([k,m],mu,[k+q,m],nu) sta per tr((k_slash+m)gamma_mu...etc) */
+
+
+/* bisogna eseguire la seguente funzione prima di usare distrib_d */
+
+setup_distr_symp([p1,k,p2],[d(k,p1)=(m^2-t)/2,d(k,k)=m^2,d(p1,p1)=0,
+                 d(p2,p2)=0,d(k,p2)=(s+t-m^2)/2,d(p1,p2)=s/2]);
+
+fden(xxx,m):=distrib_d(d(xxx,xxx)-m^2);
+
+threegl(p1,mu1,p2,mu2,p3,mu3):=
+(
+d(mu1,mu2)*(d(p1,mu3)-d(p2,mu3))+
+d(mu2,mu3)*(d(p2,mu1)-d(p3,mu1))+
+d(mu3,mu1)*(d(p3,mu2)-d(p1,mu2)) 
+);
+
+proj(mu,nu):= - d(mu,nu) + 2*d(p1,mu)*d(p2,nu)/s + 2*d(p1,nu)*d(p2,mu)/s;
+
+
+/* se vogliamo lasciar liberi due indici per costruire l'ampiezza correlata
+   in spin mettiamo due proiettori (invece di uno) con due indici liberi */
+
+proj1(mu,nu):= proj(mu,mu0)*proj(nu,nu0);
+proj2(mu,nu):= proj(mu,nu);
+
+
+
+/* calcolo del diagramma di Born;
+   omettiamo sempre il fattore 1/(2*s) 1/(2-2*ep)^2 1/D_A^2
+   di flusso, media sugli spin del gluone iniziale, e media
+   sul colore; omettiamo inoltre il fattore C_F*N_C che c'e'
+   sempre nel calcolo del colore. Percio', per ottenere
+   la sezione d'urto di Born dobbiamo moltiplicare per
+
+            1/(8*s*(1-ep)^2) T_F/D_A
+
+   che in quattro dimensioni da' 
+
+               1/(16*(N_C^2-1)s)
+*/
+
+/*
+p1    mup  k     mu
+~~~~~~~|---->----|~~~~~~~~ p1
+       |         |
+p2     | p1+p2-k |
+~~~~~~~|----<----|~~~~~~~~ p2
+      nup        nu
+
+*/
+
+born1: - gamma_prod([k,m],[mup],[k-p1,m],[nup],[k-p1-p2,m],[nu],[k-p1,m],[mu])
+*proj1(mu,mup)*proj2(nu,nup);
+den1:distrib_d(fden(k-p1,m)^2);
+/* segni
+   -  per la loop fermionica
+
+    colore: cf^2*nc
+*/
+col1:cf;
+
+/*
+p1    mup  k     nu
+~~~~~~~|---->-----~~~~~~~~ p2
+       |         |
+p2     | p1+p2-k |
+~~~~~~~|----<----|~~~~~~~~ p1
+      nup        mu
+
+*/
+
+born2: - gamma_prod([k,m],[mup],[k-p1,m],[nup],[k-p1-p2,m],[mu],[k-p2,m],[nu])
+*proj1(mu,mup)*proj2(nu,nup);
+den2:distrib_d(fden(k-p1,m)*fden(k-p2,m));
+/* colore cf*(cf-ca/2)* nc */
+col2: cf-ca/2;
+
+
+
+
+/*
+p1    mup  k       
+~~~~~~~|---->-----       ~~~~~~mu
+       |          |alfa  ~
+p2     |          ~~~~~~~~
+~~~~~~~|-----<----|      ~~~~~~nu
+      nup       
+
+*/
+
+
+born3:  -gamma_prod([k,m],[mup],[k-p1,m],[nup],[k-p1-p2,m],[alfa]) * 
+threegl(-p1-p2,alfa,p1,nu,p2,mu)*proj1(mu,mup)*proj2(nu,nup);
+den3:distrib_d(fden(k-p1,m)*fden(p1+p2,0));
+/* segni
+ - per loop ferm.
+-i per il vertice
+ i per il propagatore fermionico
+ i per il propagatore gluonico complesso coniugato
+ colore i ca/2 * cf * Nc
+*/
+col3: ca/2;
+
+/*
+p1 mup
+~~~~~~~~       ->-       ~~~~~~mu
+       ~alpha  |  | beta ~
+p2     ~~~~~~~~|  |~~~~~~~
+~~~~~~~~       -<-|      ~~~~~~nu
+   nup
+
+*/
+
+
+born4: gamma_prod([k,m],[alfa],[k-p1-p2,m],[beta])
+*threegl(-p1-p2,alfa,p2,mup,p1,nup)*proj2(mu,mup)*proj1(nu,nup)
+*threegl(-p1-p2,beta,p1,nu,p2,mu);
+den4:distrib_d(fden(p1+p2,0)^2);
+/* segni
+   -  per la loop fermionica
+   colore ca * cf * nc
+*/
+col4: ca;
+/* load("contract5.mac"); */
+msimp(xxx):=
+(
+xxx:contract_d(xxx,[alfa,beta,mu,mup,nu,nup]),
+xxx:trace_contract(xxx,[alfa,beta,mu,mup,nu,nup]),
+xxx:trace_all(xxx),
+xxx:contract_d(xxx,[alfa,beta,mu,mup,nu,nup]),
+xxx:factor(distrib_d(xxx))
+);
+
+bborn1:msimp(born1)/den1;
+bborn2:msimp(born2)/den2;
+bborn3:msimp(born3)/den3;
+bborn4:msimp(born4)/den4;
+
+bborn: 2*bborn1*col1+2*bborn2*col2+4*bborn3*col3+bborn4*col4;
+bborn:(bborn+subst([t1=t2,k=p1+p2-k],bborn))/2/(8*v);
+bborn:coefsum(coefsm(distrib_d(bborn),[mu0,nu0]));
+
+mborn:
+(cf-ca*t2*t1)*(-8*(ep-1)*(t1^2+t2^2-ep)/(t2*t1)-2*ro*(ro-4*t2*t1)/(t2^2*t1^2
+ ));
+
+born:factor(distrib_d(contract_d(subst(nu0=mu0,bborn),[mu0])));
+rat(born/mborn),t2=1-t1,ca=n,cf=(n^2-1)/(2*n),v=n^2-1,tf=1/2;
+
+
+
+bborn:subst([d(k,mu0)=p(mu,3),d(k,nu0)=p(mup,3),
+             d(p1,mu0)=p(mu,1),d(p1,nu0)=p(mup,1),
+             d(p2,mu0)=p(mu,2),d(p2,nu0)=p(mup,2),
+	     d(mu0,nu0)=gtens(mu,mup)],bborn);
+
+
+
+p13:d(p1,k);
+p23:d(p2,k);
+p12:d(p1,p2);
+
+
+kill(t2);
+
+bborn1:(  (p(mu,1)*p(mup,2)+p(mu,2)*p(mup,1))*(t1^2+t2^2+ro)
+-gtens(mu,mup)*s*(t1^2+t2^2)/2
+-(p(mu,2)*p(mup,3)+p(mu,3)*p(mup,2))*ro/t2
+-(p(mu,1)*p(mup,3)+p(mu,3)*p(mup,1))*ro/t1
++p(mu,1)*p(mup,1)*ro*t2/t1
++p(mu,2)*p(mup,2)*ro*t1/t2
++p(mu,3)*p(mup,3)*ro/(t2*t1) )*(n^2*(t1^2+t2^2)-1)
+/(2*n*s*v*t1*t2);
+
+/* bborn1 (spin correlated on leg 1) is equal to bborn2! */
+
+
+rat(bborn1-bborn),t2=1-t1,ca=n,cf=(n^2-1)/(2*n),v=n^2-1,tf=1/2;
+
+fortran(bmunu(mu,mup,1)=bborn1);
+
+

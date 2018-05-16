@@ -1,0 +1,47 @@
+ W + c +  4  jets
+ W-> ell nu
+ =======================================
+ Generation cuts for the partonic event sample:
+      Charm jets:
+ ptmin= 10.0000000000000000  |etamax|= 6.00000000000000000  dR(c-j)> 0.400000000000000022
+      Light jets:
+ ptmin= 15.0000000000000000  |etamax|= 6.00000000000000000  dR(j-j)> 0.400000000000000022
+      Leptons:
+ ptmin(lep)= 0.000000000000000000E+00  |etamax|= 10.0000000000000000  Et(miss)> 0.000000000000000000E+00  dR(l-j)> 0.000000000000000000E+00
+************** run parameters
+  10 ! hard process code
+   0.000   4.700 174.300  80.419  91.188 120.000 ! mc,mb,mt,mw,mz,mh
+   2         1.00000 !  ih2
+   3      6500.00000 !  ebeam
+   4         9.00000 !  ndns
+   5         1.00000 !  iqopt
+   6         1.00000 !  qfac
+   7         1.00000 !  ickkw
+   8         1.00000 !  ktfac
+  10         4.00000 !  njets
+  30        15.00000 !  ptjmin
+  32        10.00000 !  ptcmin
+  33         0.00000 !  ptlmin
+  34         0.00000 !  metmin
+  40         6.00000 !  etajmax
+  42         6.00000 !  etacmax
+  43        10.00000 !  etalmax
+  47        -1.00000 !  ptj1min
+  48        -1.00000 !  ptj1max
+  50         0.40000 !  drjmin
+  55         0.00000 !  drlmin
+  90      4824.00000 !  iseed1
+  91     60231.00000 !  iseed2
+ 110         0.26000 !  xlclu
+ 111         1.00000 !  lpclu
+ 151         1.00000 !  iwdecmod
+ 160         1.00000 !  cluopt
+ 190     44319.00000 !  iseed3
+ 191     64304.00000 !  iseed4
+ 501        20.00000 ! min ETCLUS used for parton-jet matching (Normally ETCLUS = ptjmin + 5)
+ 502         0.40000 ! min RCLUS value for parton-jet matching
+ 503         6.00000 ! max ETACLUS value for parton-jet matching
+ 504         0.00000 ! Jet Matching: 0 inclusive 1 exclusive
+************** end parameters
+             123.58305662               5.09308388  ! Crosssection +- error (pb)
+    153000      1238.03379027  ! unwtd events, lum (pb-1)

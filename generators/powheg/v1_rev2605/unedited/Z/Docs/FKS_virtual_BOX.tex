@@ -1,0 +1,589 @@
+\documentclass[11pt]{article} %ER: % Don't like 10pt? Try 11pt or 12pt
+
+\usepackage[english]{inputenc}
+\usepackage[english]{babel}
+\usepackage[paper=a4paper]{geometry}
+
+\usepackage{epsfig}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsbsy}
+\usepackage{bbm}
+%\documentclass{article}
+%\usepackage{amsmath,amssymb,enumerate,epsfig}
+
+%%%%%%%%%% Start TeXmacs macros
+%\newcommand{\tmmathbf}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand{\tmmathbf}[1]{\ensuremath{{\bf #1}}}
+%\newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
+%\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newcommand{\tmtexttt}[1]{{\ttfamily{#1}}}
+\newcommand{\tmtextrm}[1]{{\rmfamily{#1}}}
+%\newenvironment{enumeratenumeric}{\begin{enumerate}[1.] }{\end{enumerate}}
+\newcommand{\tmop}[1]{\ensuremath{{\rm #1}}}
+\newcommand{\tmtextit}[1]{{\itshape{#1}}}
+\newenvironment{enumeratenumeric}{\begin{enumerate}}{\end{enumerate}}
+\newenvironment{itemizedot}{\begin{itemize}
+\renewcommand{\labelitemi}{$\bullet$}
+\renewcommand{\labelitemii}{$\bullet$}
+\renewcommand{\labelitemiii}{$\bullet$}
+\renewcommand{\labelitemiv}{$\bullet$}}{\end{itemize}} 
+%%%%%%%%%% End TeXmacs macros
+
+\def\beq{\begin{equation}}
+\def\beqn{\begin{eqnarray}}
+\def\eeq{\end{equation}}
+\def\eeqn{\end{eqnarray}}
+\def\abs#1{\left|#1\right|}
+\def\bentarrow{\:\raisebox{1.3ex}{\rlap{$\vert$}}\!\longrightarrow}
+\def\FWeq#1{eq.~({\bf I}.#1)}
+\def\FNWeq#1{eq.~({\bf II}.#1)}
+\def\FKSeq#1{eq.~({\bf FKS}.#1)}
+\def\half{\frac{1}{2}}
+
+\newcommand\FKS{Frixione, Kunszt and Signer}
+\newcommand\CS{Catani and Seymour}
+
+\newcommand\HERWIG{{\tt HERWIG}}
+\newcommand\HWpp{{\tt HERWIG}++}
+\newcommand\PYTHIA{{\tt PYTHIA}}
+\newcommand\ARIADNE{{\tt ARIADNE}}
+
+\newcommand\BASES{{\tt BASES}}
+\newcommand\SPRING{{\tt SPRING}}
+
+\def\IN{{\small IN}}
+\def\OUT{{\small OUT}}
+\def\INm{{\sss\rm IN}}
+\def\OUTm{{\sss\rm OUT}}
+
+%\def\tk{\widetilde k}
+\def\tk{\bar k}
+\def\tx{\widetilde x}
+
+
+
+\def\lq{\left[} 
+\def\rq{\right]} 
+\def\rg{\right\}} 
+\def\lg{\left\{} 
+\def\({\left(} 
+\def\){\right)} 
+ 
+\def\REF#1{#1}
+
+
+\def\KFS#1{K^{{#1}}_{\scriptscriptstyle\rm F\!.S\!.}}
+\def\HFS#1{H_{{#1}}^{\scriptscriptstyle\rm F\!.S\!.}}
+\def\Kab{\KFS{ab}}
+\def\Hba{\HFS{ba}}
+\def\Kcb{\KFS{cb}}
+\def\Kac{\KFS{ac}}
+\def\Hac{\HFS{ac}}
+\def\Hcb{\HFS{cb}}
+\def\Hab{\HFS{ab}}
+\def\cm{{\cal M}}
+\def\bom#1{{\mbox{\boldmath $#1$}}}
+\def\ket#1{|{#1}>}
+\def\bra#1{<{#1}|}
+
+\def\th{\theta}
+
+%% initial-state labels
+
+\newcommand\sss{\mathchoice%
+{\displaystyle}%
+{\scriptstyle}%
+{\scriptscriptstyle}%
+{\scriptscriptstyle}%
+}
+
+\newcommand\nplus{\oplus}
+\newcommand\nminus{\ominus}
+
+\newcommand\splus{{\sss \nplus}}
+\newcommand\sminus{{\sss \nminus}}
+
+\newcommand\splusminus{{\mathchoice%
+{\vplusminus\displaystyle}%
+{\vplusminus\scriptstyle}%
+{\vplusminus\scriptscriptstyle}%
+{\vplusminus\scriptscriptstyle}%
+}}
+
+\newcommand\sminusplus{{\mathchoice%
+{\vminusplus\displaystyle}%
+{\vminusplus\scriptstyle}%
+{\vminusplus\scriptscriptstyle}%
+{\vminusplus\scriptscriptstyle}%
+}}
+
+\newdimen\hbigcirc
+\newdimen\wbigcirc
+
+%\newcommand\vplusminus[1]{%
+%\settoheight{\hbigcirc}{$#1\bigcirc$}%
+%\settowidth{\wbigcirc}{$#1\bigcirc$}%
+%\makebox[\wbigcirc]{\raisebox{0.1\hbigcirc}%
+%{\makebox[0pt]{$#1+$}}\raisebox{-0.25\hbigcirc}%
+%{\makebox[0pt]{$#1-$}}\makebox[0pt]{$#1\bigcirc$}}%
+%}
+
+\newcommand\vplusminus[1]{%
+\settoheight{\hbigcirc}{$#1\bigcirc$}%
+\settowidth{\wbigcirc}{$#1\bigcirc$}%
+\makebox[\wbigcirc]{%
+\makebox[0pt]{\rule[0.4\hbigcirc]{0.5\wbigcirc}{0.05\hbigcirc}}%
+\makebox[0pt]{\rule[0.1\hbigcirc]{0.5\wbigcirc}{0.05\hbigcirc}}%
+\makebox[0pt]{\rule[0.1\hbigcirc]{0.05\wbigcirc}{0.6\hbigcirc}}%
+\makebox[0pt]{$#1\bigcirc$}}%
+}
+
+
+\newcommand\vminusplus[1]{%
+\settoheight{\hbigcirc}{$#1\bigcirc$}%
+\settowidth{\wbigcirc}{$#1\bigcirc$}%
+\makebox[\wbigcirc]{%
+\makebox[0pt]{\rule[0.2\hbigcirc]{0.5\wbigcirc}{0.05\hbigcirc}}%
+\makebox[0pt]{\rule[0.5\hbigcirc]{0.5\wbigcirc}{0.05\hbigcirc}}%
+\makebox[0pt]{\rule[-0.1\hbigcirc]{0.05\wbigcirc}{0.6\hbigcirc}}%
+\makebox[0pt]{$#1\bigcirc$}}%
+}
+
+\newcommand\xplus{x_\splus}
+\newcommand\xminus{x_\sminus}
+\newcommand\xplusminus{x_\splusminus}
+\newcommand\kplus{k_\splus}
+\newcommand\kminus{k_\sminus}
+\newcommand\Kplus{K_\splus}
+\newcommand\Kminus{K_\sminus}
+\newcommand\bxplus{\bar{x}_\splus}
+\newcommand\bxminus{\bar{x}_\sminus}
+\newcommand\bxplusminus{\bar{x}_\splusminus}
+%
+
+\newcommand\fmo{{f_{\splus}}}
+\newcommand\fmop{{f_{\splus}'}}
+\newcommand\fmt{{f_{\sminus}}}
+
+\newcommand\ep{\epsilon}
+\newcommand\clH{{\mathbb H}}
+\newcommand\clS{{\mathbb S}}
+\newcommand\EVprjmap{{\cal P}_{\clH\to\clS}}
+\newcommand\as{\alpha_{\sss\rm S}}
+\newcommand\asotpi{\frac{\as}{2\pi}}
+\newcommand\Lum{{\cal L}}
+\newcommand\Lumt{\tilde{\cal L}}
+\newcommand\orda{{\cal O}(\as)}
+\newcommand\ordaz{{\cal O}(\as^0)}
+\newcommand\ordat{{\cal O}(\as^2)}
+\newcommand\ordaB{{\cal O}(\as^m)}
+\newcommand\ordaBpo{{\cal O}(\as^{m+1})}
+\newcommand\pt{p_{\sss\rm T}}
+\newcommand\ptmin{{\pt^{\min}}}
+\newcommand\kt{k_{\sss\rm T}}
+\newcommand\kperp{k_\perp}
+\newcommand\tildept{\tilde{p}_{\sss\rm T}}
+\newcommand\tildekt{\tilde{k}_{\sss\rm T}}
+\newcommand\tildektmaxsq{{\tilde{k}_{\sss\rm T,\,max}^2}}
+\newcommand\boost{\mathbb B}
+
+%\newcommand\mat{{\cal M}}
+%\newcommand\matB{{\cal M}^{(b)}}
+%\newcommand\matR{{\cal M}^{(r)}}
+%\newcommand\matRS{\widehat{\cal M}^{(r)}}
+%\newcommand\matVb{{\cal M}^{(v)}_{\sss B}}
+\newcommand\matB{{\cal B}}
+\newcommand\matR{{\cal R}}
+\newcommand\matRi{{\cal R}^{(\ctindex)}}
+\newcommand\matRS{\widehat{\matR}}
+\newcommand\matVb{{\cal V}_{\bare}}
+\newcommand\matMCs{{\cal M}}
+\newcommand\matI{{\cal I}}
+%\newcommand\matSV{{\cal M}^{(sv)}}
+\newcommand\matSV{{\cal V}}
+
+%\newcommand\matCb{{\cal M}^{(c)}_{\sss B}}
+%\newcommand\matCpb{{\cal M}^{(c+)}_{\sss B}}
+%\newcommand\matCmb{{\cal M}^{(c-)}_{\sss B}}
+%\newcommand\matCpmb{{\cal M}^{(c\pm)}_{\sss B}}
+%\newcommand\matCpm{{\cal M}^{(c\pm)}}
+\newcommand\matC{{\cal G}}
+\newcommand\bare{{\rm b}}
+\newcommand\matCb{{\cal G}_\bare}
+\newcommand\matCpb{{\cal G}_{\splus,\bare}}
+\newcommand\matCmb{{\cal G}_{\sminus,\bare}}
+\newcommand\matCpmb{{\cal G}_{\splusminus,\bare}}
+\newcommand\matCp{{\cal G}_\splus}
+\newcommand\matCm{{\cal G}_\sminus }
+\newcommand\matCpm{{\cal G}_{\splusminus}}
+
+\newcommand\ctindex{\alpha}
+\newcommand\ctindr{{\alpha_{\sss\rm r}}}
+\newcommand\ctindpm{{\alpha_{\splusminus}}}
+\newcommand\ctindp{{\alpha_{\splus}}}
+\newcommand\ctindm{{\alpha_{\sminus}}}
+\newcommand\matct{{\cal C}}
+\newcommand\matcti{{\cal C}^{(\ctindex)}}
+\newcommand\matctiP{\bar{\cal C}^{(\ctindex)}}
+
+\newcommand\GenSh{{\cal F}}
+\newcommand\GenShV{{\cal F}_{\sss\rm V}}
+\newcommand\GenShVT{{\cal F}_{\sss\rm VT}}
+\newcommand\GenShMC{{\cal F}_{\sss\rm MC}}
+\newcommand\GenShMCatNLO{{\cal F}_{\sss\rm MC@NLO}}
+\newcommand\GenShPOWHEG{{\cal F}_{\sss\rm POWHEG}}
+
+\newcommand\PSnpo{\Phi_{n+1}}
+\newcommand\PSn{\Phi_n}
+\newcommand\Phit{\tilde{\Phi}}
+%\newcommand\MapNLOi{{\bf M}^{(i,-)}}
+%\newcommand\MapMCisr{{\bf S}^{\sss (ISR,+)}}
+%\newcommand\MapMCfsr{{\bf S}^{\sss (FSR,+)}}
+\newcommand\MapNLOi{{\bf M}^{(\ctindex)}}
+\newcommand\MapNLOisro{{\bf M}^{\sss\rm (ISR_\splus)}}
+\newcommand\MapNLOisrt{{\bf M}^{\sss\rm (ISR_\sminus )}}
+\newcommand\MapNLOfsr{{\bf M}^{\sss\rm (FSR)}}
+\newcommand\MapMCisr{{\bf S}^{\sss\rm (ISR)}}
+\newcommand\MapMCfsr{{\bf S}^{\sss\rm (FSR)}}
+
+%\newcommand\Kinnpo{{\bf K}_{n+1}}
+%\newcommand\Kinn{{\bf K}_n}
+%\newcommand\Kinnc{{\bf K}_n^c}
+%\newcommand\Kinncp{{\bf K}_n^{c+}}
+%\newcommand\Kinncm{{\bf K}_n^{c-}}
+%\newcommand\Kinncpm{{\bf K}_n^{c\pm}}
+%\newcommand\Kinm{{\bf K}_m}
+\newcommand\Kinnpo{{\bf \Phi}_{n+1}}
+\newcommand\Kinn{{\bf \Phi}_n}
+\newcommand\BKinn{{\bf \bar{\Phi}}_n}
+\newcommand\BKinm{{\bf \bar{\Phi}}_m}
+\newcommand\Kinnc{{\bf \Phi}_n^c}
+\newcommand\Kinncp{{\bf \Phi}_{n,\splus}}
+\newcommand\Kinncm{{\bf \Phi}_{n,\sminus}}
+\newcommand\Kinncpm{{\bf \Phi}_{n,\splusminus}}
+\newcommand\BKinncp{\bar{\bf \Phi}_{n,\splus}}
+\newcommand\BKinncm{\bar{\bf \Phi}_{n,\sminus}}
+\newcommand\BKinncpm{\bar{\bf \Phi}_{n,\splusminus}}
+\newcommand\Kinm{{\bf \Phi}_m}
+\newcommand\Kinmpo{{\bf \Phi}_{m+1}}
+\newcommand\Kinnt{{\bf \tilde{\Phi}}_n}
+\newcommand\Kinnpot{{\bf \tilde{\Phi}}_{n+1}}
+
+\newcommand\KinnpoMC{{\bf \Phi}_{n+1}^{({\sss\rm MC})}}
+\newcommand\KinnMC{{\bf \Phi}_n^{({\sss\rm MC})}}
+\newcommand\KinncpMC{{\bf \Phi}_{n,\splus}^{({\sss\rm MC})}}
+\newcommand\KinncmMC{{\bf \Phi}_{n,\sminus}^{({\sss\rm MC})}}
+
+\newcommand\KinnPH{{\bf \Phi}_n^{({\sss\rm PH})}}
+\newcommand\KinncpPH{{\bf \Phi}_{n,\splus}^{({\sss\rm PH})}}
+\newcommand\KinncmPH{{\bf \Phi}_{n,\sminus}^{({\sss\rm PH})}}
+\newcommand\KinntPH{{\bf \tilde{\Phi}}_n^{({\sss\rm PH})}}
+
+\newcommand\stepf{\theta}
+\newcommand\Dfun{{\cal D}}
+\newcommand\Sfun{{\cal S}}
+\newcommand\Sin{{\cal S}^{(\INm)}}
+\newcommand\Sout{{\cal S}^{(\OUTm)}}
+%\newcommand\Sz{{\cal S}^{(0)}}
+%\newcommand\So{{\cal S}^{(1)}}
+%\newcommand\Szi{{\cal S}_i^{(0)}}
+%\newcommand\Soij{{\cal S}_{ij}^{(1)}}
+\newcommand\Sz{{\cal S}}
+\newcommand\So{{\cal S}}
+\newcommand\Szi{{\cal S}_i}
+\newcommand\Szip{{\cal S}_i^\splus}
+\newcommand\Szim{{\cal S}_i^\sminus}
+\newcommand\Szipm{{\cal S}_i^\splusminus}
+\newcommand\Szimp{{\cal S}_i^\sminusplus}
+\newcommand\Soij{{\cal S}_{ij}}
+\newcommand\Soji{{\cal S}_{ji}}
+\newcommand\mydot{\!\cdot\!}
+\newcommand\xiic{\left(\frac{1}{\xi_i}\right)_{\!\!\xi_c}}
+\newcommand\xic{\left(\frac{1}{\xi}\right)_{\!\!\xi_c}}
+\newcommand\lxic{\left(\frac{\log\xi}{\xi}\right)_{\!\!\xi_c}}
+\newcommand\omzc{\left(\frac{1}{1-z}\right)_{\!\!\xi_c}}
+\newcommand\lomzc{\left(\frac{\log(1-z)}{1-z}\right)_{\!\!\xi_c}}
+\newcommand\omyid{\left(\frac{1}{1-y_i}\right)_{\!\!\deltaI}}
+\newcommand\opyid{\left(\frac{1}{1+y_i}\right)_{\!\!\deltaI}}
+\newcommand\ompyid{\left(\frac{1}{1\mp y_i}\right)_{\!\!\deltaI}}
+\newcommand\omyjd{\left(\frac{1}{1-y_j}\right)_{\!\!\deltaO}}
+\newcommand\omyijd{\left(\frac{1}{1-y_{ij}}\right)_{\!\!\deltaO}}
+\newcommand\ompyd{\left(\frac{1}{1\mp y}\right)_{\!\!\delta}}
+\newcommand\Prec{P_{\rm rec}}
+\newcommand\Mrec{M_{\rm rec}}
+\newcommand\Pboost{K_{\rm rec}}
+%\newcommand\boosted[1]{{\underline #1}}
+%\newcommand\mmod[1]{\boldsymbol{#1}}
+\newcommand\mmod[1]{\underline{#1}}
+\newcommand\MCatNLO{{\tt MC@NLO}}
+\newcommand\pMCatNLO{{pMC@NLO}}
+\newcommand\xicut{\xi_{c}}
+\newcommand\deltaI{\delta_{\sss\rm I}}
+\newcommand\deltaO{\delta_{\sss\rm O}}
+\newcommand\MSB{{\rm \overline{MS}}}
+\newcommand\DIG{{\rm DIS}_\gamma}
+\newcommand\CA{C_{\sss\rm A}}
+\newcommand\DA{D_{\sss\rm A}}
+\newcommand\CF{C_{\sss\rm F}}
+\newcommand\TF{T_{\sss\rm F}}
+\newcommand\NC{N_{\rm c}}
+\newcommand\NCt{N_{\rm c}^2}
+\newcommand\NF{n_{\rm f}}
+
+%\newcommand\APl{{<}}
+\newcommand\APl{{reg}}
+\newcommand\APreg{\hat{P}}
+\newcommand\indsing{{i_s}}
+\newcommand\fr{{f_r}}
+\newcommand\fb{{f_b}}
+\newcommand\Fb{{F_b}}
+\newcommand\POWHEG{{POWHEG}}
+
+\newcommand\Rad{\Phi_{\rm rad}}
+\newcommand\Xrad{X_{\rm rad}}
+%\newcommand\BRad{\bar{\Phi}_{\rm rad}}
+
+\newcommand\muF{\mu_{\sss\rm F}}
+\newcommand\muR{\mu_{\sss\rm R}}
+
+\newcommand\frindsing{{\ctindr}}
+
+\newcommand\qb{\bar{q}}
+\newcommand\RED{}
+\def\ord#1{{\cal O}\(#1\)}
+\def\ga{\gamma}
+\def\sirave{\overline{\sigma}_{\rm real} }
+\def\siNLOave{\overline{\sigma}_{\rm NLO} }
+\def\siMSBave{\overline{\sigma}_{\rm NLO}^{\rm \overline{MS}}}
+\def\sicoll{\sigma^{\rm coll}_{\rm ct}}
+\def\sibave{\overline{\sigma}_{\rm Born} }
+\def\sivave{\overline{\sigma}_{\rm virt} }
+
+\newcommand\xpm{{x_{\splus\sminus}}}
+\newcommand\xipm{{x_{i,\splus\sminus}}}
+\newcommand\vplus{{\tilde{v}_\splus}}
+\newcommand\vminus{{\tilde{v}_\sminus}}
+\newcommand\vpm{{\tilde{v}_\splusminus}}
+
+\def\reff#1{(\ref{#1})}
+\def\nn{\nonumber}
+
+\title{Calculation of $\matSV_{\sss\rm fin}$ in the FKS framework:\\
+an example using POWHEG-BOX scales}
+\author{~}
+%\date{~}
+\begin{document}
+\maketitle
+\begin{abstract}{}
+We show how to calculate the $\matSV_{\sss\rm fin}$ term needed by the
+POWHEG-BOX program, starting from a generic expression for the virtual
+term $\mathcal{V}_{b}$.  We show this in the case of DY processes.
+\end{abstract}
+
+
+We start from FNO, eq.7.190, which is taken from the original paper by
+Altarelli, Ellis and Martinelli:
+\begin{equation}
+\label{eq:virtual}
+  \mathcal{V}_{b,\,q\qb} = \left( \frac{4 \pi \muR^2}{s}
+  \right)^{\epsilon} \frac{\Gamma (1 + \epsilon) \, \Gamma (1 -
+  \epsilon)^2}{\Gamma (1 - 2 \epsilon)}  \frac{\as}{2 \pi}\, \CF \left[ -
+  \frac{2}{\epsilon^2} - \frac{3}{\epsilon} - 8 + \pi^2
+  \right]\mathcal{B}_{\,q\qb},
+\end{equation}
+Here $\muR$ stands for the renormalization scale, and
+$s=2(k_\splus\cdot k_\sminus)$. 
+% As in FNO, we start by observing
+%that:
+%\begin{equation}
+%  \frac{\Gamma (1 + \epsilon) \,\Gamma (1 - \epsilon)^2}{\Gamma (1 - 2
+%  \epsilon)} = \frac{1}{\Gamma (1 - \epsilon)} +\mathcal{O}\(\epsilon^3\),
+%\end{equation}
+%Therefore, up to terms that vanish in the limit $\epsilon\to 0$, we have:
+%\begin{equation}
+%  \mathcal{V}_{b,\,q\qb} = \left( \frac{4 \pi \mu^2}{s}
+%  \right)^{\epsilon} \frac{\Gamma (1 + \epsilon) \, \Gamma (1 -
+%  \epsilon)^2}{\Gamma (1 - 2 \epsilon)}  \frac{\as}{2 \pi}\, \CF \left[ -
+%  \frac{2}{\epsilon^2} - \frac{3}{\epsilon} - 8 + \pi^2
+%  \right]\mathcal{B}_{\,q\qb},
+%\end{equation}
+To extract $\matSV_{\sss\rm fin}$ from eq.~\reff{eq:virtual},
+we need to equal the expression in~\reff{eq:virtual} to the following one
+(FNO, eq.2.92):
+\begin{equation} 
+\matVb={\cal N}\,\asotpi
+\Bigg[-\sum_{i \in \matI} \left(\frac{1}{\ep^2} \,C_{f_i}+
+\frac{1}{\ep} \,\gamma_{f_i}\right)\matB
++\frac{1}{\ep}\sum_{\stackrel{i,j \in \matI}{i\ne j}}\log\frac{2k_i\mydot
+  k_j}{Q^2}\, 
+\matB_{ij}+\matSV_{\sss\rm fin}\Bigg]\,
+\label{eq:FKSoneloop}
+\end{equation}
+where
+\begin{equation}\label{eq:virtnorm}
+{\cal N}=
+\frac{(4\pi)^\ep}{\Gamma(1-\ep)}
+\left(\frac{\muR^2}{Q^2}\right)^\ep.
+\end{equation}
+
+For the case at hand, equation~\reff{eq:FKSoneloop} reduces to
+\begin{equation}
+\mathcal{V}_{b,\,q\qb}=\(\frac{4\pi\muR^2}{Q^2}\)^\ep\frac{1}{\Gamma(1-\ep)}
+\,\asotpi
+\Bigg[-\(\frac{2}{\ep^2} +\frac{3}{\ep} -\frac{2}{\ep}\log\frac{s}{Q^2}\)
+\CF \matB_{q\qb}  + \matSV_{{\sss\rm fin},\,q\qb}\Bigg]\,.
+\label{eq:FKSoneloop_DY}
+\end{equation}
+where we used the fact that the only colored partons involved are the
+two incoming quarks, and we also have that
+$\matB^{q\qb}_{\splus\sminus}=\CF\matB_{q\qb}$.
+
+We notice that $Q^2$ is here an \emph{arbitrary} scale.
+In the FKS approach, the soft-virtual term is obtained summing to
+$\matSV_{\sss\rm fin}$ a quantity that is $Q^2$ dependent
+(see FNO, eq. 2.99, 2.100 and 2.101).
+In the POWHEG-BOX code, this operation is authomatized
+and it is performed in a file that the user is not supposed
+to edit. 
+Therefore, an explicit choice for this scale was needed. Since we choosed
+\begin{equation}
+Q^2=\muR^2\,,
+\end{equation}
+it is important to use the same value for $Q^2$ in eq.~\reff{eq:FKSoneloop_DY},
+in order to extract a consistent expression for $\matSV_{\sss\rm fin}$.
+
+Therefore we evaluate the expression in~\reff{eq:FKSoneloop_DY} with
+$Q^2=\muR^2$, and equal it to the r.h.s. of
+eq.~\reff{eq:virtual}, obtaining:
+\begin{eqnarray}
+&& (4\pi)^\ep\frac{1}{\Gamma(1-\ep)}
+\Bigg[-\(\frac{2}{\ep^2} +\frac{3}{\ep} -\frac{2}{\ep}\log\frac{s}{\muR^2}\)
+\matB_{q\qb}  + \frac{\matSV_{{\sss\rm fin},\,q\qb}}{\CF}\Bigg] =\phantom{\hspace{3cm}} \nn \\
+&& \hspace{3cm}\left( \frac{4 \pi \muR^2}{s} \right)^{\epsilon} 
+\frac{\Gamma (1 + \epsilon) \, \Gamma (1 -
+  \epsilon)^2}{\Gamma (1 - 2 \epsilon)}  \left[ -
+  \frac{2}{\epsilon^2} - \frac{3}{\epsilon} - 8 + \pi^2
+  \right]\mathcal{B}_{\,q\qb}\,.
+\end{eqnarray}
+By using the fact that
+\begin{equation}
+  \frac{\Gamma (1 + \epsilon) \,\Gamma (1 - \epsilon)^2}{\Gamma (1 - 2
+  \epsilon)} = \frac{1}{\Gamma (1 - \epsilon)} +\mathcal{O}\(\epsilon^3\),
+\end{equation}
+we have
+\begin{equation}
+\frac{\matSV_{{\sss\rm fin},\,q\qb}}{\CF}=
+\left[ \left( \frac{\muR^2}{s} \right)^{\epsilon} \left( -\
+  \frac{2}{\epsilon^2} - \frac{3}{\epsilon} - 8 + \pi^2
+  \right) +
+\left(\frac{2}{\ep^2} + \frac{3}{\ep} - \frac{2}{\ep}\log\frac{s}{\muR^2} \right)\right]
+\matB_{q\qb}\,,
+\end{equation}
+that reduces to
+\begin{equation}
+\matSV_{{\sss\rm fin},\,q\qb}=\matB_{q\qb} \lq \pi^2 -8 -3\log\frac{\muR^2}{s}
+-\log^2\frac{\muR^2}{s} \rq \CF\,
+\label{eq:FKS_Vfinite_DY}
+\end{equation}
+after expanding $(\muR^2/s)^\ep$ as usual.
+The expression in eq.~\reff{eq:FKS_Vfinite_DY} is the one needed by
+the POWHEG-BOX program, and it has to be coded inside the subroutine
+\tmtexttt{setvirtual}.
+
+\end{document}
+
+
+
+\documentclass{article}
+\usepackage{amsmath}
+
+%%%%%%%%%% Start TeXmacs macros
+%\newcommand{\bignone}{}
+%\newcommand{\tmmathbf}[1]{\ensuremath{\boldsymbol{#1}}}
+%\newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
+%%%%%%%%%% End TeXmacs macros
+
+\begin{document}
+
+\title{AAA}
+%\title{}
+%\author{}\maketitle
+
+ddddd
+
+\end{document}
+
+We deal with an integral of the form
+\begin{equation}
+  I = \int_{- 1}^1 d y \int_0^{X (y)} d \xi \frac{1}{(1 - y)_+}  \left(
+  \frac{1}{\xi} \right)_{\xi_c} f (\xi, y) .
+\end{equation}
+First of all, we demonstrate the identity
+\begin{equation}
+  \[ \[ \int_0^X d \xi \left( \frac{1}{\xi} \right)_{\xi_c} \bignone F (\xi) =
+        \int_{0^{}}^1 d \tilde{\xi}  \left[ \left( \frac{1}{\tilde{\xi}}
+        \right)_+ + \log \frac{X}{\xi_c} \bignone \delta ( \tilde{\xi})
+        \right] F (\xi) \] \]
+\end{equation}
+with $\xi = X \tilde{\xi}$. If $F (0) = 0$ we simply have
+\begin{equation}
+  \int_0^X d \xi \left( \frac{1}{\xi} \right)_{\xi_c} \bignone F (\xi) =
+  \int_{0^{}}^1 d \tilde{\xi}  \left( \frac{1}{\tilde{\xi}} \right)_+ F (\xi)
+\end{equation}
+For $F (\xi) = 1$ we have
+\begin{equation}
+  \int_0^X d \xi \bignone  \left( \frac{1}{\xi} \right)_{\xi_c} =
+  \int_{\xi_c}^X \frac{d \xi}{\xi} = \bignone \log \frac{X}{\xi_c} =
+  \int_{0^{}}^1 d \tilde{\xi}  \left[ \left( \frac{1}{\tilde{\xi}} \right)_+ +
+  \log \frac{X}{\xi_c} \bignone \delta ( \tilde{\xi}) \right],
+\end{equation}
+which is obvious.
+
+We now work out the integral. We follow only the $1 / (1 - y)$ term for
+simplicity
+\begin{eqnarray}
+  I = \int_{- 1^{}}^1 d y \int_0^1 d \tilde{\xi}  \frac{1}{(1 - y)_+}  \left[
+  \left( \frac{1}{\tilde{\xi}} \right)_+ + \log \frac{X (y)}{\xi_c} \bignone
+  \delta ( \tilde{\xi}) \right] f (\xi, y) &  &  \nonumber\\
+  = \int_{- 1}^1 d y \int_0^1 d \tilde{\xi}  \frac{1}{1 - y}  \left[ \frac{f (
+  \tilde{\xi} X (y), y) - f (0, y)}{\tilde{\xi}} - \frac{f ( \tilde{\xi} X
+  (1), 1) - f (0, 1)}{\tilde{\xi}} \left]  \right. \right. &  &  \nonumber\\
+  + \int_{- 1}^1 d y \frac{1}{1 - y} \left[ \log \frac{X (y)}{\xi_c} f (0, y)
+  - \log \frac{X (1)}{\xi_c} f (0, 1) \right], &  & 
+\end{eqnarray}
+which is our needed formula.
+
+The real contribution to $\tilde{B}$ is obtained as
+\begin{eqnarray}
+  \bar{B}_{\tmop{real}} & = & \int d \tmmathbf{\Phi}_n \int_0^{2 \pi} d \phi
+  \int_{- 1}^1 d y \int_0^{X (y)} d \xi J_{\tmop{rad}} (\xi, y, \phi) R
+  \nonumber\\
+  & = & \int d \tmmathbf{\Phi}_n \int_0^{2 \pi} d \phi \int_{- 1}^1 d y
+  \int_0^{X (y)} d \xi \frac{1}{(1 - y)_+}  \left( \frac{1}{\xi}
+  \right)_{\xi_c}  \frac{J_{\tmop{rad}} (\xi, y, \phi)}{\xi} (1 - y) \xi^2 R
+  \nonumber\\
+  & = & \int d \tmmathbf{\Phi}_n \int_0^{2 \pi} d \phi \int_{- 1}^1 d y
+  \left[ \int_0^1 d \tilde{\xi}  \frac{1}{(1 - y)_+}  \left(
+  \frac{1}{\tilde{\xi}} \right)_+  \frac{J_{\tmop{rad}} (\xi, y, \phi)}{\xi}
+  (1 - y) \xi^2 R \right. \nonumber\\
+  &  & \left. + \log \frac{X (y)}{\xi_c} \lim_{\xi \rightarrow 0} \left(
+  \frac{J_{\tmop{rad}} (\xi, y, \phi)}{\xi} (1 - y) \xi^2 R \right) \right], 
+\end{eqnarray}
+where we should not forget that $\xi = \tilde{\xi} X (y)$ is also a function
+of $y$. Defining
+\begin{equation}
+  f (\xi, y) = \frac{J_{\tmop{rad}} (\xi, y, \phi)}{\xi} (1 - y) \xi^2 R,
+\end{equation}
+we get
+\begin{eqnarray}
+  \bar{B}_{\tmop{real}} & = & \int d \tmmathbf{\Phi}_n \int_0^{2 \pi} d \phi
+  \int_{- 1}^1 \frac{d y}{1 - y} \left\{ \int_0^1 d \tilde{\xi}  \left[
+  \frac{f ( \tilde{\xi} X (y), y) - f (0, y)}{\tilde{\xi}} - \frac{f (
+  \tilde{\xi} X (1), 1) - f (0, 1)}{\tilde{\xi}} \left]  \right. \right.
+  \right. \nonumber\\
+  &  & \left. + \left[ \log \frac{X (y)}{\xi_c} f (0, y) - \log \frac{X
+  (1)}{\xi_c} f (0, 1) \right] \right\} . 
+\end{eqnarray}
+
+\end{document}

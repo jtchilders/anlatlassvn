@@ -1,0 +1,292 @@
+Index: PHASIC++/Channels/BBar_Emission_Generator.C
+===================================================================
+--- PHASIC++/Channels/BBar_Emission_Generator.C	(revision 26395)
++++ PHASIC++/Channels/BBar_Emission_Generator.C	(working copy)
+@@ -14,6 +14,7 @@
+ #include "ATOOLS/Org/Data_Reader.H"
+ #include "ATOOLS/Org/Data_Writer.H"
+ #include "PHASIC++/Channels/Vegas.H"
++#include "ATOOLS/Org/My_MPI.H"
+ 
+ using namespace ATOOLS;
+ using namespace PHASIC;
+@@ -277,6 +278,17 @@
+ 
+ void BBar_Emission_Generator::MPISync()
+ {
++#ifdef USING__MPI
++  size_t i(0), j(0);
++  std::vector<double> sv;
++  for (size_t i(0);i<m_dipoles.size();++i)
++    m_dipoles[i]->MPICollect(sv,i);
++  if (MPI::COMM_WORLD.Get_size())
++    mpi->MPIComm()->Allreduce
++      (MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
++  for (size_t i(0);i<m_dipoles.size();++i)
++    m_dipoles[i]->MPIReturn(sv,j);
++#endif
+   for (size_t i(0);i<m_dipoles.size();++i)
+     m_dipoles[i]->MPISync();
+ } 
+Index: PHASIC++/Channels/CS_Dipole.C
+===================================================================
+--- PHASIC++/Channels/CS_Dipole.C	(revision 26395)
++++ PHASIC++/Channels/CS_Dipole.C	(working copy)
+@@ -100,21 +100,27 @@
+   p_vegas->EndOptimize();
+ }
+ 
++void CS_Dipole::MPICollect(std::vector<double> &sv,size_t &i)
++{
++  sv.resize(3*(i+1));
++  sv[3*i+0]=m_mnp;
++  sv[3*i+1]=m_msum;
++  sv[3*i+2]=m_msum2;
++  ++i;
++}
++
++void CS_Dipole::MPIReturn(std::vector<double> &sv,size_t &i)
++{
++  m_mnp=sv[3*i+0];
++  m_msum=sv[3*i+1];
++  m_msum2=sv[3*i+2];
++  ++i;
++}
++
+ void CS_Dipole::MPISync()
+ {
+   p_vegas->MPISync();
+ #ifdef USING__MPI
+-  int size=MPI::COMM_WORLD.Get_size();
+-  if (size>1) {
+-    double val[3];
+-    val[0]=m_mnp;
+-    val[1]=m_msum;
+-    val[2]=m_msum2;
+-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,val,3,MPI::DOUBLE,MPI::SUM);
+-    m_mnp=val[0];
+-    m_msum=val[1];
+-    m_msum2=val[2];
+-  }
+   m_np+=m_mnp;
+   m_sum+=m_msum;
+   m_sum2+=m_msum2;
+Index: PHASIC++/Channels/CS_Dipole.H
+===================================================================
+--- PHASIC++/Channels/CS_Dipole.H	(revision 26395)
++++ PHASIC++/Channels/CS_Dipole.H	(working copy)
+@@ -79,6 +79,8 @@
+     void AddPoint(const double &value,const double &ewgt,const int mode);
+     void Optimize();
+     void EndOptimize();
++    void MPICollect(std::vector<double> &sv,size_t &i);
++    void MPIReturn(std::vector<double> &sv,size_t &i);
+     void MPISync();
+     void Reset();
+ 
+Index: PHASIC++/Main/Process_Integrator.C
+===================================================================
+--- PHASIC++/Main/Process_Integrator.C	(revision 26395)
++++ PHASIC++/Main/Process_Integrator.C	(working copy)
+@@ -505,25 +505,51 @@
+       (*p_proc)[i]->Integrator()->SetPSHandler(pshandler);
+ } 
+ 
+-void Process_Integrator::MPISync()
++void Process_Integrator::MPICollect
++(std::vector<double> &sv,std::vector<double> &mv,size_t &i)
++{
++  sv.resize(3*(i+1));
++  mv.resize(2*(i+1));
++  sv[3*i+0]=m_msn;
++  sv[3*i+1]=m_mssum;
++  sv[3*i+2]=m_mssumsqr;
++  mv[2*i+0]=m_max;
++  mv[2*i+1]=m_smax;
++  ++i;
++  if (p_proc->IsGroup())
++    for (size_t j(0);j<p_proc->Size();++j)
++      (*p_proc)[j]->Integrator()->MPICollect(sv,mv,i);
++}
++
++void Process_Integrator::MPIReturn
++(std::vector<double> &sv,std::vector<double> &mv,size_t &i)
++{
++  m_msn=sv[3*i+0];
++  m_mssum=sv[3*i+1];
++  m_mssumsqr=sv[3*i+2];
++  m_max=mv[2*i+0];
++  m_smax=mv[2*i+1];
++  ++i;
++  if (p_proc->IsGroup())
++    for (size_t j(0);j<p_proc->Size();++j)
++      (*p_proc)[j]->Integrator()->MPIReturn(sv,mv,i);
++}
++
++void Process_Integrator::MPISync(const int mode)
+ {
+   if (p_whisto) p_whisto->MPISync();
+ #ifdef USING__MPI
+-  int size=MPI::COMM_WORLD.Get_size();
+-  if (size>1) {
+-    double sval[3], mval[2];
+-    sval[0]=m_msn;
+-    sval[1]=m_mssum;
+-    sval[2]=m_mssumsqr;
+-    mval[0]=m_max;
+-    mval[1]=m_smax;
+-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,sval,3,MPI::DOUBLE,MPI::SUM);
+-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,mval,2,MPI::DOUBLE,MPI::MAX);
+-    m_msn=sval[0];
+-    m_mssum=sval[1];
+-    m_mssumsqr=sval[2];
+-    m_max=mval[0];
+-    m_smax=mval[1];
++  if (mode==0) {
++    size_t i(0), j(0);
++    std::vector<double> sv, mv;
++    MPICollect(sv,mv,i);
++    if (MPI::COMM_WORLD.Get_size()) {
++      mpi->MPIComm()->Allreduce
++	(MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
++      mpi->MPIComm()->Allreduce
++	(MPI_IN_PLACE,&mv[0],mv.size(),MPI::DOUBLE,MPI::MAX);
++    }
++    MPIReturn(sv,mv,j);
+   }
+   m_sn+=m_msn;
+   m_ssum+=m_mssum;
+@@ -533,7 +559,7 @@
+   p_proc->MPISync();
+   if (p_proc->IsGroup())
+     for (size_t i(0);i<p_proc->Size();++i)
+-      (*p_proc)[i]->Integrator()->MPISync();
++      (*p_proc)[i]->Integrator()->MPISync(1);
+ }
+ 
+ void Process_Integrator::OptimizeResult()
+Index: PHASIC++/Main/Process_Integrator.H
+===================================================================
+--- PHASIC++/Main/Process_Integrator.H	(revision 26395)
++++ PHASIC++/Main/Process_Integrator.H	(working copy)
+@@ -121,7 +121,9 @@
+ 
+     double SelectionWeight(const int mode) const;
+ 
+-    void MPISync();
++    void MPISync(const int mode=0);
++    void MPICollect(std::vector<double> &sv,std::vector<double> &mv,size_t &i);
++    void MPIReturn(std::vector<double> &sv,std::vector<double> &mv,size_t &i);
+ 
+     // inline functions
+     inline Process_Base *Process() const { return p_proc; }
+Index: PHASIC++/Process/Process_Base.C
+===================================================================
+--- PHASIC++/Process/Process_Base.C	(revision 26395)
++++ PHASIC++/Process/Process_Base.C	(working copy)
+@@ -14,6 +14,7 @@
+ #include "ATOOLS/Org/STL_Tools.H"
+ #include "ATOOLS/Org/MyStrStream.H"
+ #include "ATOOLS/Org/Shell_Tools.H"
++#include "ATOOLS/Org/My_MPI.H"
+ #include "PDF/Main/Shower_Base.H"
+ #include "PDF/Main/ISR_Handler.H"
+ #include <algorithm>
+@@ -93,8 +94,25 @@
+ {
+ }
+ 
++void Process_Base::MPICollect(std::vector<double> &sv,size_t &i)
++{
++}
++
++void Process_Base::MPIReturn(std::vector<double> &sv,size_t &i)
++{
++}
++
+ void Process_Base::MPISync()
+ {
++#ifdef USING__MPI
++  size_t i(0), j(0);
++  std::vector<double> sv;
++  MPICollect(sv,i);
++  if (MPI::COMM_WORLD.Get_size()>1)
++    mpi->MPIComm()->Allreduce
++      (MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
++  MPIReturn(sv,j);
++#endif
+ }
+ 
+ void Process_Base::SetFixedScale(const std::vector<double> &s)
+Index: PHASIC++/Process/Process_Base.H
+===================================================================
+--- PHASIC++/Process/Process_Base.H	(revision 26395)
++++ PHASIC++/Process/Process_Base.H	(working copy)
+@@ -127,6 +127,8 @@
+     virtual bool ReadIn(const std::string &pid);
+     virtual void WriteOut(const std::string &pid);
+     virtual void EndOptimize();
++    virtual void MPICollect(std::vector<double> &sv,size_t &i);
++    virtual void MPIReturn(std::vector<double> &sv,size_t &i);
+     virtual void MPISync();
+ 
+     virtual bool IsGroup() const;
+Index: AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.C
+===================================================================
+--- AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.C	(revision 26395)
++++ AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.C	(working copy)
+@@ -875,22 +875,28 @@
+   for (size_t i=0;i<wgtinfo.m_wfac.size();++i) wgtinfo.m_wfac[i]*=m_lastk;
+ }
+ 
++void Single_Virtual_Correction::MPICollect(std::vector<double> &sv,size_t &i)
++{
++  sv.resize(i+4);
++  sv[i+0]=m_mn;
++  sv[i+1]=m_mbsum;
++  sv[i+2]=m_mvsum;
++  sv[i+3]=m_misum;
++  i+=4;
++}
++
++void Single_Virtual_Correction::MPIReturn(std::vector<double> &sv,size_t &i)
++{
++  m_mn=sv[i+0];
++  m_mbsum=sv[i+1];
++  m_mvsum=sv[i+2];
++  m_misum=sv[i+3];
++  i+=4;
++}
++
+ void Single_Virtual_Correction::MPISync()
+ {
+ #ifdef USING__MPI
+-  int size=MPI::COMM_WORLD.Get_size();
+-  if (size>1) {
+-    double val[4];
+-    val[0]=m_mn;
+-    val[1]=m_mbsum;
+-    val[2]=m_mvsum;
+-    val[3]=m_misum;
+-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,val,4,MPI::DOUBLE,MPI::SUM);
+-    m_mn=val[0];
+-    m_mbsum=val[1];
+-    m_mvsum=val[2];
+-    m_misum=val[3];
+-  }
+   m_n+=m_mn;
+   m_bsum+=m_mbsum;
+   m_vsum+=m_mvsum;
+Index: AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.H
+===================================================================
+--- AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.H	(revision 26395)
++++ AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.H	(working copy)
+@@ -61,6 +61,8 @@
+     void AddPoint(const double &value);
+     bool ReadIn(const std::string &pid);
+     void WriteOut(const std::string &pid);
++    void MPICollect(std::vector<double> &sv,size_t &i);
++    void MPIReturn(std::vector<double> &sv,size_t &i);
+     void MPISync();
+ 
+     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);

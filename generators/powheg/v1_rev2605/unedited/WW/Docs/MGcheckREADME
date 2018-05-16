@@ -1,0 +1,15 @@
+To perform checks of Born and real against MadGraph:
+
+Born: copy the files qqb_ww.f.mcheck, init_coupling.f.mgcheck and Born.f.mgcheck into the WW directory, rename as .f, make and run.
+
+The output should be the same as in "BornMGcheck"  - this is the same as MadGraph to 9 significant figures.
+
+For real: 
+
+(Ensure that qqb_ww.f and Born.f are changed back to their normal forms BEFORE running this step)
+
+Then copy the files qqb_ww_g.f.mgcheck, init_coupling.f.mgcheck and real.f.mgcheck into the WW directory, rename to .f, make and run.
+
+The output should be the same as "realMGcheck" - this is the same as MadGraph to 8 significant figures.
+
+RR 01/06/2011

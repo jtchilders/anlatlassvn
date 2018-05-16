@@ -1,0 +1,46 @@
+# @configure_input@
+#
+# output interfaces for documentation
+# the following need to come first
+globallibrary Herwig.so
+library HwWeakCurrents.so
+#
+library Hw64Decay.so
+library HwAnalysis.so
+library HwFormFactors.so
+library HwLEPAnalysis.so
+library HwTevatronAnalysis.so
+library HwMamboDecay.so
+library HwMEHadronFast.so
+library HwMEHadron.so
+library HwMEDIS.so
+library HwMELepton.so
+library HwMEGammaGamma.so
+library HwMEGammaHadron.so
+library HwPowhegMEHadron.so
+library HwPowhegMELepton.so
+library SimpleKTCut.so
+library HwMPI.so
+library HwMRST.so
+library HwReggeonPDF.so
+library HwPomeronPDF.so
+library HwPomeronFlux.so
+library HwPartonicDecay.so
+library HwPerturbativeDecay.so
+library HwPerturbativeHiggsDecay.so
+library HwShower.so
+library HwSMDecay.so
+library HwTauDecay.so
+library HwTMDecay.so
+library HwBaryonDecay.so
+library HwSOPHTY.so
+library HwUA5.so
+library HwVMDecay.so
+library HwSatPDF.so
+library HwIncomingPhotonEvolver.so
+@LOAD_BSM@
+@LOAD_DIPOLE_ALPHAS@
+@LOAD_MATCHBOX@
+@LOAD_DIPOLE@
+@LOAD_FASTJET@
+doxygendump Herwig:: AllInterfaces.h

@@ -1,0 +1,211 @@
+gfortran -fno-automatic -c -o ../wqqlib/wqq.o ../wqqlib/wqq.f 
+gfortran -fno-automatic -c -o wqqusr.o wqqusr.f 
+gfortran -fno-automatic -c -o ../wqqlib/Aproc.o ../wqqlib/Aproc.f 
+gfortran -fno-automatic -c -o ../alplib/alpgen.o ../alplib/alpgen.f 
+alpgen.inc:150.20:
+    Included at wqqusr.f:15:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at wqqusr.f:130:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at wqqusr.f:184:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at wqqusr.f:205:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/wqq.f:6:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/wqq.f:13:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/Aproc.f:2:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/wqq.f:164:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:146:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:208:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:332:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/Aproc.f:780:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:514:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+gfortran -fno-automatic -c -o ../alplib/alppdf.o ../alplib/alppdf.f 
+gfortran -fno-automatic -c -o ../alplib/alputi.o ../alplib/alputi.f 
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:574:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+gfortran -fno-automatic -c -o ../alplib/Aint.o ../alplib/Aint.f 
+gfortran -fno-automatic -c -o ../alplib/Asu3.o ../alplib/Asu3.f 
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:627:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/wqq.f:1407:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:668:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/wqq.f:1480:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/wqq.f:1630:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/wqq.f:2152:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../wqqlib/wqq.f:2245:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:1610:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:1689:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:1854:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:1940:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+gfortran -fno-automatic -c -o ../alplib/Aint90.o ../alplib/Aint90.f 
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:3082:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+gfortran -fno-automatic -c -o ../alplib/Acp.o ../alplib/Acp.f 
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:4606:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:4890:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:5021:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:5203:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:5305:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:5325:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+alpgen.inc:150.20:
+    Included at ../alplib/alpgen.f:5344:
+
+      common/glocut/ptjmin,ptjmax,etajmax,drjmin,                       
+                    1
+Warning: Padding of 4 bytes required before 'ptj1min' in COMMON 'glocut' at (1)
+gfortran -fno-automatic -o wqqgen ./wqqusr.o ../wqqlib/wqq.o \
+	../alplib/alpgen.o ../alplib/alputi.o ../alplib/alppdf.o \
+	../alplib/Acp.o ../alplib/Asu3.o ../alplib/Aint.o

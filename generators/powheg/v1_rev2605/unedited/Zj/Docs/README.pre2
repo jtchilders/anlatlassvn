@@ -1,0 +1,16 @@
+By using the makefile Makefile.pre2 rather than the default one, the
+generator is compiled with all the new features discussed in
+arXiv:1303.5447. These features are described in the W2jet/Docs or
+Z2jet/Docs directory. One can thus activate the MiNLO procedure by
+inserting
+minlo 1
+in the Makefile.
+
+The MiNLO procedure used in this case is the one documented in
+arXiv:1212.4504 (JHEP 1305 (2013) 082). However, in the present
+case the newdij feature (documented in arXiv:1303.5447 and in W
+or Z2jet/Docs) is used. In order to exactly reproduced the
+results of ref.arXiv:1212.4504, however, the option olddij 1
+should be used, since the newdij feature was not available at the
+time of ref.arXiv:1212.4504. We believe that, from a physics point
+of view, it is better NOT to use this olddij option.

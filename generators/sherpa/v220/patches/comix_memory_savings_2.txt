@@ -1,0 +1,3 @@
+attached a patch that will help to save memory in Comix. For W+5j it's ~50% savings (300MB instead of 430MB), for W+4j it's only 15%, but nevertheless, it's something. Maybe this helps to make things go more smoothly on Mira? I'm also attaching the patch for setting PSI_ITMIN per node (sorry for the delay on this).
+
+I checked the loading times for Comix again, they are ~4s for W+4j and ~30s for W+5j once the process information has been written out. Also, I got the memory information wrong below, this was not restricted to EW order 2. When I use EW order 2 it's ~50MB for W+4j and ~130MB for W+5j. I think it's hard to improve that one. Optimizing Amegic will require a bit more work.

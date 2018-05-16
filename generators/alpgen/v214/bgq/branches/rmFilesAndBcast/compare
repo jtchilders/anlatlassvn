@@ -1,0 +1,46 @@
+#!/bin/sh 
+# For developers only:
+# >  ./compare v1 v2 
+# to compare the source files in the versions stored in directory v1 and v2
+#
+NEW_path="$1"
+REF_path="$2"
+
+#
+# list processes
+#prc=  0     1   2   3    4    5     6  7  8   9    10    11    12   13  14     15  16
+procs=(wqq zqq wjet zjet vbjet 2Q 4Q QQh Njet wcjet phjet hjet top wphjet wphqq 2Qph)
+
+rm diff.out
+# first compare alpgen and other auxiliary files
+files=(alplib/alpgen.f alplib/alpgen.inc alplib/alpsho.f alplib/alpsho.inc \
+alplib/alputi.f alplib/alppdf.f Makefile)
+
+for file in "${files[@]}"; do
+    if ! diff $NEW_path/$file $REF_path/$file  ;
+	then
+	echo "*******"$file >> diff.out
+	diff $NEW_path/$file $REF_path/$file  >> diff.out
+	echo "  " >> diff.out
+    fi
+done
+
+
+#  compare process' files
+for prc in "${procs[@]}"; do
+    workdir=$prc"work"
+    libdir=$prc"lib"
+    files=($workdir/$prc"usr.f" $workdir/input $libdir/$prc".f" \
+           $libdir/$prc".inc")
+
+# proc.f
+    for file in "${files[@]}"; do
+	if ! diff $NEW_path/$file $REF_path/$file ;  
+	    then
+	    echo "*******"$file >> diff.out
+	    diff $NEW_path/$file $REF_path/$file  >> diff.out
+	    echo "  " >> diff.out
+	fi
+    done
+done
+

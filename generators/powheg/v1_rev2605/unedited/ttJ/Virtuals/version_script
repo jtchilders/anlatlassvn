@@ -1,0 +1,17 @@
+LIBVIRTUAL_1.0.0 { 
+	global:
+		extern "C++"{
+			gggtt2*; 
+			gqbttqb2*; 
+			qgttq2*; 
+			qqttg2*;
+			ioperator*;	
+			setdelta*;
+			set_virtual_scales_;
+			olp_start_;
+			olp_evalsubprocess_;
+			virtual_initialize_;
+		};
+	local: 
+	*;
+}; 

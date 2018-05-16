@@ -1,0 +1,12 @@
+This directory is a placeholder for the generator for the subprocess
+			g g -> A
+in the MSSM.
+The process is implemented in the gg_H_MSSM generator along with
+			g g -> h
+			g g -> H
+It could be selected by defining the variable 'higgstype' to 3 
+in the powheg.input configuration file.
+The directory gg_H_MSSM/testrun-lhc-A contains an example configuration file.
+
+Please see the documentation of the gg_H_MSSM generator for all the
+available configuration parameters.

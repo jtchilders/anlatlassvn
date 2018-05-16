@@ -1,0 +1,90 @@
+Index: AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.C
+===================================================================
+--- AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.C	(revision 26401)
++++ AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.C	(working copy)
+@@ -894,8 +894,9 @@
+   i+=4;
+ }
+ 
+-void Single_Virtual_Correction::MPISync()
++void Single_Virtual_Correction::MPISync(const int mode)
+ {
++  Process_Base::MPISync(mode);
+ #ifdef USING__MPI
+   m_n+=m_mn;
+   m_bsum+=m_mbsum;
+Index: AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.H
+===================================================================
+--- AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.H	(revision 26401)
++++ AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.H	(working copy)
+@@ -63,7 +63,7 @@
+     void WriteOut(const std::string &pid);
+     void MPICollect(std::vector<double> &sv,size_t &i);
+     void MPIReturn(std::vector<double> &sv,size_t &i);
+-    void MPISync();
++    void MPISync(const int mode=0);
+ 
+     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
+     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
+Index: PHASIC++/Main/Process_Integrator.C
+===================================================================
+--- PHASIC++/Main/Process_Integrator.C	(revision 26401)
++++ PHASIC++/Main/Process_Integrator.C	(working copy)
+@@ -556,7 +556,7 @@
+   m_ssumsqr+=m_mssumsqr;
+   m_msn=m_mssum=m_mssumsqr=0.0;
+ #endif
+-  p_proc->MPISync();
++  p_proc->MPISync(mode);
+   if (p_proc->IsGroup())
+     for (size_t i(0);i<p_proc->Size();++i)
+       (*p_proc)[i]->Integrator()->MPISync(1);
+@@ -593,7 +593,7 @@
+ 
+ void Process_Integrator::StoreResults(const int mode)
+ {
+-  MPISync();
++  if (m_msn) MPISync();
+   if (m_resultpath.length()==0) return;
+   if (m_totalxs!=0.0 && mode==0) return;
+   SetTotal(0); 
+Index: PHASIC++/Process/Process_Base.C
+===================================================================
+--- PHASIC++/Process/Process_Base.C	(revision 26401)
++++ PHASIC++/Process/Process_Base.C	(working copy)
+@@ -96,14 +96,21 @@
+ 
+ void Process_Base::MPICollect(std::vector<double> &sv,size_t &i)
+ {
++  if (IsGroup())
++    for (size_t j(0);j<Size();++j)
++      (*this)[j]->MPICollect(sv,i);
+ }
+ 
+ void Process_Base::MPIReturn(std::vector<double> &sv,size_t &i)
+ {
++  if (IsGroup())
++    for (size_t j(0);j<Size();++j)
++      (*this)[j]->MPIReturn(sv,i);
+ }
+ 
+-void Process_Base::MPISync()
++void Process_Base::MPISync(const int mode)
+ {
++  if (mode) return;
+ #ifdef USING__MPI
+   size_t i(0), j(0);
+   std::vector<double> sv;
+Index: PHASIC++/Process/Process_Base.H
+===================================================================
+--- PHASIC++/Process/Process_Base.H	(revision 26401)
++++ PHASIC++/Process/Process_Base.H	(working copy)
+@@ -129,7 +129,7 @@
+     virtual void EndOptimize();
+     virtual void MPICollect(std::vector<double> &sv,size_t &i);
+     virtual void MPIReturn(std::vector<double> &sv,size_t &i);
+-    virtual void MPISync();
++    virtual void MPISync(const int mode=0);
+ 
+     virtual bool IsGroup() const;
+ 
